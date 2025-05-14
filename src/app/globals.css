@@ -9,7 +9,7 @@
 
 @import "tailwindcss";
 
-:root {
+@theme {
 	--principal-blue: #103663;
 	--secondary-blue: #4A77A8;
 	--font-inter: 'Inter', sans-serif;
@@ -19,5 +19,35 @@
 
 body {
 	background-color: white;
+	font-family: var(--font-inter);
+}
+
+/* Encabezados h1-h6 con Questrial */
+h1, h2, h3, h4, h5, h6 {
 	font-family: var(--font-questrial);
+}
+
+/* Elementos de UI con Be Vietnam Pro */
+button, 
+a, 
+input, 
+select, 
+textarea, 
+label,
+.btn,
+.nav-item,
+.menu-item,
+.card-header,
+.tab,
+.badge,
+.tag,
+.tooltip,
+.notification,
+.alert {
+	font-family: var(--font-be-vietnam);
+}
+
+/* Placeholders con Be Vietnam Pro */
+::placeholder {
+	font-family: var(--font-be-vietnam);
 }
