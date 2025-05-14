@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/layout/Navbar";
 
 const nunitoSans = Nunito_Sans({
 	subsets: ["latin"],
@@ -21,6 +22,7 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body className={`${nunitoSans.variable} antialiased`}>
+				<Navbar/>
 				{children}
 			</body>
 		</html>
