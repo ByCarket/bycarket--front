@@ -14,7 +14,7 @@ export default function Footer() {
 	};
 
 	return (
-		<footer className='w-full h-[60vh] bg-gradient-to-r from-[#103663] to-[#4A77A8]'>
+		<footer className='w-full h-[60vh] bg-gradient-to-r from-principal-blue to-secondary-blue'>
 			<div className='container mx-auto h-full flex flex-col'>
 				<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-12 flex-grow'>
 					<div className='flex flex-col'>
@@ -152,7 +152,7 @@ export default function Footer() {
 							/>
 							<button
 								type='submit'
-								className='px-6 py-2 bg-[#103663] text-white rounded-md hover:bg-[#103663]/80 transition-colors'>
+								className='px-6 py-2 bg-principal-blue text-white rounded-md hover:bg-principal-blue/80 transition-colors'>
 								Suscribirse
 							</button>
 						</form>

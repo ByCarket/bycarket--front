@@ -18,11 +18,11 @@
 //   return (
 //     <div className="max-w-4xl mx-auto mt-20">
 
-//                     <div className="bg-[#103663] backdrop-blur-md shadow-md rounded-2xl p-6 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
+//                     <div className="bg-principal-blue backdrop-blur-md shadow-md rounded-2xl p-6 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-6">
 //                         <img
 //                             src={user.avatarUrl}
 //                             alt="Foto de perfil"
-//                             className="w-32 h-32 rounded-full object-cover border-4 border-[#103663]"
+//                             className="w-32 h-32 rounded-full object-cover border-4 border-principal-blue"
 //                         />
 //                         <div className="flex-1 text-white">
 //                             <h2 className="text-2xl font-bold">{user.name}</h2>
@@ -33,16 +33,16 @@
 //                                 <p>📅 Miembro desde {user.joined}</p>
 //                             </div>
 //                             <div className="mt-4 flex gap-2">
-//                                 <button className="px-4 py-2 bg-[#4A77A8] border border-solid text-white rounded-xl hover:bg-[#103663] transition">
+//                                 <button className="px-4 py-2 bg-secondary-blue border border-solid text-white rounded-xl hover:bg-principal-blue transition">
 //                                     Editar perfil
 //                                 </button>
-//                                 <button className="px-4 py-2 bg-[#4A77A8] border border-solid text-white rounded-xl hover:bg-[#103663] transition">
+//                                 <button className="px-4 py-2 bg-secondary-blue border border-solid text-white rounded-xl hover:bg-principal-blue transition">
 //                                     Publicar auto
 //                                 </button>
 //                             </div>
 //                         </div>
 //                     </div>
-    
+
 //     </div>
 //   );
 // };
