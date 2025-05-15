@@ -22,26 +22,31 @@ export default function Navbar() {
 
 
             <div className="hidden md:flex gap-6 text-sm text-white font-medium">
-                <Link href="#">Link</Link>
-                <Link className='ml-20' href="#">Link</Link>
-                <Link className='ml-20' href="#">Link</Link>
-                <Link className='ml-20' href="#">Link</Link>
-                <Link className='ml-20' href="#">Link</Link>
+                <Link href="/">Home</Link>
+                <Link className='ml-20' href="#">Vehiculos</Link>
+                <Link className='ml-20' href="#">¿Quienes somos?</Link>
+                <Link className='ml-20' href="#">Premium</Link>
             </div>
 
 
             <div className="flex gap-3">
+                  <Link
+                    href="/dashboard"
+                    className="rounded-full bg-gray-200 px-5 py-2 text-sm font-bold text-black hover:bg-gray-300"
+                >
+                    Perfil
+                </Link>
                 <Link
-                    href="#"
+                    href="/register"
                     className="rounded-full bg-gray-200 px-5 py-2 text-sm font-bold text-black hover:bg-gray-300"
                 >
                     Registrarse
                 </Link>
                 <Link
-                    href="#"
+                    href="/login"
                     className="rounded-full bg-gray-200 px-5 py-2 text-sm font-bold text-black hover:bg-gray-300"
                 >
-                    Iniciar Sesion
+                    Iniciar Sesión
                 </Link>
             </div>
         </nav>
