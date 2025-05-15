@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/context/AuthProvider";
 import type { Metadata } from "next";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
@@ -22,8 +23,10 @@ export default function RootLayout({
 	return (
 		<html lang='en'>
 			<body className={`${nunitoSans.variable} antialiased`}>
-				<Navbar/>
-				{children}
+				<AuthProvider>
+					<Navbar />
+					{children}
+				</AuthProvider>
 			</body>
 		</html>
 	);
