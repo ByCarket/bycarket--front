@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { signIn } from "next-auth/react";
+import { FcGoogle } from "react-icons/fc";
 
 export default function RegisterForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -299,6 +301,21 @@ export default function RegisterForm() {
 							className='w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300'>
 							Registrarse
 						</button>
+
+						<div className='text-center mt-4'>
+							<span className='text-sm text-gray-600'>
+								prefieres registrarte con:
+							</span>
+						</div>
+
+						<div className='text-center mt-2'>
+							<button
+								type='button'
+								onClick={() => signIn("google")}
+								className='w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-300 mx-auto'>
+								<FcGoogle className='h-6 w-6' />
+							</button>
+						</div>
 
 						<div className='text-center mt-4'>
 							<span className='text-gray-600'>
