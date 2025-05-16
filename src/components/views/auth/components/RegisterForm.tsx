@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { signIn } from "next-auth/react";
+import { FcGoogle } from "react-icons/fc";
 
 export default function RegisterForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -75,8 +77,8 @@ export default function RegisterForm() {
 
 	return (
 		<div className='relative min-h-screen w-full overflow-hidden'>
-			<div className='absolute top-0 left-0 w-3/4 h-1/2 bg-[#103663] rounded-br-[100px]'></div>
-			<div className='absolute bottom-0 right-0 w-3/4 h-1/3 bg-[#4A77A8] rounded-tl-[100px]'></div>
+			<div className='absolute top-0 left-0 w-3/4 h-1/2 bg-principal-blue rounded-br-[100px]'></div>
+			<div className='absolute bottom-0 right-0 w-3/4 h-1/3 bg-secondary-blue rounded-tl-[100px]'></div>
 
 			<div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4'>
 				<h1 className='text-4xl md:text-5xl font-thin text-white mb-8 text-center'>
@@ -98,7 +100,7 @@ export default function RegisterForm() {
 								onChange={formik.handleChange}
 								onBlur={formik.handleBlur}
 								value={formik.values.name}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 							/>
 							{formik.touched.name && formik.errors.name ? (
 								<div className='text-red-500 text-sm mt-1'>
@@ -120,7 +122,7 @@ export default function RegisterForm() {
 								onChange={formik.handleChange}
 								onBlur={formik.handleBlur}
 								value={formik.values.email}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 							/>
 							{formik.touched.email && formik.errors.email ? (
 								<div className='text-red-500 text-sm mt-1'>
@@ -142,7 +144,7 @@ export default function RegisterForm() {
 								onChange={formik.handleChange}
 								onBlur={formik.handleBlur}
 								value={formik.values.phone ?? ""}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 							/>
 							{formik.touched.phone && formik.errors.phone ? (
 								<div className='text-red-500 text-sm mt-1'>
@@ -165,7 +167,7 @@ export default function RegisterForm() {
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
 									value={formik.values.country}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 								/>
 								{formik.touched.country &&
 								formik.errors.country ? (
@@ -188,7 +190,7 @@ export default function RegisterForm() {
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
 									value={formik.values.city}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 								/>
 								{formik.touched.city && formik.errors.city ? (
 									<div className='text-red-500 text-sm mt-1'>
@@ -211,7 +213,7 @@ export default function RegisterForm() {
 								onChange={formik.handleChange}
 								onBlur={formik.handleBlur}
 								value={formik.values.address}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 							/>
 							{formik.touched.address && formik.errors.address ? (
 								<div className='text-red-500 text-sm mt-1'>
@@ -234,7 +236,7 @@ export default function RegisterForm() {
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
 									value={formik.values.password}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 								/>
 								<button
 									type='button'
@@ -273,7 +275,7 @@ export default function RegisterForm() {
 									onChange={formik.handleChange}
 									onBlur={formik.handleBlur}
 									value={formik.values.confirmPassword}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A77A8]'
+									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
 								/>
 								<button
 									type='button'
@@ -296,9 +298,24 @@ export default function RegisterForm() {
 
 						<button
 							type='submit'
-							className='w-full py-2 px-4 bg-[#103663] hover:bg-[#4A77A8] text-white font-semibold rounded-md transition duration-300'>
+							className='w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300'>
 							Registrarse
 						</button>
+
+						<div className='text-center mt-4'>
+							<span className='text-sm text-gray-600'>
+								prefieres registrarte con:
+							</span>
+						</div>
+
+						<div className='text-center mt-2'>
+							<button
+								type='button'
+								onClick={() => signIn("google")}
+								className='w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-300 mx-auto'>
+								<FcGoogle className='h-6 w-6' />
+							</button>
+						</div>
 
 						<div className='text-center mt-4'>
 							<span className='text-gray-600'>
@@ -306,7 +323,7 @@ export default function RegisterForm() {
 							</span>
 							<a
 								href='/login'
-								className='text-[#103663] hover:text-[#4A77A8] font-medium transition duration-300'>
+								className='text-principal-blue hover:text-secondary-blue font-medium transition duration-300'>
 								Inicia sesión
 							</a>
 						</div>
