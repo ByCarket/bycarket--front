@@ -1,9 +1,9 @@
-import React from "react";
+import AnalyticsView from '@/components/views/dashboard/AnalyticsView'
+import React from 'react'
 
-const AnalyticsPage = () => {
-  return <div>AnalyticsPage</div>;
-};
-
-export default AnalyticsPage;
-
-// * Página de estadísticas, actividades, notificaciones
+export const page = () => {
+  return (
+    <AnalyticsView/>
+  )
+}
+export default page
