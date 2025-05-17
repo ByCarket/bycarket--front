@@ -5,11 +5,13 @@ export interface RegisterData {
 	email: string;
 	password: string;
 	confirmPassword: string;
-	phone?: number;
-	country?: string;
-	city?: string;
-	address?: string;
+	phone: number;
+	country: string;
+	city: string;
+	address: string;
 }
+
+type RegisterPayload = Omit<RegisterData, "confirmPassword">;
 
 interface RegisterResponse {
 	message: string;
@@ -35,9 +37,9 @@ export interface GoogleProcessLoginResponse {
 		email: string;
 		name: string;
 		role: string;
-		profileComplete: boolean;
 	};
 	message: string;
+	token: string;
 }
 
 export interface CompleteProfileData {
@@ -62,9 +64,11 @@ export interface CompleteProfileResponse {
 export const registerUser = async (
 	userData: RegisterData
 ): Promise<RegisterResponse> => {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { confirmPassword, ...payload } = userData;
 	const response = await http.post<RegisterResponse>(
 		"/auth/register",
-		userData
+		userData as RegisterPayload
 	);
 	return response.data;
 };
