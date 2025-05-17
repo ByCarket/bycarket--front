@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFormik, FormikProps } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
+
+import { useSession } from "next-auth/react";
 
 interface FormValues {
 	name: string;
@@ -202,6 +204,14 @@ export default function RegisterForm() {
 		},
 	});
 
+	const { status } = useSession();
+
+	useEffect(() => {
+		if (status === "authenticated") {
+			router.push("/");
+		}
+	}, [status, router]);
+
 	return (
 		<div className='flex min-h-screen w-full overflow-hidden'>
 			<div className='flex flex-col items-center justify-center w-full md:w-1/2 px-6 py-8'>
@@ -299,7 +309,9 @@ export default function RegisterForm() {
 
 							<button
 								type='button'
-								onClick={() => signIn("google")}
+								onClick={() =>
+									signIn("google", { callbackUrl: "/" })
+								}
 								className='flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition duration-300'>
 								<FcGoogle className='h-5 w-5' />
 							</button>

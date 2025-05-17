@@ -80,18 +80,8 @@ export const processGoogleLogin = async (
 	googleProfile: unknown
 ): Promise<GoogleProcessLoginResponse> => {
 	const response = await http.post<GoogleProcessLoginResponse>(
-		"/google-auth/process-login",
+		"auth/process-google",
 		googleProfile
-	);
-	return response.data;
-};
-
-export const completeGoogleProfile = async (
-	profileData: CompleteProfileData
-): Promise<CompleteProfileResponse> => {
-	const response = await http.post<CompleteProfileResponse>(
-		"/google-auth/complete-profile",
-		profileData
 	);
 	return response.data;
 };

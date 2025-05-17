@@ -4,6 +4,7 @@ import {
 	registerUser,
 	LoginData,
 	RegisterData,
+	GoogleProcessLoginResponse,
 } from "@/services/api.service";
 import {
 	setAuthToken,
@@ -15,6 +16,7 @@ interface User {
 	id: string;
 	name: string;
 	email: string;
+	role?: string;
 }
 
 interface AuthState {
@@ -26,6 +28,7 @@ interface AuthState {
 	register: (data: RegisterData) => Promise<void>;
 	logout: () => void;
 	initializeAuth: () => void;
+	setGoogleUser: (response: GoogleProcessLoginResponse) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -74,5 +77,21 @@ export const useAuthStore = create<AuthState>((set) => ({
 	logout: () => {
 		removeAuthToken();
 		set({ user: null, token: null, isAuthenticated: false });
+	},
+	
+	setGoogleUser: (response: GoogleProcessLoginResponse) => {
+		if (response.token && response.user) {
+			set({
+				token: response.token,
+				user: {
+					id: response.user.id,
+					name: response.user.name,
+					email: response.user.email,
+					role: response.user.role,
+				},
+				isAuthenticated: true,
+				loading: false,
+			});
+		}
 	},
 }));

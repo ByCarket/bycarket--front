@@ -22,9 +22,8 @@ const handler = NextAuth({
 					if (backendResponse?.token) {
 						setAuthToken(backendResponse.token);
 					}
-					return true; // ¡Éxito! 🎉
+					return true;
 				} catch (error) {
-					// Uwaa~ Algo salió mal... 😥
 					console.error("Error processing Google login:", error);
 					return false;
 				}
@@ -36,6 +35,9 @@ const handler = NextAuth({
 				return url;
 			}
 			return baseUrl;
+		},
+		async session({ session }) {
+			return session;
 		},
 	},
 });
