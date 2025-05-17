@@ -10,9 +10,6 @@ export interface RegisterData {
 	city: string;
 	address: string;
 }
-
-type RegisterPayload = Omit<RegisterData, "confirmPassword">;
-
 interface RegisterResponse {
 	message: string;
 }
@@ -64,11 +61,10 @@ export interface CompleteProfileResponse {
 export const registerUser = async (
 	userData: RegisterData
 ): Promise<RegisterResponse> => {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { confirmPassword, ...payload } = userData;
+	const { ...payload } = userData;
 	const response = await http.post<RegisterResponse>(
 		"/auth/register",
-		userData as RegisterPayload
+		payload
 	);
 	return response.data;
 };
