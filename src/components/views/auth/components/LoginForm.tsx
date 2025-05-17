@@ -11,7 +11,7 @@ import {
 	removeRememberedEmail,
 } from "@/services/storage.service";
 import { useAuth } from "@/hooks/useAuth";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 
@@ -20,6 +20,7 @@ export default function LoginForm() {
 	const [rememberMe, setRememberMe] = useState(false);
 	const router = useRouter();
 	const { login } = useAuth();
+	const { status } = useSession();
 
 	const togglePasswordVisibility = () => {
 		setShowPassword(!showPassword);
@@ -64,6 +65,12 @@ export default function LoginForm() {
 			setRememberMe(true);
 		}
 	}, [formik.setFieldValue, setRememberMe]);
+
+	React.useEffect(() => {
+		if (status === "authenticated") {
+			router.push("/");
+		}
+	}, [status, router]);
 
 	return (
 		<div className='flex min-h-screen w-full overflow-hidden'>
@@ -183,7 +190,7 @@ export default function LoginForm() {
 						<div className='text-center mt-2'>
 							<button
 								type='button'
-								onClick={() => signIn("google")}
+								onClick={() => signIn("google", { callbackUrl: "/" })}
 								className='w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-300 mx-auto'>
 								<FcGoogle className='h-6 w-6' />
 							</button>

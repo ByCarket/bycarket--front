@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/context/AuthContext";
+import { useSession } from "next-auth/react";
 
 export default function Navbar() {
 	const { isAuthenticated, logout } = useAuthStore();
+	const { status } = useSession();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+
+	useEffect(() => {
+		setIsUserAuthenticated(isAuthenticated || status === "authenticated");
+	}, [isAuthenticated, status]);
 
 	const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
@@ -54,7 +61,7 @@ export default function Navbar() {
 				</div>
 
 				<div className='hidden space-x-2 md:flex'>
-					{isAuthenticated ? (
+					{isUserAuthenticated ? (
 						<>
 							<Link
 								href='/dashboard'
@@ -145,7 +152,7 @@ export default function Navbar() {
 						</div>
 
 						<div className='mt-auto space-y-2 pb-8'>
-							{isAuthenticated ? (
+							{isUserAuthenticated ? (
 								<>
 									<Link
 										href='/dashboard'
