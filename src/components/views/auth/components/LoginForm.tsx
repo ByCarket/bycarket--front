@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
+import Image from "next/image";
 
 export default function LoginForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -62,20 +63,28 @@ export default function LoginForm() {
 			formik.setFieldValue("email", rememberedEmail);
 			setRememberMe(true);
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [formik.setFieldValue, setRememberMe]); //! Despues le hago un fix
+	}, [formik.setFieldValue, setRememberMe]);
 
 	return (
-		<div className='relative min-h-screen w-full overflow-hidden'>
-			<div className='absolute top-0 left-0 w-2/3 h-full bg-principal-blue'></div>
-			<div className='absolute top-0 right-0 w-1/3 h-full bg-secondary-blue'></div>
-
-			<div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4'>
-				<h1 className='text-4xl md:text-5xl font-thin text-white mb-8 text-center'>
+		<div className='flex min-h-screen w-full overflow-hidden'>
+			<div className='hidden md:block w-1/2 bg-gray-50'>
+				<Image
+					src='https://i.pinimg.com/originals/bb/87/24/bb8724a67587e50d70412c1f4841dec9.gif'
+					alt='Cute GIF'
+					width={0}
+					height={0}
+					sizes='100vw'
+					className='object-cover w-full h-full'
+					unoptimized={true}
+					priority
+				/>
+			</div>
+			<div className='flex flex-col items-center justify-center w-full md:w-1/2 px-6 py-8'>
+				<h1 className='text-3xl md:text-4xl font-light text-principal-blue mb-6 text-center'>
 					Inicia Sesión
 				</h1>
 
-				<div className='w-full max-w-md p-6 bg-white rounded-[50px] shadow-lg'>
+				<div className='w-full max-w-md'>
 					<form onSubmit={formik.handleSubmit} className='space-y-4'>
 						<div>
 							<label
