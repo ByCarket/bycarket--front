@@ -12,6 +12,7 @@ import { FcGoogle } from "react-icons/fc";
 export default function RegisterForm() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 	const { register } = useAuth();
 
@@ -40,38 +41,45 @@ export default function RegisterForm() {
 				.email("Correo electrónico inválido")
 				.required("El correo electrónico es obligatorio"),
 			password: Yup.string()
-				.min(6, "La contraseña debe tener al menos 6 caracteres")
+				.min(8, "La contraseña debe tener al menos 8 caracteres")
+				.max(15, "La contraseña no debe exceder los 15 caracteres")
 				.matches(
-					/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.@$!%*?&])[A-Za-z\d@$!%*?&.]/,
-					"La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+					/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,15}$/,
+					"La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&.), y tener entre 8 y 15 caracteres"
 				)
 				.required("La contraseña es obligatoria"),
 			confirmPassword: Yup.string()
 				.oneOf([Yup.ref("password")], "Las contraseñas no coinciden")
 				.required("Debes confirmar la contraseña"),
 			phone: Yup.number()
-				.nullable()
-				.transform((value, originalValue) =>
-					originalValue === "" ? null : value
-				)
+				.required("El teléfono es obligatorio")
 				.typeError("El teléfono debe ser un número válido"),
-			country: Yup.string(),
-			city: Yup.string(),
-			address: Yup.string(),
+			country: Yup.string().required("El país es obligatorio"),
+			city: Yup.string().required("La ciudad es obligatoria"),
+			address: Yup.string().required("La dirección es obligatoria"),
 		}),
 		onSubmit: async (values) => {
+			setError(null);
 			const registrationData = {
 				name: values.name,
 				email: values.email,
 				password: values.password,
 				confirmPassword: values.confirmPassword,
-				phone: values.phone ?? undefined,
+				phone: values.phone as number,
 				country: values.country,
 				city: values.city,
 				address: values.address,
 			};
-			await register(registrationData);
-			router.push("/login");
+			try {
+				await register(registrationData);
+				router.push("/login");
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} catch (err: any) {
+				setError(
+					err.message || "Error en el registro. Inténtalo de nuevo."
+				);
+				console.error("Error durante el registro:", err);
+			}
 		},
 	});
 
@@ -295,7 +303,11 @@ export default function RegisterForm() {
 								</div>
 							) : null}
 						</div>
-
+						{error && (
+							<div className='text-red-500 text-sm mt-1'>
+								{error}
+							</div>
+						)}
 						<button
 							type='submit'
 							className='w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300'>

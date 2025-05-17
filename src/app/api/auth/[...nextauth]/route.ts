@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { processGoogleLogin } from "@/services/api.service";
+import { setAuthToken } from "@/services/storage.service";
 
 const handler = NextAuth({
 	providers: [
@@ -13,15 +14,17 @@ const handler = NextAuth({
 		signIn: "/login",
 	},
 	callbacks: {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		async signIn({ user, account, profile }) {
 			if (account?.provider === "google" && profile) {
 				try {
 					const backendResponse = await processGoogleLogin(profile);
-					if (!backendResponse.user.profileComplete) {
-						return `/complete-profile?email=${backendResponse.user.email}`;
+					if (backendResponse?.token) {
+						setAuthToken(backendResponse.token);
 					}
-					return true;
+					return true; // ¡Éxito! 🎉
 				} catch (error) {
+					// Uwaa~ Algo salió mal... 😥
 					console.error("Error processing Google login:", error);
 					return false;
 				}
@@ -31,9 +34,6 @@ const handler = NextAuth({
 		async redirect({ url, baseUrl }) {
 			if (url.startsWith(baseUrl)) {
 				return url;
-			}
-			if (url.startsWith("/complete-profile")) {
-				return `${baseUrl}${url}`;
 			}
 			return baseUrl;
 		},
