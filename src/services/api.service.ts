@@ -85,3 +85,34 @@ export const processGoogleLogin = async (
 	);
 	return response.data;
 };
+
+export interface UserData {
+	id: string;
+	name: string;
+	email: string;
+	phone?: number;
+	country?: string;
+	city?: string;
+	address?: string;
+	role?: string;
+	posts?: {
+		id: string;
+		postDate: string;
+		status: string;
+		questions?: {
+			id: string;
+			message: string;
+			date: string;
+		}[];
+	}[];
+}
+
+export interface UserDataResponse {
+	data: UserData;
+	message: string;
+}
+
+export const getUserData = async (): Promise<UserDataResponse> => {
+	const response = await http.get<UserDataResponse>("/users/me");
+	return response.data;
+};
