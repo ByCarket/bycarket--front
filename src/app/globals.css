@@ -29,8 +29,9 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-questrial);
+font-family: var(--font-questrial);
 }
+
 
 /* Elementos de UI con Be Vietnam Pro */
 button,

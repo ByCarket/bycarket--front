@@ -5,12 +5,11 @@ export interface RegisterData {
 	email: string;
 	password: string;
 	confirmPassword: string;
-	phone?: number;
-	country?: string;
-	city?: string;
-	address?: string;
+	phone: number;
+	country: string;
+	city: string;
+	address: string;
 }
-
 interface RegisterResponse {
 	message: string;
 }
@@ -35,9 +34,9 @@ export interface GoogleProcessLoginResponse {
 		email: string;
 		name: string;
 		role: string;
-		profileComplete: boolean;
 	};
 	message: string;
+	token: string;
 }
 
 export interface CompleteProfileData {
@@ -62,9 +61,10 @@ export interface CompleteProfileResponse {
 export const registerUser = async (
 	userData: RegisterData
 ): Promise<RegisterResponse> => {
+	const { ...payload } = userData;
 	const response = await http.post<RegisterResponse>(
 		"/auth/register",
-		userData
+		payload
 	);
 	return response.data;
 };
@@ -80,18 +80,39 @@ export const processGoogleLogin = async (
 	googleProfile: unknown
 ): Promise<GoogleProcessLoginResponse> => {
 	const response = await http.post<GoogleProcessLoginResponse>(
-		"/google-auth/process-login",
+		"auth/process-google",
 		googleProfile
 	);
 	return response.data;
 };
 
-export const completeGoogleProfile = async (
-	profileData: CompleteProfileData
-): Promise<CompleteProfileResponse> => {
-	const response = await http.post<CompleteProfileResponse>(
-		"/google-auth/complete-profile",
-		profileData
-	);
+export interface UserData {
+	id: string;
+	name: string;
+	email: string;
+	phone?: number;
+	country?: string;
+	city?: string;
+	address?: string;
+	role?: string;
+	posts?: {
+		id: string;
+		postDate: string;
+		status: string;
+		questions?: {
+			id: string;
+			message: string;
+			date: string;
+		}[];
+	}[];
+}
+
+export interface UserDataResponse {
+	data: UserData;
+	message: string;
+}
+
+export const getUserData = async (): Promise<UserDataResponse> => {
+	const response = await http.get<UserDataResponse>("/users/me");
 	return response.data;
 };

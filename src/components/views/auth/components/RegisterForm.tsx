@@ -1,35 +1,154 @@
 "use client";
 
-import React, { useState } from "react";
-import { useFormik } from "formik";
+import React, { useState, useEffect } from "react";
+import { useFormik, FormikProps } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
+import Image from "next/image";
+
+import { useSession } from "next-auth/react";
+
+interface FormValues {
+	name: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+	phone: number | undefined;
+	country: string;
+	city: string;
+	address: string;
+}
+
+const InputField = ({
+	id,
+	label,
+	type = "text",
+	formik,
+	...props
+}: {
+	id: keyof FormValues;
+	label: string;
+	type?: string;
+	formik: FormikProps<FormValues>;
+	[key: string]: unknown;
+}) => (
+	<div className='mb-4'>
+		<label
+			htmlFor={id}
+			className='block text-sm font-medium text-gray-700 mb-1'>
+			{label}
+		</label>
+		<input
+			id={id}
+			name={id}
+			type={type}
+			onChange={formik.handleChange}
+			onBlur={formik.handleBlur}
+			value={formik.values[id] ?? ""}
+			className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'
+			{...props}
+		/>
+		{formik.touched[id] && formik.errors[id] ? (
+			<div className='text-red-500 text-xs mt-1'>
+				{formik.errors[id]?.toString()}
+			</div>
+		) : null}
+	</div>
+);
+
+const PasswordField = ({
+	id,
+	label,
+	formik,
+	showPassword,
+	showConfirmPassword,
+	togglePasswordVisibility,
+	toggleConfirmPasswordVisibility,
+}: {
+	id: "password" | "confirmPassword";
+	label: string;
+	formik: FormikProps<FormValues>;
+	showPassword: boolean;
+	showConfirmPassword: boolean;
+	togglePasswordVisibility: () => void;
+	toggleConfirmPasswordVisibility: () => void;
+}) => {
+	const isConfirm = id === "confirmPassword";
+	const showPwd = isConfirm ? showConfirmPassword : showPassword;
+	const toggleFn = isConfirm
+		? toggleConfirmPasswordVisibility
+		: togglePasswordVisibility;
+
+	return (
+		<div className='mb-4'>
+			<label
+				htmlFor={id}
+				className='block text-sm font-medium text-gray-700 mb-1'>
+				{label}
+			</label>
+			<div className='relative'>
+				<input
+					id={id}
+					name={id}
+					type={showPwd ? "text" : "password"}
+					onChange={formik.handleChange}
+					onBlur={formik.handleBlur}
+					value={formik.values[id]}
+					className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'
+				/>
+				<button
+					type='button'
+					onClick={toggleFn}
+					className='absolute inset-y-0 right-0 pr-3 flex items-center'>
+					{showPwd ? (
+						<EyeOff className='h-4 w-4 text-gray-500' />
+					) : (
+						<Eye className='h-4 w-4 text-gray-500' />
+					)}
+				</button>
+			</div>
+			{formik.touched[id] && formik.errors[id] ? (
+				<div className='text-red-500 text-xs mt-1'>
+					{formik.errors[id]?.toString()}
+				</div>
+			) : null}
+		</div>
+	);
+};
+
+interface RegistrationData {
+	name: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+	phone: number;
+	country: string;
+	city: string;
+	address: string;
+}
 
 export default function RegisterForm() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 	const { register } = useAuth();
 
-	const togglePasswordVisibility = () => {
-		setShowPassword(!showPassword);
-	};
-
-	const toggleConfirmPasswordVisibility = () => {
+	const togglePasswordVisibility = () => setShowPassword(!showPassword);
+	const toggleConfirmPasswordVisibility = () =>
 		setShowConfirmPassword(!showConfirmPassword);
-	};
 
-	const formik = useFormik({
+	const formik = useFormik<FormValues>({
 		initialValues: {
 			name: "",
 			email: "",
 			password: "",
 			confirmPassword: "",
-			phone: undefined as number | undefined,
+			phone: undefined,
 			country: "",
 			city: "",
 			address: "",
@@ -40,295 +159,189 @@ export default function RegisterForm() {
 				.email("Correo electrónico inválido")
 				.required("El correo electrónico es obligatorio"),
 			password: Yup.string()
-				.min(6, "La contraseña debe tener al menos 6 caracteres")
+				.min(8, "La contraseña debe tener al menos 8 caracteres")
+				.max(15, "La contraseña no debe exceder los 15 caracteres")
 				.matches(
-					/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[.@$!%*?&])[A-Za-z\d@$!%*?&.]/,
-					"La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial"
+					/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,15}$/,
+					"La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial (@$!%*?&.), y tener entre 8 y 15 caracteres"
 				)
 				.required("La contraseña es obligatoria"),
 			confirmPassword: Yup.string()
 				.oneOf([Yup.ref("password")], "Las contraseñas no coinciden")
 				.required("Debes confirmar la contraseña"),
 			phone: Yup.number()
-				.nullable()
-				.transform((value, originalValue) =>
-					originalValue === "" ? null : value
-				)
+				.required("El teléfono es obligatorio")
 				.typeError("El teléfono debe ser un número válido"),
-			country: Yup.string(),
-			city: Yup.string(),
-			address: Yup.string(),
+			country: Yup.string().required("El país es obligatorio"),
+			city: Yup.string().required("La ciudad es obligatoria"),
+			address: Yup.string().required("La dirección es obligatoria"),
 		}),
 		onSubmit: async (values) => {
-			const registrationData = {
+			setError(null);
+			const registrationData: RegistrationData = {
 				name: values.name,
 				email: values.email,
 				password: values.password,
 				confirmPassword: values.confirmPassword,
-				phone: values.phone ?? undefined,
+				phone: values.phone as number,
 				country: values.country,
 				city: values.city,
 				address: values.address,
 			};
-			await register(registrationData);
-			router.push("/login");
+			try {
+				await register(registrationData);
+				router.push("/login");
+			} catch (err) {
+				if (err instanceof Error) {
+					setError(
+						err.message ||
+							"Error en el registro. Inténtalo de nuevo."
+					);
+				} else {
+					setError("Error en el registro. Inténtalo de nuevo.");
+				}
+			}
 		},
 	});
 
-	return (
-		<div className='relative min-h-screen w-full overflow-hidden'>
-			<div className='absolute top-0 left-0 w-3/4 h-1/2 bg-principal-blue rounded-br-[100px]'></div>
-			<div className='absolute bottom-0 right-0 w-3/4 h-1/3 bg-secondary-blue rounded-tl-[100px]'></div>
+	const { status } = useSession();
 
-			<div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4'>
-				<h1 className='text-4xl md:text-5xl font-thin text-white mb-8 text-center'>
+	useEffect(() => {
+		if (status === "authenticated") {
+			router.push("/");
+		}
+	}, [status, router]);
+
+	return (
+		<div className='flex min-h-screen w-full overflow-hidden'>
+			<div className='flex flex-col items-center justify-center w-full md:w-1/2 px-6 py-8'>
+				<h1 className='text-3xl md:text-4xl font-light text-principal-blue mb-6 text-center'>
 					Registra tu cuenta
 				</h1>
 
-				<div className='w-full max-w-md p-6 bg-white rounded-[50px] shadow-lg'>
-					<form onSubmit={formik.handleSubmit} className='space-y-4'>
-						<div>
-							<label
-								htmlFor='name'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Nombre Completo
-							</label>
-							<input
+				<div className='w-full max-w-md'>
+					<form onSubmit={formik.handleSubmit} className='space-y-2'>
+						<div className='grid grid-cols-1 gap-4'>
+							<InputField
 								id='name'
-								name='name'
-								type='text'
-								onChange={formik.handleChange}
-								onBlur={formik.handleBlur}
-								value={formik.values.name}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+								label='Nombre Completo'
+								formik={formik}
 							/>
-							{formik.touched.name && formik.errors.name ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.name}
-								</div>
-							) : null}
-						</div>
-
-						<div>
-							<label
-								htmlFor='email'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Correo Electrónico
-							</label>
-							<input
+							<InputField
 								id='email'
-								name='email'
+								label='Correo Electrónico'
 								type='email'
-								onChange={formik.handleChange}
-								onBlur={formik.handleBlur}
-								value={formik.values.email}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+								formik={formik}
 							/>
-							{formik.touched.email && formik.errors.email ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.email}
-								</div>
-							) : null}
-						</div>
-
-						<div>
-							<label
-								htmlFor='phone'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Teléfono
-							</label>
-							<input
+							<InputField
 								id='phone'
-								name='phone'
+								label='Teléfono'
 								type='number'
-								onChange={formik.handleChange}
-								onBlur={formik.handleBlur}
-								value={formik.values.phone ?? ""}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+								formik={formik}
 							/>
-							{formik.touched.phone && formik.errors.phone ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.phone}
-								</div>
-							) : null}
-						</div>
 
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-							<div>
-								<label
-									htmlFor='country'
-									className='block text-sm font-medium text-gray-700 mb-1'>
-									País
-								</label>
-								<input
+							<div className='grid grid-cols-2 gap-4'>
+								<InputField
 									id='country'
-									name='country'
-									type='text'
-									onChange={formik.handleChange}
-									onBlur={formik.handleBlur}
-									value={formik.values.country}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+									label='País'
+									formik={formik}
 								/>
-								{formik.touched.country &&
-								formik.errors.country ? (
-									<div className='text-red-500 text-sm mt-1'>
-										{formik.errors.country}
-									</div>
-								) : null}
-							</div>
-
-							<div>
-								<label
-									htmlFor='city'
-									className='block text-sm font-medium text-gray-700 mb-1'>
-									Ciudad
-								</label>
-								<input
+								<InputField
 									id='city'
-									name='city'
-									type='text'
-									onChange={formik.handleChange}
-									onBlur={formik.handleBlur}
-									value={formik.values.city}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+									label='Ciudad'
+									formik={formik}
 								/>
-								{formik.touched.city && formik.errors.city ? (
-									<div className='text-red-500 text-sm mt-1'>
-										{formik.errors.city}
-									</div>
-								) : null}
 							</div>
-						</div>
 
-						<div>
-							<label
-								htmlFor='address'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Dirección
-							</label>
-							<input
+							<InputField
 								id='address'
-								name='address'
-								type='text'
-								onChange={formik.handleChange}
-								onBlur={formik.handleBlur}
-								value={formik.values.address}
-								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
+								label='Dirección'
+								formik={formik}
 							/>
-							{formik.touched.address && formik.errors.address ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.address}
-								</div>
-							) : null}
+							<PasswordField
+								id='password'
+								label='Contraseña'
+								formik={formik}
+								showPassword={showPassword}
+								showConfirmPassword={showConfirmPassword}
+								togglePasswordVisibility={
+									togglePasswordVisibility
+								}
+								toggleConfirmPasswordVisibility={
+									toggleConfirmPasswordVisibility
+								}
+							/>
+							<PasswordField
+								id='confirmPassword'
+								label='Confirmar Contraseña'
+								formik={formik}
+								showPassword={showPassword}
+								showConfirmPassword={showConfirmPassword}
+								togglePasswordVisibility={
+									togglePasswordVisibility
+								}
+								toggleConfirmPasswordVisibility={
+									toggleConfirmPasswordVisibility
+								}
+							/>
 						</div>
 
-						<div>
-							<label
-								htmlFor='password'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Contraseña
-							</label>
-							<div className='relative'>
-								<input
-									id='password'
-									name='password'
-									type={showPassword ? "text" : "password"}
-									onChange={formik.handleChange}
-									onBlur={formik.handleBlur}
-									value={formik.values.password}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
-								/>
-								<button
-									type='button'
-									onClick={togglePasswordVisibility}
-									className='absolute inset-y-0 right-0 pr-3 flex items-center'>
-									{showPassword ? (
-										<EyeOff className='h-5 w-5 text-gray-500' />
-									) : (
-										<Eye className='h-5 w-5 text-gray-500' />
-									)}
-								</button>
+						{error && (
+							<div className='text-red-500 text-sm mt-1'>
+								{error}
 							</div>
-							{formik.touched.password &&
-							formik.errors.password ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.password}
-								</div>
-							) : null}
-						</div>
-
-						<div>
-							<label
-								htmlFor='confirmPassword'
-								className='block text-sm font-medium text-gray-700 mb-1'>
-								Confirmar Contraseña
-							</label>
-							<div className='relative'>
-								<input
-									id='confirmPassword'
-									name='confirmPassword'
-									type={
-										showConfirmPassword
-											? "text"
-											: "password"
-									}
-									onChange={formik.handleChange}
-									onBlur={formik.handleBlur}
-									value={formik.values.confirmPassword}
-									className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue'
-								/>
-								<button
-									type='button'
-									onClick={toggleConfirmPasswordVisibility}
-									className='absolute inset-y-0 right-0 pr-3 flex items-center'>
-									{showConfirmPassword ? (
-										<EyeOff className='h-5 w-5 text-gray-500' />
-									) : (
-										<Eye className='h-5 w-5 text-gray-500' />
-									)}
-								</button>
-							</div>
-							{formik.touched.confirmPassword &&
-							formik.errors.confirmPassword ? (
-								<div className='text-red-500 text-sm mt-1'>
-									{formik.errors.confirmPassword}
-								</div>
-							) : null}
-						</div>
+						)}
 
 						<button
 							type='submit'
-							className='w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300'>
+							className='w-full py-2 px-4 mt-4 bg-principal-blue hover:bg-secondary-blue text-white font-medium rounded-md transition duration-300'>
 							Registrarse
 						</button>
 
-						<div className='text-center mt-4'>
-							<span className='text-sm text-gray-600'>
-								prefieres registrarte con:
-							</span>
-						</div>
+						<div className='flex flex-col items-center mt-4 space-y-4'>
+							<div className='flex items-center w-full'>
+								<div className='flex-grow h-px bg-gray-200'></div>
+								<span className='px-3 text-xs text-gray-500'>
+									o regístrate con
+								</span>
+								<div className='flex-grow h-px bg-gray-200'></div>
+							</div>
 
-						<div className='text-center mt-2'>
 							<button
 								type='button'
-								onClick={() => signIn("google")}
-								className='w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-300 mx-auto'>
-								<FcGoogle className='h-6 w-6' />
+								onClick={() =>
+									signIn("google", { callbackUrl: "/" })
+								}
+								className='flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 transition duration-300'>
+								<FcGoogle className='h-5 w-5' />
 							</button>
-						</div>
 
-						<div className='text-center mt-4'>
-							<span className='text-gray-600'>
-								¿Tienes cuenta?{" "}
-							</span>
-							<a
-								href='/login'
-								className='text-principal-blue hover:text-secondary-blue font-medium transition duration-300'>
-								Inicia sesión
-							</a>
+							<div className='text-center text-sm'>
+								<span className='text-gray-600'>
+									¿Tienes cuenta?{" "}
+								</span>
+								<a
+									href='/login'
+									className='text-principal-blue hover:text-secondary-blue font-medium transition duration-300'>
+									Inicia sesión
+								</a>
+							</div>
 						</div>
 					</form>
 				</div>
+			</div>
+
+			<div className='hidden md:block w-1/2 bg-gray-50'>
+				<Image
+					src='https://i.pinimg.com/originals/bb/87/24/bb8724a67587e50d70412c1f4841dec9.gif'
+					alt='Cute GIF'
+					width={0}
+					height={0}
+					sizes='100vw'
+					className='object-cover w-full h-full'
+					unoptimized={true}
+					priority
+				/>
 			</div>
 		</div>
 	);

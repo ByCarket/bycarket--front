@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { processGoogleLogin } from "@/services/api.service";
+import { setAuthToken } from "@/services/storage.service";
 
 const handler = NextAuth({
 	providers: [
@@ -13,12 +14,13 @@ const handler = NextAuth({
 		signIn: "/login",
 	},
 	callbacks: {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		async signIn({ user, account, profile }) {
 			if (account?.provider === "google" && profile) {
 				try {
 					const backendResponse = await processGoogleLogin(profile);
-					if (!backendResponse.user.profileComplete) {
-						return `/complete-profile?email=${backendResponse.user.email}`;
+					if (backendResponse?.token) {
+						setAuthToken(backendResponse.token);
 					}
 					return true;
 				} catch (error) {
@@ -32,10 +34,10 @@ const handler = NextAuth({
 			if (url.startsWith(baseUrl)) {
 				return url;
 			}
-			if (url.startsWith("/complete-profile")) {
-				return `${baseUrl}${url}`;
-			}
 			return baseUrl;
+		},
+		async session({ session }) {
+			return session;
 		},
 	},
 });
