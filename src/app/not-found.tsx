@@ -4,7 +4,7 @@ import crashIllustration from "../../public/illustrations/404-car-crash.svg";
 export default function NotFound() {
   return (
     <div className="relative h-screen overflow-hidden flex items-center justify-center">
-      <div className="absolute inset-0 bg-[#103663] z-0" />
+      <div className="absolute inset-0 bg-principal-blue z-0" />
 
       <div className="absolute bottom-0 left-0 w-full z-10">
         <svg
@@ -33,7 +33,7 @@ export default function NotFound() {
         </p>
         <a
           href="/"
-          className="bg-white text-[#103663] px-6 py-3 rounded-2xl shadow hover:bg-gray-100 transition font-medium"
+          className="bg-white text-principal-blue px-6 py-3 rounded-2xl shadow hover:bg-gray-100 transition font-medium"
         >
           Volver al inicio
         </a>
