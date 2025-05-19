@@ -1,7 +1,8 @@
 import React from "react";
+import VehicleDetailView from "@/components/views/marketplace/[id]/VehicleDetailView";
 
-const VehicleId = () => {
-	return <div>VehiclesID</div>;
+const VehicleIdPage = () => {
+	return <VehicleDetailView />;
 };
 
-export default VehicleId;
+export default VehicleIdPage;

@@ -1,6 +1,5 @@
 import AnalyticsView from "@/components/views/dashboard/AnalyticsView";
-import React from "react";
 
-export default function Page() {
-  return <AnalyticsView />;
+export default function Analytics() {
+	return <AnalyticsView />;
 }
