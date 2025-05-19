@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 export default function Hero() {
   const scrollToHowItWorks = () => {
     document
@@ -34,11 +36,16 @@ export default function Hero() {
         </div>
 
         <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center md:justify-end">
-          <img
-            src="/assets/images/landing/hero-image.webp"
-            alt="Decoración Hero"
-            className="mx-auto md:mx-0 w-[100%] md:w-[95%] lg:w-[90%] max-w-[800px] h-auto object-contain"
-          />
+          <div className="relative mx-auto md:mx-0 w-[100%] md:w-[95%] lg:w-[90%] max-w-[800px] h-auto">
+            <Image
+              src="/assets/images/landing/hero-image.webp"
+              alt="Decoración Hero"
+              width={1200}
+              height={800}
+              className="w-[100%] md:w-[95%] lg:w-[90%] max-w-[800px] h-auto object-contain"
+              priority
+            />
+          </div>
         </div>
       </div>
     </section>

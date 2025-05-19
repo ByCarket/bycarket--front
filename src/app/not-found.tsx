@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import crashIllustration from "../../public/illustrations/404-car-crash.svg";
 
 export default function NotFound() {
@@ -31,12 +32,12 @@ export default function NotFound() {
         <p className="mb-6 text-white/80">
           Ups… parece que este auto tomó otro camino.
         </p>
-        <a
+        <Link
           href="/"
           className="bg-white text-principal-blue px-6 py-3 rounded-2xl shadow hover:bg-gray-100 transition font-medium"
         >
           Volver al inicio
-        </a>
+        </Link>
       </div>
     </div>
   );

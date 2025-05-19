@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function BuySection() {
+
 	const router = useRouter();
 
 	return (
@@ -55,4 +57,5 @@ export default function BuySection() {
 			</div>
 		</section>
 	);
+
 }
