@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function BuySection() {
   const router = useRouter();
@@ -42,16 +43,24 @@ export default function BuySection() {
           </button>
         </div>
 
-        <div className="w-full md:w-3/5 flex justify-center md:justify-start">
-          <motion.img
+        <div className="w-full md:w-3/5 flex justify-center md:justify-start relative">
+          <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            src="/assets/images/landing/BuySection-image.webp"
-            alt="Imagen compra"
-            className="w-full h-auto rounded-3xl shadow-lg"
-          />
+            className="w-full h-auto relative"
+          >
+            <Image
+              src="/assets/images/landing/BuySection-image.webp"
+              alt="Imagen compra"
+              layout="responsive"
+              width={700}
+              height={500}
+              className="rounded-3xl shadow-lg"
+              priority
+            />
+          </motion.div>
         </div>
       </div>
     </section>

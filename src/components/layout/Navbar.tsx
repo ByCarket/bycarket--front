@@ -23,7 +23,7 @@ export default function Navbar() {
     <nav className="relative py-4">
       <div className="container mx-auto flex items-center justify-between px-4">
         <Link
-          href="/"
+          href="/home"
           className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
         >
           <Image
@@ -40,13 +40,13 @@ export default function Navbar() {
 
         <div className="hidden space-x-6 md:flex">
           <Link
-            href="/"
+            href="/home"
             className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
           >
             Home
           </Link>
           <Link
-            href="/vehicles"
+            href="/marketplace"
             className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
           >
             Vehiculos
@@ -138,14 +138,14 @@ export default function Navbar() {
 
             <div className="mt-8 flex flex-col space-y-4">
               <Link
-                href="/"
+                href="/home"
                 className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
                 onClick={toggleMobileMenu}
               >
                 Home
               </Link>
               <Link
-                href="/vehicles"
+                href="/marketplace"
                 className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
                 onClick={toggleMobileMenu}
               >

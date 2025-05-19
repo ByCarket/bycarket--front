@@ -2,29 +2,42 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function SellSection() {
   const router = useRouter();
 
   return (
     <section className="relative w-full overflow-hidden bg-secondary-blue">
-      <img
-        src="/assets/svg/sell-divider.svg"
-        alt="Decoración superior"
-        className="absolute top-0 left-0 w-full h-auto z-0"
-      />
+      <div className="absolute top-0 left-0 w-full h-auto z-0">
+        <Image
+          src="/assets/svg/sell-divider.svg"
+          alt="Decoración superior"
+          width={1920}
+          height={200}
+          layout="responsive"
+          priority
+        />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 pt-50 pb-16 gap-20">
         <div className="w-full md:w-3/5 flex justify-center md:justify-end">
-          <motion.img
+          <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            src="/assets/images/landing/SellSection-image.webp"
-            alt="Imagen compra"
-            className="w-full h-auto rounded-3xl shadow-lg"
-          />
+            className="w-full h-auto rounded-3xl shadow-lg overflow-hidden"
+          >
+            <Image
+              src="/assets/images/landing/SellSection-image.webp"
+              alt="Imagen compra"
+              width={800}
+              height={500}
+              className="w-full h-auto object-cover"
+              priority
+            />
+          </motion.div>
         </div>
 
         <div className="w-full md:w-2/5 text-center md:text-left">
