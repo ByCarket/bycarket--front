@@ -21,7 +21,7 @@ export default function SellSection() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            src="/assets/images/SellSection-image.webp"
+            src="/assets/images/landing/SellSection-image.webp"
             alt="Imagen compra"
             className="w-full h-auto rounded-3xl shadow-lg"
           />
@@ -47,7 +47,7 @@ export default function SellSection() {
           </p>
 
           <button
-            onClick={() => router.push("/register-vehicle")}
+            onClick={() => router.push("/dashboard/register-vehicle")}
             className="bg-principal-blue hover:bg-[#0c2c50] text-white font-semibold px-8 py-4 text-lg rounded-2xl shadow transition"
           >
             Vende

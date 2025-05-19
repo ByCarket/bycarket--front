@@ -48,7 +48,7 @@ export default function BuySection() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true }}
-            src="/assets/images/BuySection-image.webp"
+            src="/assets/images/landing/BuySection-image.webp"
             alt="Imagen compra"
             className="w-full h-auto rounded-3xl shadow-lg"
           />

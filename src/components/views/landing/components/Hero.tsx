@@ -35,7 +35,7 @@ export default function Hero() {
 
         <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center md:justify-end">
           <img
-            src="/assets/images/hero-image.webp"
+            src="/assets/images/landing/hero-image.webp"
             alt="Decoración Hero"
             className="mx-auto md:mx-0 w-[100%] md:w-[95%] lg:w-[90%] max-w-[800px] h-auto object-contain"
           />
