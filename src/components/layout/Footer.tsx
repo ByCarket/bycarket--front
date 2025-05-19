@@ -2,13 +2,20 @@
 
 import { Mail, Instagram, Facebook } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="bg-white text-gray-700 border-t border-gray-200">
       <div className="container mx-auto px-6 py-16 flex flex-col items-center space-y-8">
-        <Link href="/" className="flex items-center gap-3">
-          <img src="/logoo.png" alt="ByCarket logo" className="h-10 w-10" />
+        <Link href="/home" className="flex items-center gap-3">
+          <Image
+            src="/logoo.png"
+            alt="ByCarket logo"
+            width={40}
+            height={40}
+            className="h-10 w-10"
+          />
           <span className="text-3xl font-semibold text-principal-blue">
             ByCarket
           </span>
