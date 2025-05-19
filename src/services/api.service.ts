@@ -112,7 +112,44 @@ export interface UserDataResponse {
 	message: string;
 }
 
+export interface UpdateUserData {
+	name?: string;
+	email?: string;
+	phone?: number;
+	country?: string;
+	city?: string;
+	address?: string;
+}
+
 export const getUserData = async (): Promise<UserDataResponse> => {
 	const response = await http.get<UserDataResponse>("/users/me");
+	return response.data;
+};
+
+export const updateUserData = async (
+	userData: UpdateUserData
+): Promise<UserDataResponse> => {
+	try {
+		const response = await http.patch<UserDataResponse>(
+			"/users/me",
+			userData
+		);
+		return response.data;
+	} catch (error: any) {
+		const errorMsg =
+			error.response?.data?.message ||
+			error.message ||
+			"Error al actualizar datos del usuario";
+		throw new Error(errorMsg);
+	}
+};
+
+export const createPost = async (
+	vehicleId: string
+): Promise<{ data: string; message: string }> => {
+	const response = await http.post<{ data: string; message: string }>(
+		"/posts",
+		{ vehicleId }
+	);
 	return response.data;
 };

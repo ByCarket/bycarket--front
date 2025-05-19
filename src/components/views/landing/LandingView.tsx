@@ -6,13 +6,13 @@ import HowItWorks from "./components/HowItWorks";
 import SellSection from "./components/SellSection";
 
 export default function LandingView() {
-  return (
-    <main>
-      <Hero />
-      <HowItWorks />
-      <BuySection />
-      <SellSection />
-      <CTA />
-    </main>
-  );
+	return (
+		<main>
+			<Hero />
+			<HowItWorks />
+			<BuySection />
+			<SellSection />
+			<CTA />
+		</main>
+	);
 }

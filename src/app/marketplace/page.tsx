@@ -1,7 +1,7 @@
-import React from "react";
+import MarketplaceView from "@/components/views/marketplace/MarketplaceView";
 
 const Marketplace = () => {
-	return <div>VehiclesPage</div>;
+	return <MarketplaceView />;
 };
 
 export default Marketplace;

@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import UserData from "@/components/views/dashboard/components/UserData";
+import VehicleForm from "@/components/views/dashboard/VehicleForm";
 
-export default function Profile() {
+export default function RegisterVehicle() {
 	const { isAuthenticated, loading } = useAuth();
 	const router = useRouter();
 
@@ -24,11 +24,8 @@ export default function Profile() {
 	}
 
 	return (
-		<div className='container mx-auto py-8 px-4'>
-			<h1 className='text-3xl font-bold text-principal-blue mb-6'>
-				Mi Perfil
-			</h1>
-			<UserData />
+		<div className='container mx-auto py-8'>
+			<VehicleForm />
 		</div>
 	);
 }

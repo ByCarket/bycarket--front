@@ -1,5 +1,5 @@
-import HomeView from "@/components/views/home/HomeView";
+import LandingView from "@/components/views/landing/LandingView";
 
 export default function Home() {
-	return <HomeView />;
+	return <LandingView />;
 }
