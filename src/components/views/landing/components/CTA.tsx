@@ -30,7 +30,7 @@ export default function CTA() {
           </button>
 
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard/vip")}
             className="flex items-center gap-2 bg-secondary-blue text-white px-6 py-3 rounded-2xl font-semibold shadow-md hover:bg-[#0c2b50] transition"
           >
             <Star size={20} />

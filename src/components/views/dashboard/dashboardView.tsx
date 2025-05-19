@@ -57,8 +57,8 @@ const tips = [
 
 export default function DashboardView() {
   return (
-    <main className="min-h-screen flex flex-col lg:flex-row text-gray-800 bg-secondary-blue p-6">
-      <aside className="w-full shadow-xl lg:w-1/4 p-6 rounded-xl flex flex-col space-y-8 bg-white">
+    <main className="min-h-screen flex flex-col lg:flex-row text-gray-800 bg-secondary-blue p-4 sm:p-6 gap-6">
+      <aside className="w-full lg:w-1/4 p-4 sm:p-6 shadow-xl rounded-xl flex flex-col space-y-8 bg-white">
         <div className="flex flex-col items-center">
           <img
             src={user.avatarUrl}
@@ -82,7 +82,6 @@ export default function DashboardView() {
               Miembro desde <strong>{user.joined}</strong>
             </span>
           </div>
-
           <div className="flex items-center gap-3">
             <Phone className="w-5 h-5 text-blue-500" />
             <span>+39 345 678 910</span>
@@ -103,7 +102,7 @@ export default function DashboardView() {
 
         <div>
           <h3 className="text-gray-900 font-semibold mb-3">Redes Sociales</h3>
-          <nav className="flex gap-4">
+          <nav className="flex flex-wrap gap-2">
             <a
               href="#"
               className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-black hover:bg-principal-blue hover:text-white transition"
@@ -147,7 +146,7 @@ export default function DashboardView() {
         </div>
       </aside>
 
-      <section className="flex-1 px-6 py-8 space-y-6 bg-white shadow-xl rounded-xl lg:ml-6 mt-6 lg:mt-0">
+      <section className="w-full flex-1 px-4 sm:px-6 py-6 space-y-6 bg-white shadow-xl rounded-xl">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card, idx) => (
             <div
@@ -163,7 +162,7 @@ export default function DashboardView() {
           ))}
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-md">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md">
           <h3 className="text-lg font-bold mb-4">Ventas Generales</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={salesData}>
@@ -180,7 +179,7 @@ export default function DashboardView() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-md">
+        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md">
           <h3 className="text-lg font-bold mb-4">
             Consejos para mejorar tus ventas
           </h3>
@@ -191,8 +190,8 @@ export default function DashboardView() {
           </ul>
         </div>
 
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-700 to-pink-600 text-white rounded-xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-5 flex-1">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-700 to-pink-600 text-white rounded-xl p-4 sm:p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-5 flex-1 text-center md:text-left flex-col md:flex-row">
             <ShieldCheck className="w-12 h-12 text-yellow-400" />
             <div>
               <h3 className="text-2xl font-semibold">Suscripción Premium</h3>
@@ -203,7 +202,7 @@ export default function DashboardView() {
               </p>
             </div>
           </div>
-          <button className="bg-yellow-400 text-indigo-900 font-semibold py-3 px-7 rounded-lg shadow-lg hover:bg-yellow-500 transition">
+          <button className="bg-yellow-400 text-indigo-900 font-semibold py-3 px-7 rounded-lg shadow-lg hover:bg-yellow-500 transition w-full md:w-auto">
             Ver más
           </button>
         </div>

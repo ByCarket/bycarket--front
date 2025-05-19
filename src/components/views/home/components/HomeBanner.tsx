@@ -26,14 +26,14 @@ const slides: Slide[] = [
     title: "Vendé tu auto fácilmente",
     subtitle: "Publicá gratis y alcanzá miles de compradores",
     ctaText: "Publicar auto",
-    ctaLink: "/marketplace",
+    ctaLink: "/dashboard/register-vehicle",
   },
   {
     image: "/assets/images/home/banner-3.webp",
     title: "Beneficios exclusivos para miembros VIP",
     subtitle: "Automatizá tus publicaciones con tecnología inteligente",
     ctaText: "Hacete VIP",
-    ctaLink: "/vip",
+    ctaLink: "/dashboard/vip",
   },
 ];
 
