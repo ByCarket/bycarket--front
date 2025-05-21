@@ -6,12 +6,14 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/context/AuthContext";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuthStore();
   const { status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsUserAuthenticated(isAuthenticated || status === "authenticated");
@@ -38,28 +40,33 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden space-x-6 md:flex">
+        <div className="hidden space-x-6 md:flex ">
           <Link
             href="/home"
-            className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/home"
+              ? "text-principal-blue after:w-full"
+              : "text-principal-blue after:w-0 hover:after:w-full"
+              }`}
           >
-            Home
+            Inicio
           </Link>
+
           <Link
             href="/marketplace"
-            className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/marketplace"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
           >
             Vehiculos
           </Link>
+
           <Link
-            href="#"
-            className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
-          >
-            ¿Quienes somos?
-          </Link>
-          <Link
-            href="#"
-            className="relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full"
+            href="/suscription"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/suscription"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
           >
             Premium
           </Link>
@@ -142,7 +149,7 @@ export default function Navbar() {
                 className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
                 onClick={toggleMobileMenu}
               >
-                Home
+                Inicio
               </Link>
               <Link
                 href="/marketplace"
@@ -151,15 +158,9 @@ export default function Navbar() {
               >
                 Vehiculos
               </Link>
+
               <Link
-                href="#"
-                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
-                onClick={toggleMobileMenu}
-              >
-                ¿Quienes somos?
-              </Link>
-              <Link
-                href="#"
+                href="/suscription"
                 className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
                 onClick={toggleMobileMenu}
               >
