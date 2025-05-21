@@ -70,6 +70,15 @@ export default function Navbar() {
           >
             Premium
           </Link>
+          <Link
+            href=""
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/contact"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
+          >
+            Contacto
+          </Link>
         </div>
 
         <div className="hidden space-x-2 md:flex">
@@ -125,7 +134,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
               >
                 <Image
-                  src="/logo.jpg"
+                  src="/Logoo.png"
                   alt="logoByCarket"
                   width={40}
                   height={40}
@@ -165,6 +174,13 @@ export default function Navbar() {
                 onClick={toggleMobileMenu}
               >
                 Premium
+              </Link>
+              <Link
+                href=""
+                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
+                onClick={toggleMobileMenu}
+              >
+                Contacto
               </Link>
             </div>
 
