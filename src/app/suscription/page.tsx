@@ -1,7 +1,9 @@
+
+import SuscriptionView from "@/components/views/suscription/SuscriptionView";
 import React from "react";
 
 const SuscriptionPage = () => {
-  return <div>SuscriptionPage</div>;
+  return <SuscriptionView/>
 };
 
 export default SuscriptionPage;
