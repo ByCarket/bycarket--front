@@ -11,6 +11,7 @@ import {
 	getAuthToken,
 	removeAuthToken,
 } from "@/services/storage.service";
+import { signOut } from "next-auth/react";
 
 interface User {
 	id: string;
@@ -77,8 +78,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 	logout: () => {
 		removeAuthToken();
 		set({ user: null, token: null, isAuthenticated: false });
+		signOut();
 	},
-	
+
 	setGoogleUser: (response: GoogleProcessLoginResponse) => {
 		if (response.token && response.user) {
 			set({
