@@ -144,12 +144,35 @@ export const updateUserData = async (
 	}
 };
 
+export interface CreatePostResponse {
+	data: {
+		id: string;
+		vehicleId: string;
+		status: string;
+		postDate: string;
+		description?: string;
+	};
+	message: string;
+}
+
 export const createPost = async (
-	vehicleId: string
-): Promise<{ data: string; message: string }> => {
-	const response = await http.post<{ data: string; message: string }>(
-		"/posts",
-		{ vehicleId }
+	vehicleId: string,
+	description?: string
+): Promise<CreatePostResponse> => {
+	console.log(
+		`API Service - createPost - Enviando petición: { vehicleId: "${vehicleId}", description: "${
+			description || ""
+		}" }`
 	);
+
+	const response = await http.post<CreatePostResponse>("/posts", {
+		vehicleId,
+		description,
+	});
+	return response.data;
+};
+
+export const deleteUserAccount = async (): Promise<{ message: string }> => {
+	const response = await http.delete<{ message: string }>("/users/me");
 	return response.data;
 };

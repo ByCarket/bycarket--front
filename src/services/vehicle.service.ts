@@ -21,7 +21,10 @@ export interface VehicleData {
 	brandId: string;
 	modelId: string;
 	versionId: string;
+	typeOfVehicle: string;
 	year: number;
+	condition: string;
+	currency: string;
 	price: number;
 	mileage: number;
 	description: string;
@@ -33,7 +36,10 @@ export interface VehicleResponse {
 	brand: Brand;
 	model: Model;
 	version: Version;
+	typeOfVehicle: string;
 	year: number;
+	condition: string;
+	currency: string;
 	price: number;
 	mileage: number;
 	description: string;
@@ -88,14 +94,16 @@ export const createVehicle = async (
 		brandId: vehicleData.brandId,
 		modelId: vehicleData.modelId,
 		versionId: vehicleData.versionId,
+		typeOfVehicle: vehicleData.typeOfVehicle,
 		year: vehicleData.year,
+		condition: vehicleData.condition,
+		currency: vehicleData.currency,
 		price: vehicleData.price,
 		mileage: vehicleData.mileage,
 		description: vehicleData.description,
 	};
 
 	const response = await http.post<VehicleResponse>("/vehicles", payload);
-
 	return response.data;
 };
 
@@ -110,7 +118,7 @@ export const getVehicles = async (
 };
 
 export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
-	const response = await http.get<VehicleResponse[]>("/vehicles");
+	const response = await http.get<VehicleResponse[]>("/vehicles/me");
 	return response.data;
 };
 
@@ -118,7 +126,7 @@ export const getPosts = async (
 	page: number = 1,
 	limit: number = 10
 ): Promise<GetPostsResponse> => {
-	const response = await http.get<GetPostsResponse>("/posts", {
+	const response = await http.get<GetPostsResponse>("/posts/me", {
 		params: { page, limit },
 	});
 	return response.data;
@@ -134,6 +142,33 @@ export const getVehicleById = async (
 		return response.data;
 	} catch (error) {
 		console.error("Error fetching vehicle by ID:", error);
+		throw error;
+	}
+};
+
+export const deleteVehicle = async (vehicleId: string): Promise<void> => {
+	try {
+		await http.delete(`/vehicles/${vehicleId}`);
+	} catch (error) {
+		throw error;
+	}
+};
+
+export const updateVehicle = async (
+	vehicleId: string,
+	vehicleData: Partial<VehicleData>
+): Promise<VehicleResponse> => {
+	const response = await http.patch<VehicleResponse>(
+		`/vehicles/${vehicleId}`,
+		vehicleData
+	);
+	return response.data;
+};
+
+export const deletePost = async (postId: string): Promise<void> => {
+	try {
+		await http.delete(`/posts/${postId}`);
+	} catch (error) {
 		throw error;
 	}
 };

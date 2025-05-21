@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { getUserVehicles } from "@/services/vehicle.service";
 import VehicleItem from "./components/VehicleItem";
 import { VehicleResponse } from "@/services/vehicle.service";
-import { createPost } from "@/services/api.service";
 import { useRouter } from "next/navigation";
 
 const MyVehiclesView = () => {
@@ -20,7 +19,7 @@ const MyVehiclesView = () => {
 				const userVehicles = await getUserVehicles();
 				setVehicles(userVehicles);
 			} catch (err: any) {
-				setError("Error al cargar tus vehículos. Uwaa~");
+				setError("Error al cargar tus vehículos.");
 				console.error(err);
 			} finally {
 				setLoading(false);
@@ -30,22 +29,12 @@ const MyVehiclesView = () => {
 		fetchVehicles();
 	}, []);
 
-	const handlePostVehicle = async (vehicleId: string) => {
-		try {
-			await createPost(vehicleId);
-			alert("¡Vehículo publicado con éxito!");
-		} catch (err: any) {
-			alert("Yamete~ Hubo un error al publicar el vehículo.");
-			console.error(err);
-		}
-	};
-
 	const handleViewDetails = (vehicleId: string) => {
 		router.push(`/marketplace/${vehicleId}`);
 	};
 
 	if (loading) {
-		return <div>Cargando tus vehículos... 🌸</div>;
+		return <div>Cargando tus vehículos...</div>;
 	}
 
 	if (error) {
@@ -64,7 +53,6 @@ const MyVehiclesView = () => {
 					<VehicleItem
 						key={vehicle.id}
 						vehicle={vehicle}
-						onPost={handlePostVehicle}
 						onViewDetails={handleViewDetails}
 					/>
 				))}
