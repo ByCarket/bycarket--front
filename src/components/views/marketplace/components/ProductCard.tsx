@@ -3,55 +3,61 @@ import Link from "next/link";
 import Image from "next/image";
 
 interface ProductCardProps {
-	vehicle: VehicleResponse;
+  vehicle: VehicleResponse;
 }
 
 export default function ProductCard({ vehicle }: ProductCardProps) {
-	return (
-		<div className='bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300'>
-			<div className='h-48 bg-gray-200 relative'>
-				{vehicle.images && vehicle.images.length > 0 && (
-					<Image
-						src={vehicle.images[0]}
-						alt={`${vehicle.brand.name} ${vehicle.model.name}`}
-						className='w-full h-full object-cover'
-					/>
-				)}
-			</div>
-			<div className='p-4'>
-				<h3 className='text-lg font-semibold text-[#103663]'>
-					{`${vehicle.brand.name} ${vehicle.model.name} ${vehicle.version.name}`}
-				</h3>
-				<div className='flex justify-between items-center mt-2'>
-					<span className='text-xl font-bold'>
-						${vehicle.price.toLocaleString()}
-					</span>
-					<span className='text-sm text-gray-500'>
-						{vehicle.year}
-					</span>
-				</div>
-				<div className='mt-3 text-sm text-gray-600'>
-					<div className='flex justify-between mb-1'>
-						<span>Kilometraje:</span>
-						<span className='font-medium'>
-							{vehicle.mileage.toLocaleString()} km
-						</span>
-					</div>
-					<div className='flex justify-between mb-1'>
-						<span>Motor:</span>
-						<span className='font-medium'>N/A</span>{" "}
-					</div>
-					<div className='flex justify-between'>
-						<span>Transmisión:</span>
-						<span className='font-medium'>N/A</span>{" "}
-					</div>
-				</div>
-				<Link href={`/marketplace/${vehicle.id}`} passHref>
-					<button className='w-full mt-4 bg-[#103663] text-white py-2 rounded-md hover:bg-[#0c2a4d] transition-colors'>
-						Ver Detalles
-					</button>
-				</Link>
-			</div>
-		</div>
-	);
+  return (
+    <Link
+      href={`/marketplace/${vehicle.id}`}
+      className={`
+        group block w-full
+        bg-[#4a77a8] rounded-2xl 
+        overflow-hidden border border-white/20
+        transform transition 
+        hover:shadow-2xl hover:scale-[1.02]
+        duration-300
+      `}
+    >
+      <div className="relative h-44 md:h-48">
+        {vehicle.images?.[0] && (
+          <Image
+            src={vehicle.images[0]}
+            alt={`${vehicle.brand.name} ${vehicle.model.name}`}
+            className="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-300"
+          />
+        )}
+      </div>
+
+      <div className="px-4 py-3 bg-white/10 backdrop-blur-sm space-y-1.5">
+        <h3 className="text-lg font-semibold text-white truncate">
+          {vehicle.brand.name} {vehicle.model.name}
+        </h3>
+        <p className="text-sm text-white/90 truncate">{vehicle.version.name}</p>
+
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-xl font-bold text-yellow-400">
+            ${vehicle.price.toLocaleString()}
+          </span>
+          <span className="text-base text-white/90">{vehicle.year}</span>
+        </div>
+
+        <div className="mt-3">
+          <span
+            className={`
+              inline-block w-full text-center
+              text-base font-medium
+              bg-white text-[#103663]
+              py-2 rounded-full
+              shadow-sm
+              opacity-90 group-hover:opacity-100
+              transition-opacity duration-200
+            `}
+          >
+            Ver detalles
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
 }

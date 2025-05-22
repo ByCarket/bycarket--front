@@ -1,260 +1,78 @@
 export default function Sidebar() {
-	return (
-		<aside className='w-full md:w-64 bg-white border-r border-gray-200 p-4'>
-			<div className='mb-6'>
-				<div className='relative'>
-					<input
-						type='text'
-						placeholder='Buscar vehículos...'
-						className='w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#103663]'
-					/>
-					<button className='absolute right-2 top-2 text-[#103663]'>
-						<svg
-							xmlns='http://www.w3.org/2000/svg'
-							width='20'
-							height='20'
-							viewBox='0 0 24 24'
-							fill='none'
-							stroke='currentColor'
-							strokeWidth='2'
-							strokeLinecap='round'
-							strokeLinejoin='round'>
-							<circle cx='11' cy='11' r='8'></circle>
-							<line x1='21' y1='21' x2='16.65' y2='16.65'></line>
-						</svg>
-					</button>
-				</div>
-			</div>
+  return (
+    <aside className="w-full md:w-56 bg-[#103663] text-white py-4 px-3 space-y-4 rounded-lg">
+      <div className="space-y-4">
+        <FilterSection
+          title="Rango de Precio (ARS)"
+          name="price"
+          options={[
+            "< $5M",
+            "$5M - $10M",
+            "$10M - $15M",
+            "$15M - $25M",
+            "> $25M",
+          ]}
+        />
 
-			<div className='mb-6'>
-				<h3 className='text-lg font-medium text-[#103663] mb-3'>
-					Rango de Precio
-				</h3>
-				<div className='space-y-2'>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='price1'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='price1' className='text-gray-700'>
-							Menos de $10,000
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='price2'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='price2' className='text-gray-700'>
-							$10,000 - $20,000
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='price3'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='price3' className='text-gray-700'>
-							$20,000 - $30,000
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='price4'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='price4' className='text-gray-700'>
-							$30,000 - $50,000
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='price5'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='price5' className='text-gray-700'>
-							Más de $50,000
-						</label>
-					</div>
-				</div>
-			</div>
+        <FilterSection
+          title="Tipo de Vehículo"
+          name="type"
+          options={["Sedán", "SUV", "Pick-up", "Hatchback", "Van"]}
+        />
 
-			<div className='mb-6'>
-				<h3 className='text-lg font-medium text-[#103663] mb-3'>
-					Tipo de Vehículo
-				</h3>
-				<div className='space-y-2'>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='type1'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='type1' className='text-gray-700'>
-							Sedán
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='type2'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='type2' className='text-gray-700'>
-							SUV
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='type3'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='type3' className='text-gray-700'>
-							Camioneta
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='type4'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='type4' className='text-gray-700'>
-							Mate Móvil
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='type5'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='type5' className='text-gray-700'>
-							Asadomóvil
-						</label>
-					</div>
-				</div>
-			</div>
+        <FilterSection
+          title="Marca"
+          name="brand"
+          options={["Toyota", "Ford", "VW", "Chevrolet", "Honda"]}
+        />
 
-			<div className='mb-6'>
-				<h3 className='text-lg font-medium text-[#103663] mb-3'>
-					Marca
-				</h3>
-				<div className='space-y-2'>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='brand1'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='brand1' className='text-gray-700'>
-							Toyota
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='brand2'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='brand2' className='text-gray-700'>
-							Honda
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='brand3'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='brand3' className='text-gray-700'>
-							Fernet
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='brand4'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='brand4' className='text-gray-700'>
-							Dulce de Leche
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='brand5'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='brand5' className='text-gray-700'>
-							Messi
-						</label>
-					</div>
-				</div>
-			</div>
+        <FilterSection
+          title="Año"
+          name="year"
+          options={["23-24", "20-22", "15-19", "10-14", "<10"]}
+        />
+      </div>
 
-			<div>
-				<h3 className='text-lg font-medium text-[#103663] mb-3'>Año</h3>
-				<div className='space-y-2'>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='year1'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='year1' className='text-gray-700'>
-							2023 - 2024
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='year2'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='year2' className='text-gray-700'>
-							2020 - 2022
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='year3'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='year3' className='text-gray-700'>
-							2015 - 2019
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='year4'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='year4' className='text-gray-700'>
-							2010 - 2014
-						</label>
-					</div>
-					<div className='flex items-center'>
-						<input
-							type='checkbox'
-							id='year5'
-							className='mr-2 h-4 w-4 accent-[#103663]'
-						/>
-						<label htmlFor='year5' className='text-gray-700'>
-							Antes de 2010
-						</label>
-					</div>
-				</div>
-			</div>
-		</aside>
-	);
+      <div>
+        <button className="w-full bg-[#facc15] text-[#103663] hover:brightness-95 py-1.5 px-3 rounded-md font-semibold shadow-sm transition text-sm">
+          Aplicar Filtros
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function FilterSection({
+  title,
+  options,
+  name,
+  minimal = false,
+}: {
+  title: string;
+  options: string[];
+  name: string;
+  minimal?: boolean;
+}) {
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-white mb-2">{title}</h3>
+      <div className={minimal ? "" : "space-y-1.5"}>
+        {options.map((label, index) => (
+          <div className="flex items-center" key={index}>
+            <input
+              type="checkbox"
+              id={`${name}-${index}`}
+              className="mr-1.5 h-3 w-3 accent-white hover:cursor-pointer"
+            />
+            <label
+              htmlFor={`${name}-${index}`}
+              className="text-white hover:text-gray-300 cursor-pointer text-sm"
+            >
+              {label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

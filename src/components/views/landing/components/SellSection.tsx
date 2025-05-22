@@ -60,7 +60,7 @@ export default function SellSection() {
           </p>
 
           <button
-            onClick={() => router.push("/dashboard/register-vehicle")}
+            onClick={() => router.push("/dashboard?tab=register-vehicle")}
             className="bg-principal-blue hover:bg-[#0c2c50] text-white font-semibold px-8 py-4 text-lg rounded-2xl shadow transition"
           >
             Vende

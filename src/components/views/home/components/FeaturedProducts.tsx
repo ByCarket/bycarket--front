@@ -29,8 +29,8 @@ const products = [
 
 export default function FeaturedProducts() {
   return (
-    <div className="max-w-7xl mx-auto px-6 pt-6 pb-12 flex flex-col items-center">
-      <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col items-center">
+    <div className="max-w-7xl mx-auto px-6 pt-2 pb-12 flex flex-col items-center">
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-8 flex flex-col items-center">
         <div className="mb-0 text-center">
           <h1 className="text-5xl font-bold text-principal-blue leading-none">
             Productos destacados
