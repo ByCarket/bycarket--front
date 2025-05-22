@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useAuthStore } from "./AuthContext";
 import { useSession } from "next-auth/react";
 import { processGoogleLogin } from "@/services/api.service";
+import { setAuthToken } from "@/services/storage.service";
 
 interface AuthProviderProps {
 	children: React.ReactNode;
@@ -22,7 +23,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 	useEffect(() => {
 		const handleGoogleSession = async () => {
-			if (session?.user && status === "authenticated") {
+			if (session?.user && status === "authenticated" && !isAuthenticated) {
 				try {
 					const backendResponse = await processGoogleLogin(
 						session.user
@@ -31,7 +32,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 						setGoogleUser(backendResponse);
 					}
 				} catch (error) {
-					console.error("Error al procesar inicio de sesión con Google:", error);
 				}
 			}
 		};

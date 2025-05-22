@@ -1,7 +1,25 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { processGoogleLogin } from "@/services/api.service";
-import { setAuthToken } from "@/services/storage.service";
+
+declare module "next-auth" {
+	interface Session {
+		backendAccessToken?: string;
+		user: {
+			id?: string;
+			name?: string;
+			email?: string;
+			image?: string;
+		}
+	}
+}
+
+declare module "next-auth/jwt" {
+	interface JWT {
+		backendAccessToken?: string;
+		userId?: string;
+	}
+}
 
 const handler = NextAuth({
 	providers: [
@@ -14,32 +32,44 @@ const handler = NextAuth({
 		signIn: "/login",
 	},
 	callbacks: {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		async signIn({ user, account, profile }) {
+		async signIn({ account, profile }) {
 			if (account?.provider === "google" && profile) {
 				try {
 					const backendResponse = await processGoogleLogin(profile);
 					if (backendResponse?.token) {
-						setAuthToken(backendResponse.token);
+						account.access_token = backendResponse.token;
 					}
 					return true;
 				} catch (error) {
-					console.error("Error processing Google login:", error);
+					console.error("Error en signIn de NextAuth:", error);
 					return false;
 				}
 			}
 			return true;
 		},
-		async redirect({ url, baseUrl }) {
-			if (url.startsWith(baseUrl)) {
-				return url;
+		async jwt({ token, account, user }) {
+			if (account?.access_token) {
+				token.backendAccessToken = account.access_token;
 			}
-			return baseUrl;
+			if (user?.id) {
+				token.userId = user.id;
+			}
+			return token;
 		},
-		async session({ session }) {
+		async session({ session, token }) {
+			if (token?.backendAccessToken) {
+				session.backendAccessToken = token.backendAccessToken;
+			}
+			if (token?.userId) {
+				session.user.id = token.userId;
+			}
 			return session;
 		},
+		async redirect({ url, baseUrl }) {
+			return url.startsWith(baseUrl) ? url : baseUrl;
+		},
 	},
+	secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

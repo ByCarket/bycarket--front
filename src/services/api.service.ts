@@ -79,11 +79,21 @@ export const loginUser = async (
 export const processGoogleLogin = async (
 	googleProfile: unknown
 ): Promise<GoogleProcessLoginResponse> => {
-	const response = await http.post<GoogleProcessLoginResponse>(
-		"auth/process-google",
-		googleProfile
-	);
-	return response.data;
+	const formattedProfile = {
+		email: (googleProfile as any).email || "",
+		name: (googleProfile as any).name || "",
+		sub: (googleProfile as any).sub || (googleProfile as any).id || "",
+	};
+	
+	try {
+		const response = await http.post<GoogleProcessLoginResponse>(
+			"/auth/process-google",
+			formattedProfile
+		);
+		return response.data;
+	} catch (error) {
+		throw new Error("Error al procesar el login de Google");
+	}
 };
 
 export interface UserData {
@@ -159,12 +169,6 @@ export const createPost = async (
 	vehicleId: string,
 	description?: string
 ): Promise<CreatePostResponse> => {
-	console.log(
-		`API Service - createPost - Enviando petición: { vehicleId: "${vehicleId}", description: "${
-			description || ""
-		}" }`
-	);
-
 	const response = await http.post<CreatePostResponse>("/posts", {
 		vehicleId,
 		description,
