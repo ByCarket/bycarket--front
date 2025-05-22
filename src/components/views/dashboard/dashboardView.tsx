@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 import ProfileContent from "./components/ProfileContent";
 import VehiclesContent from "./components/VehiclesContent";
@@ -10,8 +11,32 @@ import PublishVehicleContent from "./components/PublishVehicleContent";
 import { useUserData } from "@/hooks/useUserData";
 
 export default function Dashboard() {
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const tabParam = searchParams.get("tab");
 	const [activeTab, setActiveTab] = useState("profile");
 	const { loading } = useUserData();
+
+	useEffect(() => {
+		if (tabParam) {
+			const validTabs = [
+				"profile",
+				"vehicles",
+				"publications",
+				"register-vehicle",
+				"publish-vehicle",
+				"vip",
+			];
+			if (validTabs.includes(tabParam)) {
+				setActiveTab(tabParam);
+			}
+		}
+	}, [tabParam]);
+
+	const handleTabChange = (tab: string) => {
+		setActiveTab(tab);
+		router.push(`/dashboard?tab=${tab}`);
+	};
 
 	const renderContent = () => {
 		if (loading) {
@@ -52,7 +77,7 @@ export default function Dashboard() {
 
 	return (
 		<div className='flex min-h-screen bg-white'>
-			<Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+			<Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
 			<main className='flex-1 p-6 md:p-8'>{renderContent()}</main>
 		</div>
 	);
