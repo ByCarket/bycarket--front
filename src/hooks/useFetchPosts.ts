@@ -15,11 +15,14 @@ export const useFetchPosts = (initialPage: number = 1, initialLimit: number = 10
 				setLoading(true);
 				setError(null);
 				const response = await getPosts(currentPage, initialLimit);
-				setPosts(response.data);
-				setTotalItems(response.total);
-				setTotalPages(response.totalPages);
+				setPosts(response.data || []);
+				setTotalItems(response.total || 0);
+				setTotalPages(response.totalPages || 1);
 			} catch (err: any) {
-				setError("Hubo un error al cargar los posts. Inténtalo de nuevo más tarde.");
+				setPosts([]);
+				setTotalItems(0);
+				setTotalPages(1);
+				setError(null);
 			} finally {
 				setLoading(false);
 			}
