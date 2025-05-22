@@ -2,11 +2,11 @@
 
 import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 
 interface SidebarProps {
 	activeTab: string;
-	setActiveTab: Dispatch<SetStateAction<string>>;
+	setActiveTab: (tab: string) => void;
 }
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
