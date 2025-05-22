@@ -6,12 +6,16 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useAuthStore } from "@/context/AuthContext";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-	const { isAuthenticated, logout } = useAuthStore();
-	const { status } = useSession();
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+
+  const { isAuthenticated, logout } = useAuthStore();
+  const { status } = useSession();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const pathname = usePathname();
+
 
 	useEffect(() => {
 		setIsUserAuthenticated(isAuthenticated || status === "authenticated");
@@ -37,28 +41,47 @@ export default function Navbar() {
 					</span>
 				</Link>
 
-				<div className='hidden space-x-6 md:flex'>
-					<Link
-						href='/home'
-						className='relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full'>
-						Home
-					</Link>
-					<Link
-						href='/marketplace'
-						className='relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full'>
-						Vehiculos
-					</Link>
-					<Link
-						href='#'
-						className='relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full'>
-						¿Quienes somos?
-					</Link>
-					<Link
-						href='#'
-						className='relative text-principal-blue transition-all duration-300 ease-in-out hover:text-secondary-blue after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-secondary-blue after:transition-all after:duration-300 after:ease-in-out hover:after:w-full'>
-						Premium
-					</Link>
-				</div>
+
+        <div className="hidden space-x-6 md:flex ">
+          <Link
+            href="/home"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/home"
+              ? "text-principal-blue after:w-full"
+              : "text-principal-blue after:w-0 hover:after:w-full"
+              }`}
+          >
+            Inicio
+          </Link>
+
+          <Link
+            href="/marketplace"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/marketplace"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
+          >
+            Vehiculos
+          </Link>
+
+          <Link
+            href="/suscription"
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/suscription"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
+          >
+            Premium
+          </Link>
+          <Link
+            href=""
+            className={`relative transition-all duration-300 ease-in-out after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-principal-blue ${pathname === "/contact"
+              ? "text-principal-blue  after:w-full"
+              : "text-principal-blue  after:w-0 hover:after:w-full"
+              }`}
+          >
+            Contacto
+          </Link>
+        </div>
 
 				<div className='hidden space-x-2 md:flex'>
 					{isUserAuthenticated ? (
@@ -99,57 +122,65 @@ export default function Navbar() {
 
 			<div className='mx-auto mt-3 h-0.5 w-[70%] bg-secondary-blue'></div>
 
-			{mobileMenuOpen && (
-				<div className='fixed inset-0 z-50 bg-white md:hidden'>
-					<div className='flex h-full flex-col p-4'>
-						<div className='flex items-center justify-between'>
-							<Link
-								href='/'
-								className='flex items-center gap-2 transition-transform duration-300 hover:scale-105'>
-								<Image
-									src='/logo.jpg'
-									alt='logoByCarket'
-									width={40}
-									height={40}
-									className='h-10 w-10'
-								/>
-								<span className='text-xl font-semibold text-principal-blue'>
-									ByCarket
-								</span>
-							</Link>
-							<button
-								onClick={toggleMobileMenu}
-								className='transition-transform duration-200 hover:scale-110 hover:rotate-90'>
-								<X className='h-6 w-6 text-principal-blue' />
-							</button>
-						</div>
 
-						<div className='mt-8 flex flex-col space-y-4'>
-							<Link
-								href='/home'
-								className='text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue'
-								onClick={toggleMobileMenu}>
-								Home
-							</Link>
-							<Link
-								href='/marketplace'
-								className='text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue'
-								onClick={toggleMobileMenu}>
-								Vehiculos
-							</Link>
-							<Link
-								href='#'
-								className='text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue'
-								onClick={toggleMobileMenu}>
-								¿Quienes somos?
-							</Link>
-							<Link
-								href='#'
-								className='text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue'
-								onClick={toggleMobileMenu}>
-								Premium
-							</Link>
-						</div>
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-white md:hidden">
+          <div className="flex h-full flex-col p-4">
+            <div className="flex items-center justify-between">
+              <Link
+                href="/"
+                className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
+              >
+                <Image
+                  src="/Logoo.png"
+                  alt="logoByCarket"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10"
+                />
+                <span className="text-xl font-semibold text-principal-blue">
+                  ByCarket
+                </span>
+              </Link>
+              <button
+                onClick={toggleMobileMenu}
+                className="transition-transform duration-200 hover:scale-110 hover:rotate-90"
+              >
+                <X className="h-6 w-6 text-principal-blue" />
+              </button>
+            </div>
+
+            <div className="mt-8 flex flex-col space-y-4">
+              <Link
+                href="/home"
+                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
+                onClick={toggleMobileMenu}
+              >
+                Inicio
+              </Link>
+              <Link
+                href="/marketplace"
+                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
+                onClick={toggleMobileMenu}
+              >
+                Vehiculos
+              </Link>
+
+              <Link
+                href="/suscription"
+                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
+                onClick={toggleMobileMenu}
+              >
+                Premium
+              </Link>
+              <Link
+                href=""
+                className="text-lg text-principal-blue transition-all duration-300 ease-in-out hover:pl-2 hover:text-secondary-blue"
+                onClick={toggleMobileMenu}
+              >
+                Contacto
+              </Link>
+            </div>
 
 						<div className='mt-auto space-y-2 pb-8'>
 							{isUserAuthenticated ? (
