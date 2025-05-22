@@ -30,7 +30,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 					if (backendResponse) {
 						setGoogleUser(backendResponse);
 					}
-				} catch {}
+				} catch (error) {
+					console.error("Error al procesar inicio de sesión con Google:", error);
+				}
 			}
 		};
 

@@ -79,6 +79,7 @@ const VehicleForm: React.FC = () => {
 		brandId: Yup.string().required("La marca es obligatoria"),
 		modelId: Yup.string().required("El modelo es obligatorio"),
 		versionId: Yup.string().required("La versión es obligatoria"),
+		typeOfVehicle: Yup.string().required("El tipo de vehículo es obligatorio"),
 		year: Yup.number()
 			.required("El año es obligatorio")
 			.min(1900, "El año debe ser mayor a 1900")
@@ -86,6 +87,8 @@ const VehicleForm: React.FC = () => {
 				new Date().getFullYear() + 1,
 				`El año no puede ser mayor a ${new Date().getFullYear() + 1}`
 			),
+		condition: Yup.string().required("La condición es obligatoria"),
+		currency: Yup.string().required("La moneda es obligatoria"),
 		price: Yup.number()
 			.required("El precio es obligatorio")
 			.min(1, "El precio debe ser mayor a 0"),
@@ -103,7 +106,10 @@ const VehicleForm: React.FC = () => {
 			brandId: "",
 			modelId: "",
 			versionId: "",
+			typeOfVehicle: "SUV",
 			year: new Date().getFullYear(),
+			condition: "new",
+			currency: "U$D",
 			price: 0,
 			mileage: 0,
 			description: "",
@@ -360,6 +366,39 @@ const VehicleForm: React.FC = () => {
 
 					<div>
 						<label
+							htmlFor='typeOfVehicle'
+							className='block text-sm font-medium text-gray-700 mb-1'>
+							Tipo de Vehículo
+						</label>
+						<select
+							id='typeOfVehicle'
+							name='typeOfVehicle'
+							onChange={formik.handleChange}
+							onBlur={formik.handleBlur}
+							value={formik.values.typeOfVehicle}
+							className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'>
+							<option value='SUV'>SUV</option>
+							<option value='SEDAN'>Sedan</option>
+							<option value='HATCHBACK'>Hatchback</option>
+							<option value='PICKUP_TRUCK'>Pickup</option>
+							<option value='COUPE'>Coupe</option>
+							<option value='CONVERTIBLE'>Convertible</option>
+							<option value='WAGON'>Wagon</option>
+							<option value='VAN'>Van</option>
+							<option value='LUXURY'>Lujo</option>
+							<option value='OFF_ROAD'>Todo Terreno</option>
+							<option value='CROSSOVER'>Crossover</option>
+							<option value='COMPACT'>Compacto</option>
+						</select>
+						{formik.touched.typeOfVehicle && formik.errors.typeOfVehicle ? (
+							<div className='text-red-500 text-xs mt-1'>
+								{formik.errors.typeOfVehicle}
+							</div>
+						) : null}
+					</div>
+
+					<div>
+						<label
 							htmlFor='year'
 							className='block text-sm font-medium text-gray-700 mb-1'>
 							Año
@@ -382,24 +421,72 @@ const VehicleForm: React.FC = () => {
 
 					<div>
 						<label
-							htmlFor='price'
+							htmlFor='condition'
 							className='block text-sm font-medium text-gray-700 mb-1'>
-							Precio (USD)
+							Condición
 						</label>
-						<input
-							id='price'
-							name='price'
-							type='number'
+						<select
+							id='condition'
+							name='condition'
 							onChange={formik.handleChange}
 							onBlur={formik.handleBlur}
-							value={formik.values.price}
-							className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'
-						/>
-						{formik.touched.price && formik.errors.price ? (
+							value={formik.values.condition}
+							className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'>
+							<option value='new'>Nuevo</option>
+							<option value='used'>Usado</option>
+						</select>
+						{formik.touched.condition && formik.errors.condition ? (
 							<div className='text-red-500 text-xs mt-1'>
-								{formik.errors.price}
+								{formik.errors.condition}
 							</div>
 						) : null}
+					</div>
+
+					<div className='flex space-x-4'>
+						<div className='w-1/3'>
+							<label
+								htmlFor='currency'
+								className='block text-sm font-medium text-gray-700 mb-1'>
+								Moneda
+							</label>
+							<select
+								id='currency'
+								name='currency'
+								onChange={formik.handleChange}
+								onBlur={formik.handleBlur}
+								value={formik.values.currency}
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'>
+								<option value='U$D'>U$D</option>
+								<option value='ARS'>ARS</option>
+								<option value='EUR'>EUR</option>
+							</select>
+							{formik.touched.currency && formik.errors.currency ? (
+								<div className='text-red-500 text-xs mt-1'>
+									{formik.errors.currency}
+								</div>
+							) : null}
+						</div>
+						<div className='w-2/3'>
+							<label
+								htmlFor='price'
+								className='block text-sm font-medium text-gray-700 mb-1'>
+								Precio
+							</label>
+							<input
+								id='price'
+								name='price'
+								type='number'
+								onChange={formik.handleChange}
+								onBlur={formik.handleBlur}
+								value={formik.values.price}
+								className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue'
+							/>
+							{formik.touched.price && formik.errors.price ? (
+								<div className='text-red-500 text-xs mt-1'>
+									{formik.errors.price}
+								</div>
+							) : null}
+						</div>
 					</div>
 
 					<div>

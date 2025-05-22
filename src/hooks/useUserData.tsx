@@ -8,13 +8,17 @@ import {
 	UpdateUserData,
 } from "@/services/api.service";
 import { useAuthStore } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { removeAuthToken } from "@/services/storage.service";
 
 export const useUserData = () => {
 	const [userData, setUserData] = useState<UserData | null>(null);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [error, setError] = useState<string | null>(null);
 	const [updating, setUpdating] = useState<boolean>(false);
+	const [deleting, setDeleting] = useState<boolean>(false);
 	const { isAuthenticated, token } = useAuthStore();
+	const router = useRouter();
 
 	const fetchUserData = async () => {
 		setLoading(true);
@@ -96,12 +100,39 @@ export const useUserData = () => {
 		}
 	};
 
+	const deleteAccount = async () => {
+		if (!isAuthenticated || !token)
+			return { success: false, error: "No autenticado" };
+
+		setDeleting(true);
+		setError(null);
+
+		try {
+			await deleteAccount();
+			removeAuthToken();
+			router.push("/login");
+			return { success: true };
+		} catch (error: any) {
+			const errorMessage =
+				error.message || "Error al eliminar la cuenta";
+			setError(errorMessage);
+			return {
+				success: false,
+				error: errorMessage,
+			};
+		} finally {
+			setDeleting(false);
+		}
+	};
+
 	return {
 		userData,
 		loading,
 		error,
 		updating,
+		deleting,
 		updateUser,
+		deleteAccount,
 		refetch,
 	};
 };

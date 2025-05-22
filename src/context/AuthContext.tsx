@@ -83,6 +83,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 	setGoogleUser: (response: GoogleProcessLoginResponse) => {
 		if (response.token && response.user) {
+			setAuthToken(response.token);
 			set({
 				token: response.token,
 				user: {
