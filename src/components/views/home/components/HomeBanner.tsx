@@ -26,7 +26,7 @@ const slides: Slide[] = [
     title: "Vendé tu auto fácilmente",
     subtitle: "Publicá gratis y alcanzá miles de compradores",
     ctaText: "Publicar auto",
-    ctaLink: "/dashboard/register-vehicle",
+    ctaLink: "/dashboard?tab=register-vehicle",
   },
   {
     image: "/assets/images/home/banner-3.webp",
@@ -66,7 +66,7 @@ export default function HomeBannerSection() {
   const nextSlide = () => changeSlide((currentSlide + 1) % slides.length);
 
   return (
-    <div className="w-full bg-principal-blue py-16">
+    <div className="w-full bg-principal-blue py-12">
       <div
         className="relative mx-auto overflow-hidden rounded-[50px] \
            w-full md:w-[80%] \
