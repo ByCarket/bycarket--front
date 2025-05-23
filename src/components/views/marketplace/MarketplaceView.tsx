@@ -4,7 +4,7 @@ import Sidebar from "./components/Sidebar";
 import ProductCard from "./components/ProductCard";
 import Pagination from "./components/pagination";
 import { useFetchPosts } from "@/hooks/useFetchPosts";
-import SearchBar from "@/components/SearchBar";
+import SearchBar from "@/components/ui/SearchBar";
 
 export default function MarketplaceView() {
   const { posts, loading, error, currentPage, totalPages, handlePageChange } =
@@ -24,8 +24,8 @@ export default function MarketplaceView() {
 
       <main className="flex-1 p-4 md:p-6">
         <SearchBar />
-        <h1 className="text-2xl font-bold text-[#103663] mb-6">
-          Marketplace de Vehículos
+        <h1 className="mt-4 text-2xl font-bold text-principal-blue mb-6">
+          Catálogo de vehículos
         </h1>
 
         {Array.isArray(posts) && posts.length > 0 ? (
@@ -54,9 +54,12 @@ export default function MarketplaceView() {
                 <circle cx="17" cy="17" r="2" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#103663] mb-3">No hay vehículos disponibles</h2>
+            <h2 className="text-2xl font-bold text-[#103663] mb-3">
+              No hay vehículos disponibles
+            </h2>
             <p className="text-gray-600 max-w-md mb-8">
-              No hay posteos aún, vuelve más tarde cuando haya vehículos disponibles.
+              No hay posteos aún, vuelve más tarde cuando haya vehículos
+              disponibles.
             </p>
           </div>
         )}

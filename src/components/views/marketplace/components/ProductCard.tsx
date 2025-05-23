@@ -10,53 +10,33 @@ export default function ProductCard({ vehicle }: ProductCardProps) {
   return (
     <Link
       href={`/marketplace/${vehicle.id}`}
-      className={`
-        group block w-full
-        bg-[#4a77a8] rounded-2xl 
-        overflow-hidden border border-white/20
-        transform transition 
-        hover:shadow-2xl hover:scale-[1.02]
-        duration-300
-      `}
+      className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col"
     >
-      <div className="relative h-44 md:h-48">
+      <div className="relative h-44 w-full">
         {vehicle.images?.[0] && (
           <Image
             src={vehicle.images[0]}
             alt={`${vehicle.brand.name} ${vehicle.model.name}`}
-            className="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-300"
+            fill
+            className="object-cover"
           />
         )}
       </div>
 
-      <div className="px-4 py-3 bg-white/10 backdrop-blur-sm space-y-1.5">
-        <h3 className="text-lg font-semibold text-white truncate">
+      <div className="p-4 flex flex-col flex-grow">
+        <h2 className="text-lg font-semibold mb-1 text-principal-blue truncate">
           {vehicle.brand.name} {vehicle.model.name}
-        </h3>
-        <p className="text-sm text-white/90 truncate">{vehicle.version.name}</p>
-
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-xl font-bold text-yellow-400">
-            ${vehicle.price.toLocaleString()}
-          </span>
-          <span className="text-base text-white/90">{vehicle.year}</span>
-        </div>
-
-        <div className="mt-3">
-          <span
-            className={`
-              inline-block w-full text-center
-              text-base font-medium
-              bg-white text-[#103663]
-              py-2 rounded-full
-              shadow-sm
-              opacity-90 group-hover:opacity-100
-              transition-opacity duration-200
-            `}
-          >
-            Ver detalles
-          </span>
-        </div>
+        </h2>
+        <p className="text-sm text-secondary-blue mb-1 truncate">
+          {vehicle.version.name}
+        </p>
+        <p className="text-base font-bold text-principal-blue mb-2">
+          ${vehicle.price.toLocaleString()}
+        </p>
+        <p className="text-xs text-gray-600 mb-3">{vehicle.year}</p>
+        <span className="mt-auto bg-principal-blue text-white text-sm py-1.5 px-4 rounded-full text-center hover:bg-opacity-90 transition-colors">
+          Ver detalles
+        </span>
       </div>
     </Link>
   );
