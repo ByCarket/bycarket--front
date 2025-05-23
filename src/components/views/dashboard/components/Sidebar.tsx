@@ -23,7 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 			label: "Registrar un vehículo",
 			icon: PlusCircle,
 		},
-		{ id: "vip", label: "VIP", icon: Crown },
+		{ id: "premium", label: "Premium", icon: Crown },
 	];
 
 	const getInitials = (name: string) => {

@@ -7,6 +7,7 @@ import ProfileContent from "./components/ProfileContent";
 import VehiclesContent from "./components/VehiclesContent";
 import PublicationsContent from "./components/PostContent";
 import RegisterVehicleContent from "./components/RegisterVehicleContent";
+import PremiumContent from "./components/PremiumContent";
 import PublishVehicleContent from "./components/PublishVehicleContent";
 import { useUserData } from "@/hooks/useUserData";
 import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
@@ -26,7 +27,7 @@ export default function Dashboard() {
 				"publications",
 				"register-vehicle",
 				"publish-vehicle",
-				"vip",
+				"premium",
 			];
 			if (validTabs.includes(tabParam)) {
 				setActiveTab(tabParam);
@@ -59,18 +60,8 @@ export default function Dashboard() {
 				return <RegisterVehicleContent />;
 			case "publish-vehicle":
 				return <PublishVehicleContent />;
-			case "vip":
-				return (
-					<div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 my-4'>
-						<h2 className='text-2xl font-bold text-principal-blue mb-4'>
-							Membresía VIP
-						</h2>
-						<p className='text-yellow-600'>
-							¡Próximamente! Estamos trabajando en características
-							exclusivas para miembros VIP.
-						</p>
-					</div>
-				);
+			case "premium":
+				return <PremiumContent />;
 			default:
 				return <ProfileContent />;
 		}
