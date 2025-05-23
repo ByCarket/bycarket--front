@@ -31,7 +31,7 @@ export default function Navbar() {
           className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
         >
           <Image
-            src="/logoo.webp"
+            src="/assets/images/logo/Logoo.webp"
             alt="logoByCarket"
             width={40}
             height={40}
@@ -118,7 +118,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
               >
                 <Image
-                  src="/Logoo.webp"
+                  src="/assets/images/logo/Logoo.webp"
                   alt="logoByCarket"
                   width={40}
                   height={40}
