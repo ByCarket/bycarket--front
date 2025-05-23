@@ -132,19 +132,27 @@ export const getPosts = async (
 	return response.data;
 };
 
+
+
+interface ApiResponse<T> {
+	data: T;
+	message: string;
+}
+
 export const getVehicleById = async (
 	vehicleId: string
 ): Promise<VehicleResponse> => {
 	try {
-		const response = await http.get<VehicleResponse>(
+		const response = await http.get<ApiResponse<VehicleResponse>>(
 			`/vehicles/${vehicleId}`
 		);
-		return response.data;
+		return response.data.data;
 	} catch (error) {
 		console.error("Error fetching vehicle by ID:", error);
 		throw error;
 	}
 };
+
 
 export const deleteVehicle = async (vehicleId: string): Promise<void> => {
 	try {
