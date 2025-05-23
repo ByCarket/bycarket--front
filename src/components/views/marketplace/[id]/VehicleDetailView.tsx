@@ -1,42 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getVehicleById, VehicleResponse } from "@/services/vehicle.service";
+import { useFetchPosts } from "@/hooks/useFetchPosts";
 import Image from "next/image";
+import QuestionModal from "../components/QuestionModal";
 
 const VehicleDetailView = () => {
 	const params = useParams();
 	const vehicleId = params.id as string;
 
-	const [vehicle, setVehicle] = useState<VehicleResponse | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const { posts, loading, error } = useFetchPosts();
 
-	useEffect(() => {
-		const fetchVehicle = async () => {
-			if (!vehicleId) {
-				setError("No se encontró el ID del vehículo.");
-				setLoading(false);
-				return;
-			}
-			try {
-				setLoading(true);
-				const vehicleData = await getVehicleById(vehicleId);
-				setVehicle(vehicleData);
-			} catch (err: any) {
-				setError("Error al cargar los detalles del vehículo.");
-			} finally {
-				setLoading(false);
-			}
-		};
+	const post = posts.find((p) => p.vehicle?.id === vehicleId);
+	const vehicle = post?.vehicle;
 
-		fetchVehicle();
-	}, [vehicleId]);
 
 	if (loading) {
 		return (
-			<div className='flex justify-center items-center min-h-screen'>
+			<div className="flex justify-center items-center min-h-screen bg-[#103663] text-white text-lg">
 				Cargando detalles del vehículo...
 			</div>
 		);
@@ -44,7 +25,7 @@ const VehicleDetailView = () => {
 
 	if (error) {
 		return (
-			<div className='flex justify-center items-center min-h-screen text-red-500'>
+			<div className="flex justify-center items-center min-h-screen bg-[#103663] text-red-400 font-semibold">
 				{error}
 			</div>
 		);
@@ -52,85 +33,96 @@ const VehicleDetailView = () => {
 
 	if (!vehicle) {
 		return (
-			<div className='flex justify-center items-center min-h-screen'>
+			<div className="flex justify-center items-center min-h-screen bg-[#103663] text-white text-lg">
 				Vehículo no encontrado.
 			</div>
 		);
 	}
 
 	return (
-		<div className='container mx-auto p-4'>
-			<h1 className='text-3xl font-bold mb-6 text-[#103663]'>
-				{vehicle.brand?.name} {vehicle.model?.name}
-			</h1>
+		<div className="min-h-screen bg-gray-50 text-gray-900 py-12 px-4">
+			<div className="max-w-6xl mx-auto space-y-8">
 
-			<div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-				<div>
-					{vehicle.images && vehicle.images.length > 0 ? (
-						<div className='relative w-full h-96 rounded-lg overflow-hidden shadow-md'>
-							<Image
-								src={vehicle.images[0]}
-								alt={`${vehicle.brand?.name} ${vehicle.model?.name}`}
-								layout='fill'
-								objectFit='cover'
-							/>
+				<div className="bg-gray-200 shadow-md rounded-xl p-6 text-center">
+					<h1 className="text-4xl font-bold text-[#2d4059]">
+						{vehicle.brand?.name} {vehicle.model?.name}
+					</h1>
+					<p className="text-lg text-gray-600 mt-2">{vehicle.version?.name}</p>
+				</div>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+					<div className="bg-white rounded-xl shadow-md overflow-hidden">
+						<div className="relative h-96">
+							{vehicle.images && vehicle.images?.length > 0 ? (
+								<Image
+									src={vehicle.images[0]}
+									alt={`${vehicle.brand?.name} ${vehicle.model?.name}`}
+									layout="fill"
+									objectFit="cover"
+									className="object-cover"
+								/>
+							) : (
+								<div className="flex items-center justify-center h-full bg-gray-100 text-gray-500 text-lg">
+									No hay imágenes disponibles
+								</div>
+							)}
 						</div>
-					) : (
-						<div className='relative w-full h-96 bg-gray-200 flex items-center justify-center rounded-lg shadow-md'>
-							<span className='text-gray-500'>
-								No hay imágenes disponibles.
+					</div>
+
+
+					<div className="space-y-6">
+						{/* Características */}
+						<div className="bg-gray-100 rounded-xl shadow-md p-6">
+							<h2 className="text-2xl font-semibold text-[#2d4059] mb-4">Características</h2>
+							<ul className="space-y-2 text-base text-gray-700">
+								<li><strong>Año:</strong> {vehicle.year}</li>
+								<li><strong>Condición:</strong> {vehicle.condition}</li>
+								<li><strong>Tipo:</strong> {vehicle.typeOfVehicle}</li>
+								<li><strong>Kilometraje:</strong> {vehicle.mileage.toLocaleString()} km</li>
+								<li>
+
+								</li>
+							</ul>
+						</div>
+						<div>
+							<strong>Precio:</strong>{" "}
+							<span className="text-xl font-bold text-green-600">
+								{vehicle.currency} {vehicle.price.toLocaleString()}
 							</span>
 						</div>
-					)}
-				</div>
 
-				<div>
-					<h2 className='text-2xl font-semibold mb-4'>
-						Detalles del Vehículo
-					</h2>
-					<div className='space-y-3 text-gray-700'>
-						<p>
-							<strong>Marca:</strong>{" "}
-							{vehicle.brand
-								? vehicle.brand.name
-								: "No especificada"}
-						</p>
-						<p>
-							<strong>Modelo:</strong>{" "}
-							{vehicle.model
-								? vehicle.model.name
-								: "No especificado"}
-						</p>
-						<p>
-							<strong>Versión:</strong>{" "}
-							{vehicle.version
-								? vehicle.version.name
-								: "No especificada"}
-						</p>
-						<p>
-							<strong>Año:</strong> {vehicle.year}
-						</p>
-						<p>
-							<strong>Precio:</strong> $
-							{vehicle.price.toLocaleString()}
-						</p>
-						<p>
-							<strong>Kilometraje:</strong>{" "}
-							{vehicle.mileage.toLocaleString()} KM
-						</p>
-						<p>
-							<strong>Publicado el:</strong>{" "}
-							{new Date(vehicle.createdAt).toLocaleDateString()}
-						</p>
-					</div>
 
-					<div className='mt-6'>
-						<h3 className='text-xl font-semibold mb-2'>
-							Descripción
-						</h3>
-						<p className='text-gray-700'>{vehicle.description}</p>
+						<div className="flex flex-col sm:flex-row justify-center sm:justify-start gap-4">
+							<QuestionModal />
+							<a
+								href={`https://wa.me/549XXXXXXXXXX?text=Hola, estoy interesado en el vehículo ${vehicle.brand?.name} ${vehicle.model?.name}`}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow transition"
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="currentColor"
+									viewBox="0 0 24 24"
+									className="w-5 h-5"
+								>
+									<path d="M20.52 3.48a11.93 11.93 0 0 0-16.9 0 11.93 11.93 0 0 0-1.64 14.9L.03 23.19a.75.75 0 0 0 .99.99l4.8-1.95a11.93 11.93 0 0 0 14.9-1.64 11.93 11.93 0 0 0 0-16.9Z" />
+								</svg>
+								Contactar por WhatsApp
+							</a>
+						</div>
 					</div>
 				</div>
+
+				{/* Descripción */}
+				<div className="bg-gray-100 rounded-xl shadow-md p-6">
+					<h3 className="text-xl font-semibold mb-4 text-[#2d4059]">Descripción</h3>
+					<p className="whitespace-pre-line break-words text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto pr-2">
+						{vehicle.description}
+					</p>
+				</div>
+
 			</div>
 		</div>
 	);
