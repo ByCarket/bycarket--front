@@ -105,6 +105,7 @@ export interface UserData {
 	city?: string;
 	address?: string;
 	role?: string;
+	image?: string;
 	posts?: {
 		id: string;
 		postDate: string;
@@ -150,6 +151,39 @@ export const updateUserData = async (
 			error.response?.data?.message ||
 			error.message ||
 			"Error al actualizar datos del usuario";
+		throw new Error(errorMsg);
+	}
+};
+
+export interface UploadProfileImageResponse {
+	data: {
+		image: string;
+	};
+	message: string;
+}
+
+export const uploadUserProfileImage = async (
+	file: File
+): Promise<UploadProfileImageResponse> => {
+	try {
+		const formData = new FormData();
+		formData.append('image', file);
+		
+		const response = await http.patch<UploadProfileImageResponse>(
+			"/files/user-profile",
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			}
+		);
+		return response.data;
+	} catch (error: any) {
+		const errorMsg =
+			error.response?.data?.message ||
+			error.message ||
+			"Error al subir la imagen de perfil";
 		throw new Error(errorMsg);
 	}
 };
