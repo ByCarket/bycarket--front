@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUserData } from "@/hooks/useUserData";
 import { UpdateUserData } from "@/services/api.service";
+import Image from "next/image";
 
 export default function UserData() {
-	const { userData, loading, error, updating, updateUser, refetch } =
-		useUserData();
+	const {
+		userData,
+		loading,
+		error,
+		updating,
+		updateUser,
+		refetch,
+		uploadProfileImage,
+	} = useUserData();
 	const [isEditing, setIsEditing] = useState(false);
 	const [formData, setFormData] = useState<UpdateUserData>({});
 	const [updateMessage, setUpdateMessage] = useState<{
 		type: "success" | "error";
 		text: string;
 	} | null>(null);
+	const [isUploading, setIsUploading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	if (loading) {
 		return (
@@ -98,14 +108,127 @@ export default function UserData() {
 		setFormData({});
 	};
 
+	const handleImageClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleImageChange = async (
+		e: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (file.size > 200 * 1024) {
+			setUpdateMessage({
+				type: "error",
+				text: "La imagen no debe superar los 200KB",
+			});
+			setTimeout(() => {
+				setUpdateMessage(null);
+			}, 3000);
+			return;
+		}
+
+		setIsUploading(true);
+		try {
+			const result = await uploadProfileImage(file);
+			if (result?.success) {
+				setUpdateMessage({
+					type: "success",
+					text: "Imagen de perfil actualizada correctamente",
+				});
+				refetch();
+			} else {
+				setUpdateMessage({
+					type: "error",
+					text: result?.error || "Error al actualizar la imagen",
+				});
+			}
+		} catch (error) {
+			setUpdateMessage({
+				type: "error",
+				text: "Error al subir la imagen",
+			});
+		} finally {
+			setIsUploading(false);
+			setTimeout(() => {
+				setUpdateMessage(null);
+			}, 3000);
+		}
+	};
+
+	const getInitials = (name: string) => {
+		return name
+			.split(" ")
+			.map((part) => part[0])
+			.join("")
+			.toUpperCase()
+			.substring(0, 2);
+	};
+
 	return (
 		<div className='bg-white shadow-md rounded-lg overflow-hidden'>
 			<div className='bg-principal-blue text-white p-6 flex justify-between items-center'>
-				<div>
-					<h2 className='text-2xl font-bold'>{userData.name}</h2>
-					<p className='text-blue-100'>
-						{userData.role || "Usuario"}
-					</p>
+				<div className='flex items-center'>
+					<div className='relative mr-4'>
+						{userData.image ? (
+							<div
+								className='relative w-16 h-16 rounded-full overflow-hidden cursor-pointer'
+								onClick={handleImageClick}>
+								<Image
+									src={userData.image}
+									alt={userData.name}
+									fill
+									className='object-cover'
+								/>
+								{isUploading && (
+									<div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+										<div className='animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white'></div>
+									</div>
+								)}
+							</div>
+						) : (
+							<div
+								className='w-16 h-16 rounded-full bg-blue-700 flex items-center justify-center text-white text-xl font-bold'
+								onClick={handleImageClick}>
+								{getInitials(userData.name)}
+								{isUploading && (
+									<div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+										<div className='animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white'></div>
+									</div>
+								)}
+							</div>
+						)}
+						<div className='absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md'>
+							<svg
+								xmlns='http://www.w3.org/2000/svg'
+								width='16'
+								height='16'
+								viewBox='0 0 24 24'
+								fill='none'
+								stroke='currentColor'
+								strokeWidth='2'
+								strokeLinecap='round'
+								strokeLinejoin='round'
+								className='text-principal-blue'>
+								<path d='M12 20h9'></path>
+								<path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'></path>
+							</svg>
+						</div>
+						<input
+							type='file'
+							ref={fileInputRef}
+							className='hidden'
+							accept='image/jpeg,image/png,image/jpg,image/webp'
+							onChange={handleImageChange}
+						/>
+					</div>
+					<div>
+						<h2 className='text-2xl font-bold'>{userData.name}</h2>
+						<p className='text-blue-100'>
+							{userData.role || "Usuario"}
+						</p>
+					</div>
 				</div>
 				{!isEditing && (
 					<button

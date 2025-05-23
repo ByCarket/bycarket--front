@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUserData } from "@/hooks/useUserData";
 import { UpdateUserData } from "@/services/api.service";
-import { Trash } from "lucide-react";
+import { Trash, Edit } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
+import Image from "next/image";
 
 export default function ProfileContent() {
 	const {
@@ -16,6 +17,7 @@ export default function ProfileContent() {
 		updateUser,
 		deleteAccount,
 		refetch,
+		uploadProfileImage,
 	} = useUserData();
 	const [isEditing, setIsEditing] = useState(false);
 	const [formData, setFormData] = useState<UpdateUserData>({});
@@ -24,6 +26,8 @@ export default function ProfileContent() {
 		text: string;
 	} | null>(null);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [isUploading, setIsUploading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	if (loading) {
 		return (
@@ -124,6 +128,62 @@ export default function ProfileContent() {
 		}
 	};
 
+	const handleImageClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (file.size > 200 * 1024) {
+			setUpdateMessage({
+				type: "error",
+				text: "La imagen no debe superar los 200KB",
+			});
+			setTimeout(() => {
+				setUpdateMessage(null);
+			}, 3000);
+			return;
+		}
+
+		setIsUploading(true);
+		try {
+			const result = await uploadProfileImage(file);
+			if (result?.success) {
+				setUpdateMessage({
+					type: "success",
+					text: "Imagen de perfil actualizada correctamente",
+				});
+				refetch();
+			} else {
+				setUpdateMessage({
+					type: "error",
+					text: result?.error || "Error al actualizar la imagen",
+				});
+			}
+		} catch (error) {
+			setUpdateMessage({
+				type: "error",
+				text: "Error al subir la imagen",
+			});
+		} finally {
+			setIsUploading(false);
+			setTimeout(() => {
+				setUpdateMessage(null);
+			}, 3000);
+		}
+	};
+
+	const getInitials = (name: string) => {
+		return name
+			.split(' ')
+			.map(part => part[0])
+			.join('')
+			.toUpperCase()
+			.substring(0, 2);
+	};
+
 	return (
 		<div>
 			<div className='border-b pb-4 mb-6'>
@@ -135,8 +195,49 @@ export default function ProfileContent() {
 			<div className='grid md:grid-cols-3 gap-6'>
 				<div className='md:col-span-1'>
 					<div className='bg-white p-6 rounded-lg border border-gray-200'>
-						<div className='w-24 h-24 mx-auto rounded-full bg-secondary-blue flex items-center justify-center text-white text-3xl font-bold mb-4'>
-							{userData.name ? userData.name.charAt(0) : "U"}
+						<div
+							className='relative mx-auto mb-4'
+						>
+							{userData.image ? (
+								<div
+									className='relative w-24 h-24 mx-auto rounded-full overflow-hidden cursor-pointer'
+									onClick={handleImageClick}
+								>
+									<Image
+										src={userData.image}
+										alt={userData.name}
+										fill
+										className='object-cover'
+									/>
+									{isUploading && (
+										<div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+											<div className='animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white'></div>
+										</div>
+									)}
+								</div>
+							) : (
+								<div
+									className='w-24 h-24 mx-auto rounded-full bg-secondary-blue flex items-center justify-center text-white text-3xl font-bold cursor-pointer'
+									onClick={handleImageClick}
+								>
+									{getInitials(userData.name)}
+									{isUploading && (
+										<div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full'>
+											<div className='animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white'></div>
+										</div>
+									)}
+								</div>
+							)}
+							<div className='absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md'>
+								<Edit className='w-4 h-4 text-principal-blue' />
+							</div>
+							<input
+								type="file"
+								ref={fileInputRef}
+								className="hidden"
+								accept="image/jpeg,image/png,image/gif,image/webp"
+								onChange={handleImageChange}
+							/>
 						</div>
 						<h2 className='text-xl font-bold text-center'>
 							{userData.name}

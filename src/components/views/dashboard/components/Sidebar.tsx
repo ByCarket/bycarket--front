@@ -3,6 +3,7 @@
 import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
 import { useState } from "react";
+import Image from "next/image";
 
 interface SidebarProps {
 	activeTab: string;
@@ -25,12 +26,36 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 		{ id: "vip", label: "VIP", icon: Crown },
 	];
 
+	const getInitials = (name: string) => {
+		return name
+			.split(" ")
+			.map((part) => part[0])
+			.join("")
+			.toUpperCase()
+			.substring(0, 2);
+	};
+
 	return (
 		<aside className='w-64 border-r border-gray-200 bg-white hidden md:block'>
 			<div className='p-6'>
 				<div className='flex items-center gap-3 mb-8'>
-					<div className='w-10 h-10 rounded-full bg-principal-blue flex items-center justify-center text-white font-bold transition-transform duration-300 hover:scale-110'>
-						{userData?.name ? userData.name.charAt(0) : "U"}
+					<div className='w-10 h-10 rounded-full bg-principal-blue flex items-center justify-center text-white font-bold transition-transform duration-300 hover:scale-110 overflow-hidden'>
+						{userData?.image ? (
+							<div className='relative w-full h-full'>
+								<Image
+									src={userData.image}
+									alt={userData.name || "Usuario"}
+									fill
+									className='object-cover'
+								/>
+							</div>
+						) : (
+							<>
+								{userData?.name
+									? getInitials(userData.name)
+									: "U"}
+							</>
+						)}
 					</div>
 					<div>
 						<h2 className='font-semibold'>

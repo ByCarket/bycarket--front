@@ -6,6 +6,8 @@ import {
 	updateUserData,
 	UserData,
 	UpdateUserData,
+	uploadUserProfileImage,
+	deleteUserAccount,
 } from "@/services/api.service";
 import { useAuthStore } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -94,6 +96,28 @@ export const useUserData = () => {
 		}
 	};
 
+	const uploadProfileImage = async (file: File) => {
+		if (!isAuthenticated || !token)
+			return { success: false, error: "No autenticado" };
+
+		try {
+			const response = await uploadUserProfileImage(file);
+			if (!response || !response.data) {
+				throw new Error("Respuesta inválida del servidor");
+			}
+			
+			await fetchUserData();
+			return { success: true };
+		} catch (error: any) {
+			const errorMessage =
+				error.message || "Error al subir la imagen de perfil";
+			return {
+				success: false,
+				error: errorMessage,
+			};
+		}
+	};
+
 	const refetch = () => {
 		if (isAuthenticated && token) {
 			fetchUserData();
@@ -108,7 +132,7 @@ export const useUserData = () => {
 		setError(null);
 
 		try {
-			await deleteAccount();
+			await deleteUserAccount();
 			removeAuthToken();
 			router.push("/login");
 			return { success: true };
@@ -134,5 +158,6 @@ export const useUserData = () => {
 		updateUser,
 		deleteAccount,
 		refetch,
+		uploadProfileImage,
 	};
 };
