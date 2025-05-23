@@ -63,7 +63,7 @@ export default function FeaturedProducts() {
                 {product.price}
               </p>
               <button className="mt-auto bg-principal-blue text-white py-2 px-6 rounded-full hover:bg-opacity-90 transition-colors">
-                Comprar
+                Ver detalles
               </button>
             </div>
           </div>

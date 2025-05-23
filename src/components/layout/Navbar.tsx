@@ -47,7 +47,7 @@ export default function Navbar() {
             { href: "/home", label: "Inicio" },
             { href: "/marketplace", label: "Vehiculos" },
             { href: "/suscription", label: "Premium" },
-            { href: "", label: "Contacto" },
+            { href: "/contact", label: "Contacto" },
           ].map(({ href, label }) => (
             <Link
               key={label}
@@ -141,7 +141,7 @@ export default function Navbar() {
                 { href: "/home", label: "Inicio" },
                 { href: "/marketplace", label: "Vehiculos" },
                 { href: "/suscription", label: "Premium" },
-                { href: "", label: "Contacto" },
+                { href: "/contact", label: "Contacto" },
               ].map(({ href, label }) => (
                 <Link
                   key={label}
