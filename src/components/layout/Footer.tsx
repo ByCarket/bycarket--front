@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container mx-auto px-6 py-16 flex flex-col items-center space-y-8">
         <Link href="/home" className="flex items-center gap-3">
           <Image
-            src="/logoo.png"
+            src="/logoo.webp"
             alt="ByCarket logo"
             width={40}
             height={40}
