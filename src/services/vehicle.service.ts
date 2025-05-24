@@ -28,7 +28,7 @@ export interface VehicleData {
 	price: number;
 	mileage: number;
 	description: string;
-	images?: File[];
+	images: File[];
 }
 
 export interface VehicleResponse {
@@ -43,7 +43,7 @@ export interface VehicleResponse {
 	price: number;
 	mileage: number;
 	description: string;
-	images?: string[];
+	images: { public_id: string; secure_url: string }[];
 	userId: string;
 	createdAt: string;
 }
@@ -103,8 +103,8 @@ export const createVehicle = async (
 		description: vehicleData.description,
 	};
 
-	const response = await http.post<VehicleResponse>("/vehicles", payload);
-	return response.data;
+	const response = await http.post<any>("/vehicles", payload);
+	return response.data.data;
 };
 
 export const getVehicles = async (
@@ -132,8 +132,6 @@ export const getPosts = async (
 	return response.data;
 };
 
-
-
 interface ApiResponse<T> {
 	data: T;
 	message: string;
@@ -152,7 +150,6 @@ export const getVehicleById = async (
 		throw error;
 	}
 };
-
 
 export const deleteVehicle = async (vehicleId: string): Promise<void> => {
 	try {
@@ -177,6 +174,39 @@ export const deletePost = async (postId: string): Promise<void> => {
 	try {
 		await http.delete(`/posts/${postId}`);
 	} catch (error) {
+		throw error;
+	}
+};
+
+export const uploadVehicleImages = async (
+	vehicleId: string,
+	images: File[]
+): Promise<void> => {
+	const formData = new FormData();
+	images.forEach((image) => {
+		formData.append("images", image);
+	});
+
+	try {
+		await http.patch(`/files/vehicle-images/${vehicleId}`, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		});
+	} catch (error) {
+		console.error("Error uploading images:", error);
+		throw error;
+	}
+};
+
+export const deleteVehicleImage = async (
+	vehicleId: string,
+	publicId: string
+): Promise<void> => {
+	try {
+		await http.delete(`/files/${vehicleId}/images/${publicId}`);
+	} catch (error) {
+		console.error("Error deleting image:", error);
 		throw error;
 	}
 };

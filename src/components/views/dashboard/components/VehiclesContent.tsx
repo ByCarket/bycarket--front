@@ -82,7 +82,7 @@ export default function VehiclesContent() {
 	};
 
 	const handleAddVehicle = () => {
-		router.push("/dashboard/register-vehicle");
+		router.push("/dashboard?tab=register-vehicle");
 	};
 
 	const handleEditVehicle = async (vehicle: VehicleResponse) => {

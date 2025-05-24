@@ -9,6 +9,7 @@ import {
 	Model,
 	Version,
 	VehicleData,
+	uploadVehicleImages,
 } from "@/services/vehicle.service";
 
 export const useVehicleForm = () => {
@@ -85,11 +86,24 @@ export const useVehicleForm = () => {
 		setError(null);
 
 		try {
-			await createVehicle(vehicleData);
+			const createdVehicle = await createVehicle(vehicleData);
+
+			if (vehicleData.images && vehicleData.images.length > 0) {
+				try {
+					await uploadVehicleImages(
+						createdVehicle.id,
+						vehicleData.images
+					);
+				} catch (uploadError) {
+					setError("Error al subir las imágenes del vehículo");
+					return;
+				}
+			}
+
 			setSuccess(true);
 			router.push("/dashboard");
-		} catch (err) {
-			setError("Error al registrar el vehículo");
+		} catch (createError) {
+			setError("Error al crear el vehículo");
 		} finally {
 			setLoading(false);
 		}

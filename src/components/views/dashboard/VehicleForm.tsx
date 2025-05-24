@@ -75,11 +75,15 @@ const VehicleForm: React.FC = () => {
 		};
 	}, []);
 
+	const [imageError, setImageError] = useState<string>("");
+
 	const validationSchema = Yup.object({
 		brandId: Yup.string().required("La marca es obligatoria"),
 		modelId: Yup.string().required("El modelo es obligatorio"),
 		versionId: Yup.string().required("La versión es obligatoria"),
-		typeOfVehicle: Yup.string().required("El tipo de vehículo es obligatorio"),
+		typeOfVehicle: Yup.string().required(
+			"El tipo de vehículo es obligatorio"
+		),
 		year: Yup.number()
 			.required("El año es obligatorio")
 			.min(1900, "El año debe ser mayor a 1900")
@@ -99,6 +103,9 @@ const VehicleForm: React.FC = () => {
 			.required("La descripción es obligatoria")
 			.min(10, "La descripción debe tener al menos 10 caracteres")
 			.max(500, "La descripción no puede exceder los 500 caracteres"),
+		images: Yup.array()
+			.min(1, "Debes subir al menos una imagen")
+			.required("Debes subir al menos una imagen"),
 	});
 
 	const formik = useFormik<VehicleData>({
@@ -117,6 +124,10 @@ const VehicleForm: React.FC = () => {
 		},
 		validationSchema,
 		onSubmit: async (values) => {
+			if (values.images.length === 0) {
+				setImageError("Debes subir al menos una imagen");
+				return;
+			}
 			await submitVehicle(values);
 		},
 	});
@@ -124,12 +135,30 @@ const VehicleForm: React.FC = () => {
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
 			const filesArray = Array.from(e.target.files);
-			formik.setFieldValue("images", [
-				...(formik.values.images || []),
-				...filesArray,
-			]);
+			const validFiles = filesArray.filter(
+				(file) => file.size <= 1024 * 1024
+			);
 
-			const newPreviewUrls = filesArray.map((file) =>
+			if (validFiles.length !== filesArray.length) {
+				setImageError(
+					"Algunas imágenes superan 1MB y no fueron incluidas"
+				);
+			}
+
+			const totalImages = [
+				...(formik.values.images || []),
+				...validFiles,
+			];
+
+			if (totalImages.length > 6) {
+				setImageError("Solo puedes subir un máximo de 6 imágenes");
+				return;
+			}
+
+			formik.setFieldValue("images", totalImages);
+			setImageError("");
+
+			const newPreviewUrls = validFiles.map((file) =>
 				URL.createObjectURL(file)
 			);
 			setPreviewImages([...previewImages, ...newPreviewUrls]);
@@ -390,7 +419,8 @@ const VehicleForm: React.FC = () => {
 							<option value='CROSSOVER'>Crossover</option>
 							<option value='COMPACT'>Compacto</option>
 						</select>
-						{formik.touched.typeOfVehicle && formik.errors.typeOfVehicle ? (
+						{formik.touched.typeOfVehicle &&
+						formik.errors.typeOfVehicle ? (
 							<div className='text-red-500 text-xs mt-1'>
 								{formik.errors.typeOfVehicle}
 							</div>
@@ -460,7 +490,8 @@ const VehicleForm: React.FC = () => {
 								<option value='ARS'>ARS</option>
 								<option value='EUR'>EUR</option>
 							</select>
-							{formik.touched.currency && formik.errors.currency ? (
+							{formik.touched.currency &&
+							formik.errors.currency ? (
 								<div className='text-red-500 text-xs mt-1'>
 									{formik.errors.currency}
 								</div>
@@ -536,54 +567,83 @@ const VehicleForm: React.FC = () => {
 
 				<div>
 					<label className='block text-sm font-medium text-gray-700 mb-1'>
-						Imágenes (opcional)
+						Imágenes <span className='text-red-500'>*</span>
 					</label>
-					<div className='mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md'>
-						<div className='space-y-1 text-center'>
-							<Upload className='mx-auto h-12 w-12 text-gray-400' />
-							<div className='flex text-sm text-gray-600'>
-								<label
-									htmlFor='file-upload'
-									className='relative cursor-pointer bg-white rounded-md font-medium text-principal-blue hover:text-secondary-blue'>
-									<span>Subir imágenes</span>
-									<input
-										id='file-upload'
-										name='file-upload'
-										type='file'
-										multiple
-										accept='image/*'
-										className='sr-only'
-										ref={fileInputRef}
-										onChange={handleFileChange}
-									/>
-								</label>
-								<p className='pl-1'>o arrastra y suelta</p>
-							</div>
-							<p className='text-xs text-gray-500'>
-								PNG, JPG, GIF hasta 10MB
-							</p>
-						</div>
+					<div className='grid grid-cols-3 gap-4 mb-4'>
+						{[...Array(6)].map((_, index) => {
+							const hasImage = index < previewImages.length;
+							return (
+								<div
+									key={index}
+									className={`relative border-2 ${
+										hasImage
+											? "border-green-400"
+											: "border-gray-300 border-dashed"
+									} rounded-md aspect-square flex items-center justify-center overflow-hidden ${
+										!hasImage &&
+										"cursor-pointer hover:bg-gray-50"
+									}`}
+									onClick={() =>
+										!hasImage &&
+										fileInputRef.current?.click()
+									}>
+									{hasImage ? (
+										<>
+											<Image
+												src={previewImages[index]}
+												alt={`Imagen ${index + 1}`}
+												className='object-cover w-full h-full'
+												width={150}
+												height={150}
+											/>
+											<button
+												type='button'
+												onClick={(e) => {
+													e.stopPropagation();
+													removeImage(index);
+												}}
+												className='absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors'>
+												<X className='h-4 w-4' />
+											</button>
+										</>
+									) : (
+										<div className='text-center p-4'>
+											<Upload className='mx-auto h-8 w-8 text-gray-400 mb-2' />
+											<p className='text-xs text-gray-500'>
+												{index === 0
+													? "Imagen principal*"
+													: `Imagen ${index + 1}`}
+											</p>
+										</div>
+									)}
+								</div>
+							);
+						})}
 					</div>
 
-					{previewImages.length > 0 && (
-						<div className='mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-							{previewImages.map((src, index) => (
-								<div key={index} className='relative'>
-									<Image
-										src={src}
-										alt={`Preview ${index}`}
-										className='h-24 w-full object-cover rounded-md'
-										width={100}
-										height={100}
-									/>
-									<button
-										type='button'
-										onClick={() => removeImage(index)}
-										className='absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1'>
-										<X className='h-4 w-4' />
-									</button>
-								</div>
-							))}
+					<input
+						id='file-upload'
+						name='file-upload'
+						type='file'
+						multiple
+						accept='image/jpeg,image/png,image/jpg,image/webp'
+						className='sr-only'
+						ref={fileInputRef}
+						onChange={handleFileChange}
+					/>
+
+					<div className='flex justify-between items-center text-xs text-gray-500 mb-2'>
+						<p>Formatos: JPG, JPEG, PNG o WEBP</p>
+						<p>Máximo: 1MB por imagen</p>
+					</div>
+
+					{(imageError ||
+						(formik.touched.images && formik.errors.images)) && (
+						<div className='text-red-500 text-xs mt-1'>
+							{imageError ||
+								(typeof formik.errors.images === "string"
+									? formik.errors.images
+									: "Debes subir al menos una imagen")}
 						</div>
 					)}
 				</div>
