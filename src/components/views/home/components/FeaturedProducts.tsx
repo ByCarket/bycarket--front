@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 const products = [
   {
     id: 1,
-    name: "SUV Familiar",
+    name: "Citroen C3 Picasso",
     model: "Modelo 2015",
     price: "$12.500.000",
     image: "/assets/images/cars/citroen-c3-picasso.webp",
