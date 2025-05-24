@@ -15,7 +15,7 @@ export default function ProductCard({ vehicle }: ProductCardProps) {
       <div className="relative h-44 w-full">
         {vehicle.images?.[0] && (
           <Image
-            src={vehicle.images[0]}
+            src={vehicle.images[0].secure_url}
             alt={`${vehicle.brand.name} ${vehicle.model.name}`}
             fill
             className="object-cover"

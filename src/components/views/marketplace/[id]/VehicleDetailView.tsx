@@ -15,8 +15,7 @@ const VehicleDetailView = () => {
 
 	const post = posts.find((p) => p.vehicle?.id === vehicleId);
 	const vehicle = post?.vehicle;
-	console.log(post);
-
+	
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
 	if (loading) {
@@ -68,8 +67,7 @@ const VehicleDetailView = () => {
 								<Image
 									src={vehicle.images[currentImageIndex].secure_url}
 									alt={`${vehicle.brand?.name} ${vehicle.model?.name}`}
-									layout="fill"
-									objectFit="contain" // <-- aquí
+									fill // reemplaza layout="fill"
 									className="object-contain rounded-xl bg-gray-100"
 								/>
 
