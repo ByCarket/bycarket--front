@@ -7,23 +7,23 @@ const products = [
   {
     id: 1,
     name: "SUV Familiar",
-    model: "Modelo 2023",
-    price: "$45,000",
-    image: "https://placehold.co/400x300/000000/FFFFFF/png",
+    model: "Modelo 2015",
+    price: "$12.500.000",
+    image: "/assets/images/cars/citroen-c3-picasso.webp",
   },
   {
     id: 2,
-    name: "Sedán Ejecutivo",
-    model: "Modelo 2023",
-    price: "$38,500",
-    image: "https://placehold.co/400x300/000000/FFFFFF/png",
+    name: "Ford Ranger",
+    model: "Modelo 2021",
+    price: "$36.000.000",
+    image: "/assets/images/cars/ford-ranger.webp",
   },
   {
     id: 3,
-    name: "Coupé Deportivo",
-    model: "Modelo 2023",
-    price: "$52,900",
-    image: "https://placehold.co/400x300/000000/FFFFFF/png",
+    name: "Peugeot 308",
+    model: "Modelo 2011",
+    price: "US$ 19.900",
+    image: "/assets/images/cars/peugeot-308.webp",
   },
 ];
 
@@ -50,6 +50,7 @@ export default function FeaturedProducts() {
                 alt={product.name}
                 fill
                 className="object-cover"
+                priority={true}
               />
             </div>
             <div className="p-5 flex flex-col flex-grow">
