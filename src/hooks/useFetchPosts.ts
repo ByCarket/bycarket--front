@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { getPosts, GetPostsResponse, PostResponse } from "@/services/vehicle.service";
+import { FilterState } from "./useFilters";
 
-export const useFetchPosts = (initialPage: number = 1, initialLimit: number = 10) => {
+export const useFetchPosts = (
+	initialPage: number = 1,
+	initialLimit: number = 10,
+	filters: FilterState = {}
+) => {
 	const [posts, setPosts] = useState<PostResponse[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -14,7 +19,7 @@ export const useFetchPosts = (initialPage: number = 1, initialLimit: number = 10
 			try {
 				setLoading(true);
 				setError(null);
-				const response = await getPosts(currentPage, initialLimit);
+				const response = await getPosts(currentPage, initialLimit, filters);
 				setPosts(response.data || []);
 				setTotalItems(response.total || 0);
 				setTotalPages(response.totalPages || 1);
@@ -29,7 +34,7 @@ export const useFetchPosts = (initialPage: number = 1, initialLimit: number = 10
 		};
 
 		fetchPostsData();
-	}, [currentPage, initialLimit]);
+	}, [currentPage, initialLimit, filters]);
 
 	const handlePageChange = (page: number) => {
 		if (page >= 1 && page <= totalPages) {

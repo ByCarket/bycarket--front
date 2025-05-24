@@ -124,10 +124,17 @@ export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
 
 export const getPosts = async (
 	page: number = 1,
-	limit: number = 10
+	limit: number = 10,
+	filters: any = {}
 ): Promise<GetPostsResponse> => {
-	const response = await http.get<GetPostsResponse>("/posts/me", {
-		params: { page, limit },
+	const params = { 
+		page, 
+		limit,
+		...filters
+	};
+	
+	const response = await http.get<GetPostsResponse>("/posts", {
+		params
 	});
 	return response.data;
 };
