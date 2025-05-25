@@ -18,6 +18,7 @@ import {
 	getVehicleById
 } from "@/services/vehicle.service";
 import { useRouter } from "next/navigation";
+import { notify } from "@/app/utils/Notifications";
 import {
 	Car as CarIcon,
 	Pencil as PencilIcon,
@@ -54,7 +55,7 @@ export default function VehiclesContent() {
 			const userVehicles = await getUserVehicles();
 			setVehicles(userVehicles);
 		} catch (err: any) {
-			setError("Error al cargar tus vehículos");
+			notify.error("Error", "No se pudieron cargar los vehículos");
 		} finally {
 			setLoading(false);
 		}
@@ -70,7 +71,7 @@ export default function VehiclesContent() {
 			const data = await getBrands();
 			setBrands(data);
 		} catch (err) {
-			setError("Error al cargar las marcas");
+			notify.error("Error", "No se pudieron cargar las marcas");
 		}
 	};
 
@@ -79,7 +80,7 @@ export default function VehiclesContent() {
 			const data = await getModels(brandId);
 			setModels(data);
 		} catch (err) {
-			setError("Error al cargar los modelos");
+			notify.error("Error", "No se pudieron cargar los modelos");
 		}
 	};
 
@@ -88,7 +89,7 @@ export default function VehiclesContent() {
 			const data = await getVersions(modelId);
 			setVersions(data);
 		} catch (err) {
-			setError("Error al cargar las versiones");
+			notify.error("Error", "No se pudieron cargar las versiones");
 		}
 	};
 
@@ -197,44 +198,34 @@ const handleCancelEdit = () => {
 		try {
 			setUpdating(true);
 			setError(null);
+			const loadingId = notify.loading("Guardando cambios...");
 
 			await updateVehicle(vehicleId, formData);
+			notify.dismiss(loadingId);
+			notify.success("Éxito", "Vehículo actualizado correctamente");
 
-			setSuccessMessage("Vehículo actualizado correctamente");
 			setEditingVehicle(null);
-			fetchVehicles();
-
-			setTimeout(() => {
-				setSuccessMessage(null);
-			}, 3000);
+			setFormData({});
+			setEditingImages([]);
+			await fetchVehicles();
 		} catch (err: any) {
-			setError("Error al actualizar el vehículo");
-			setTimeout(() => {
-				setError(null);
-			}, 3000);
+			notify.error("Error", "No se pudo actualizar el vehículo");
 		} finally {
 			setUpdating(false);
 		}
 	};
 
 	const handleDeleteVehicle = async (vehicleId: string) => {
-		if (
-			window.confirm("¿Estás seguro que deseas eliminar este vehículo?")
-		) {
+		if (window.confirm("¿Estás seguro de que deseas eliminar este vehículo?")) {
 			try {
 				setDeleting(vehicleId);
+				const loadingId = notify.loading("Eliminando vehículo...");
 				await deleteVehicle(vehicleId);
-				setSuccessMessage("Vehículo eliminado correctamente");
+				notify.dismiss(loadingId);
+				notify.success("Éxito", "Vehículo eliminado correctamente");
 				setVehicles(vehicles.filter((v) => v.id !== vehicleId));
-
-				setTimeout(() => {
-					setSuccessMessage(null);
-				}, 3000);
-			} catch (err: any) {
-				setError("Error al eliminar el vehículo");
-				setTimeout(() => {
-					setError(null);
-				}, 3000);
+			} catch (err) {
+				notify.error("Error", "No se pudo eliminar el vehículo");
 			} finally {
 				setDeleting(null);
 			}

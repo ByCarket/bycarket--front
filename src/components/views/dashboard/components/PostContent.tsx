@@ -9,6 +9,7 @@ import {
 	deletePost,
 } from "@/services/vehicle.service";
 import { createPost } from "@/services/api.service";
+import { notify } from "@/app/utils/Notifications";
 import { useRouter } from "next/navigation";
 import { Car as CarIcon, Share2, Trash as TrashIcon, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -42,7 +43,7 @@ export default function PublicationsContent() {
 			setVehicles(userVehicles);
 			setPosts(postsResponse.data);
 		} catch (err) {
-			setError("Error al cargar tus datos");
+			notify.error("Error", "No se pudieron cargar las publicaciones");
 		} finally {
 			setLoading(false);
 		}
@@ -55,7 +56,13 @@ export default function PublicationsContent() {
 	const handlePostVehicle = async (vehicleId: string) => {
 		try {
 			setPosting(vehicleId);
+			const loadingId = notify.loading(isRepublishing ? "Republicando vehículo..." : "Publicando vehículo...");
+			
 			await createPost(vehicleId, description);
+			
+			notify.dismiss(loadingId);
+			notify.success("Éxito", isRepublishing ? "¡Vehículo republicado con éxito!" : "¡Vehículo publicado con éxito!");
+
 			setPublishSuccess(true);
 			setSuccessMessage(
 				isRepublishing
@@ -71,6 +78,7 @@ export default function PublicationsContent() {
 				fetchData();
 			}, 2000);
 		} catch (err: any) {
+			notify.error("Error", err.message || "Hubo un error al publicar el vehículo");
 			setError(err.message || "Hubo un error al publicar el vehículo");
 			setTimeout(() => {
 				setError(null);
@@ -107,16 +115,15 @@ export default function PublicationsContent() {
 	};
 
 	const handleDeletePost = async (postId: string) => {
-		if (
-			window.confirm(
-				"¿Estás seguro que deseas eliminar esta publicación?"
-			)
-		) {
+		if (window.confirm("¿Estás seguro que deseas eliminar esta publicación?")) {
 			try {
 				setDeleting(postId);
 				setError(null);
+				const loadingId = notify.loading("Eliminando publicación...");
 
 				await deletePost(postId);
+				notify.dismiss(loadingId);
+				notify.success("Éxito", "Publicación eliminada correctamente");
 
 				setSuccessMessage("Publicación eliminada correctamente");
 				fetchData();
@@ -125,6 +132,7 @@ export default function PublicationsContent() {
 					setSuccessMessage(null);
 				}, 3000);
 			} catch (err: any) {
+				notify.error("Error", err.message || "Hubo un error al eliminar la publicación");
 				setError(
 					err.message || "Hubo un error al eliminar la publicación"
 				);

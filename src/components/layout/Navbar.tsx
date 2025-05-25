@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { FaUser } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { useAuthStore } from "@/context/AuthContext";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import notify from "@/app/utils/Notifications";
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuthStore();
@@ -16,12 +18,21 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     setIsUserAuthenticated(isAuthenticated || status === "authenticated");
   }, [isAuthenticated, status]);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+
+  const handleLogout = () => {
+    logout();
+    notify.success("Sesión cerrada correctamente");
+    setTimeout(() => {
+      router.push("/home");
+    }, 4000);
+  };
 
   return (
     <nav className="relative py-4">
@@ -74,7 +85,7 @@ export default function Navbar() {
                 <span>Perfil</span>
               </Link>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="flex items-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md hover:translate-y-[-2px]"
               >
                 <FiLogOut size={18} />
@@ -167,7 +178,7 @@ export default function Navbar() {
                   </Link>
                   <button
                     onClick={() => {
-                      logout();
+                      handleLogout();
                       toggleMobileMenu();
                     }}
                     className="flex w-full items-center justify-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md"
