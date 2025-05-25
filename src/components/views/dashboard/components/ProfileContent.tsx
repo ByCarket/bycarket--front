@@ -184,19 +184,13 @@ export default function ProfileContent() {
 
   return (
     <div>
-      <div className="border-b pb-4 mb-6">
-        <h1 className="text-2xl font-bold text-principal-blue">
-          Datos Personales
-        </h1>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-1">
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <div className="relative mx-auto mb-4">
+      <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-lg mt-8">
+        <div className="flex flex-col md:flex-row gap-0 md:gap-8">
+          <div className="flex flex-col items-center md:items-start md:w-1/3 p-8 pt-10 bg-gradient-to-b from-gray-50 to-white rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none border-b md:border-b-0 md:border-r border-gray-100">
+            <div className="relative mb-4">
               {userData.image ? (
                 <div
-                  className="relative w-24 h-24 mx-auto rounded-full overflow-hidden cursor-pointer"
+                  className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer"
                   onClick={handleImageClick}
                 >
                   <Image
@@ -213,7 +207,7 @@ export default function ProfileContent() {
                 </div>
               ) : (
                 <div
-                  className="w-24 h-24 mx-auto rounded-full bg-secondary-blue flex items-center justify-center text-white text-3xl font-bold cursor-pointer"
+                  className="w-24 h-24 rounded-full bg-secondary-blue flex items-center justify-center text-white text-3xl font-bold cursor-pointer"
                   onClick={handleImageClick}
                 >
                   {getInitials(userData.name)}
@@ -259,43 +253,23 @@ export default function ProfileContent() {
               <span>Eliminar cuenta</span>
             </button>
           </div>
-        </div>
 
-        <div className="md:col-span-2">
-          {updateMessage && (
-            <div
-              className={`p-3 mb-4 ${
-                updateMessage.type === "success"
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-red-50 text-red-700 border-red-200"
-              } border rounded-md`}
-            >
-              {updateMessage.text}
-            </div>
-          )}
-
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 text-principal-blue">
-              Información de contacto
-            </h3>
+          <div className="flex-1 p-8">
+            {updateMessage && (
+              <div
+                className={`mb-6 p-3 ${
+                  updateMessage.type === "success"
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : "bg-red-50 text-red-700 border-red-200"
+                } border rounded-md`}
+              >
+                {updateMessage.text}
+              </div>
+            )}
 
             {isEditing ? (
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Nombre completo</p>
-                    <p className="font-medium p-2 bg-gray-50 rounded-md">
-                      {userData.name}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Correo electrónico</p>
-                    <p className="font-medium p-2 bg-gray-50 rounded-md">
-                      {userData.email}
-                    </p>
-                  </div>
-
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm text-gray-500 mb-1">
                       Teléfono
@@ -308,7 +282,6 @@ export default function ProfileContent() {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm text-gray-500 mb-1">
                       País
@@ -321,7 +294,6 @@ export default function ProfileContent() {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm text-gray-500 mb-1">
                       Ciudad
@@ -334,7 +306,6 @@ export default function ProfileContent() {
                       className="w-full p-2 border border-gray-300 rounded-md"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm text-gray-500 mb-1">
                       Dirección
@@ -348,12 +319,11 @@ export default function ProfileContent() {
                     />
                   </div>
                 </div>
-
-                <div className="mt-6 flex justify-end space-x-3">
+                <div className="flex justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700"
                   >
                     Cancelar
                   </button>
@@ -367,34 +337,30 @@ export default function ProfileContent() {
                 </div>
               </form>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm text-gray-500">Nombre completo</p>
-                  <p>{userData.name}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500">Correo electrónico</p>
-                  <p>{userData.email}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500">Teléfono</p>
-                  <p>{formatPhoneNumber(userData.phone)}</p>
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-500">Ubicación</p>
-                  <p>
-                    {userData.city && userData.country
-                      ? `${userData.city}, ${userData.country}`
-                      : "No especificada"}
+                  <p className="text-sm text-gray-500 mb-1">Teléfono</p>
+                  <p className="font-medium">
+                    {formatPhoneNumber(userData.phone)}
                   </p>
                 </div>
-
                 <div>
-                  <p className="text-sm text-gray-500">Dirección</p>
-                  <p>{userData.address || "No especificada"}</p>
+                  <p className="text-sm text-gray-500 mb-1">País</p>
+                  <p className="font-medium">
+                    {userData.country || "No especificado"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Ciudad</p>
+                  <p className="font-medium">
+                    {userData.city || "No especificado"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Dirección</p>
+                  <p className="font-medium">
+                    {userData.address || "No especificado"}
+                  </p>
                 </div>
               </div>
             )}
