@@ -13,6 +13,9 @@ import {
 	Model,
 	Version,
 	VehicleData,
+	uploadVehicleImages,
+	deleteVehicleImage,
+	getVehicleById
 } from "@/services/vehicle.service";
 import { useRouter } from "next/navigation";
 import {
@@ -23,7 +26,15 @@ import {
 	Save as SaveIcon,
 } from "lucide-react";
 
+import { useRef } from "react";
+import Image from "next/image";
+
 export default function VehiclesContent() {
+	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	const [editingImages, setEditingImages] = useState<{ public_id: string; secure_url: string }[]>([]);
+	const [imageLoading, setImageLoading] = useState(false);
 	const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -86,6 +97,8 @@ export default function VehiclesContent() {
 	};
 
 	const handleEditVehicle = async (vehicle: VehicleResponse) => {
+	setSelectedImageIndex(0);
+		setEditingImages(vehicle.images || []);
 		setEditingVehicle(vehicle.id);
 		setFormData({
 			brandId: vehicle.brand.id,
@@ -101,7 +114,13 @@ export default function VehiclesContent() {
 		await fetchVersions(vehicle.model.id);
 	};
 
-	const handleCancelEdit = () => {
+	useEffect(() => {
+	if (editingImages.length === 0) setSelectedImageIndex(0);
+	else if (selectedImageIndex >= editingImages.length) setSelectedImageIndex(0);
+}, [editingImages]);
+
+const handleCancelEdit = () => {
+		setEditingImages([]);
 		setEditingVehicle(null);
 		setFormData({});
 	};
@@ -140,6 +159,39 @@ export default function VehiclesContent() {
 			});
 		}
 	};
+
+	const handleDeleteImage = async (publicId: string) => {
+	if (!editingVehicle) return;
+	setImageLoading(true);
+	let removed = false;
+	try {
+		await deleteVehicleImage(editingVehicle, publicId);
+		removed = true;
+	} catch {
+		removed = false;
+	}
+	setEditingImages(prev => prev.filter(img => img.public_id !== publicId));
+	if (selectedImageIndex > 0 && selectedImageIndex >= editingImages.length - 1) setSelectedImageIndex(selectedImageIndex - 1);
+	setImageLoading(false);
+};
+
+	const handleAddImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	if (!editingVehicle || !e.target.files) return;
+	setImageLoading(true);
+	const files = Array.from(e.target.files);
+	try {
+		await uploadVehicleImages(editingVehicle, files);
+		const updated = await getVehicleById(editingVehicle);
+		const merged = [...editingImages];
+		updated.images.forEach(img => {
+			if (!merged.some(i => i.public_id === img.public_id)) merged.push(img);
+		});
+		setEditingImages(merged.slice(0, 5));
+		if (merged.length > 0) setSelectedImageIndex(merged.length - 1);
+	} finally {
+		setImageLoading(false);
+	}
+};
 
 	const handleSaveVehicle = async (vehicleId: string) => {
 		try {
@@ -412,6 +464,96 @@ export default function VehiclesContent() {
 										)}
 									</button>
 								</div>
+								<div className='flex flex-col gap-4 mt-6'>
+    {editingImages.length > 0 && (
+        <div className='flex flex-col md:flex-row gap-6'>
+            <div className='w-full md:w-2/5 flex flex-col items-center'>
+                <div className='w-full rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200' style={{ minHeight: 180, maxHeight: 320 }}>
+                    <Image
+                        src={editingImages[selectedImageIndex]?.secure_url}
+                        alt='Vista previa'
+                        width={480}
+                        height={320}
+                        className='object-contain w-full h-auto max-h-80 rounded-lg transition-all duration-200 shadow-sm'
+                        priority
+                    />
+                </div>
+                <div className='mt-3 flex gap-2 overflow-x-auto scrollbar-thin w-full justify-center'>
+                    {editingImages.map((img, idx) => (
+                        <div
+                            key={img.public_id}
+                            className={`relative border-2 rounded-md cursor-pointer transition-all duration-150 ${selectedImageIndex === idx ? 'border-principal-blue ring-2 ring-principal-blue' : 'border-gray-200'}`}
+                            style={{ minWidth: 64, minHeight: 44 }}
+                            onClick={() => setSelectedImageIndex(idx)}
+                        >
+                            <Image
+                                src={img.secure_url}
+                                alt='Miniatura'
+                                width={64}
+                                height={44}
+                                className='object-cover w-16 h-11 rounded-md'
+                            />
+                            <button
+                                type='button'
+                                disabled={imageLoading}
+                                onClick={e => { e.stopPropagation(); handleDeleteImage(img.public_id); }}
+                                className='absolute -top-2 -right-2 bg-white rounded-full p-1 text-red-500 shadow hover:scale-110 transition-all'
+                                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}
+                            >
+                                <svg width='16' height='16' fill='none' stroke='currentColor' strokeWidth='2' viewBox='0 0 24 24'><path d='M3 6h18'/><path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/><path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/></svg>
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className='flex-1 flex flex-col justify-end items-center md:items-start'>
+                {editingImages.length < 5 && (
+                    <button
+                        type='button'
+                        className='px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors w-max shadow'
+                        disabled={imageLoading}
+                        onClick={() => inputRef.current?.click()}
+                    >
+                        Subir más fotos?
+                    </button>
+                )}
+                <input
+                    ref={inputRef}
+                    type='file'
+                    multiple
+                    accept='image/*'
+                    disabled={imageLoading}
+                    onChange={handleAddImages}
+                    className='hidden'
+                />
+            </div>
+        </div>
+    )}
+    {editingImages.length === 0 && (
+        <div className='flex flex-col items-center gap-2'>
+            <div className='w-24 h-20 bg-gray-100 rounded flex items-center justify-center border border-gray-200'>
+                <span className='text-gray-400 text-xs'>Sin imágenes</span>
+            </div>
+            <button
+                type='button'
+                className='px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors w-max shadow'
+                disabled={imageLoading}
+                onClick={() => inputRef.current?.click()}
+            >
+                Subir fotos
+            </button>
+            <input
+                ref={inputRef}
+                type='file'
+                multiple
+                accept='image/*'
+                disabled={imageLoading}
+                onChange={handleAddImages}
+                className='hidden'
+            />
+        </div>
+    )}
+</div>
 							</div>
 						) : (
 							<div className='flex flex-col md:flex-row md:items-center gap-4'>
