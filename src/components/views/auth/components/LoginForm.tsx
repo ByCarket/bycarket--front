@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
+import notify from "@/app/utils/Notifications";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,20 +42,35 @@ export default function LoginForm() {
         .required("El correo electrónico es obligatorio"),
       password: Yup.string().required("La contraseña es obligatoria"),
     }),
-    onSubmit: async (values) => {
-      const loginData = {
-        email: values.email,
-        password: values.password,
-      };
-      await login(loginData);
+    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+      try {
+        const loginData = {
+          email: values.email,
+          password: values.password,
+        };
 
-      if (rememberMe) {
-        setRememberedEmail(values.email);
-      } else {
-        removeRememberedEmail();
+        await login(loginData);
+
+        if (rememberMe) {
+          setRememberedEmail(values.email);
+        } else {
+          removeRememberedEmail();
+        }
+
+        notify.success("¡Bienvenido!", "Has iniciado sesión correctamente");
+        router.push("/");
+      } catch (error: any) {
+        const errorMessage =
+          error?.response?.data?.message ||
+          "Error al iniciar sesión. Por favor, verifica tus credenciales.";
+        notify.error("Error", errorMessage);
+
+        if (error?.response?.data?.field) {
+          setFieldError(error.response.data.field, error.response.data.message);
+        }
+      } finally {
+        setSubmitting(false);
       }
-
-      router.push("/");
     },
   });
 
