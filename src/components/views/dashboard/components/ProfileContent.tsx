@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useUserData } from "@/hooks/useUserData";
 import { UpdateUserData } from "@/services/api.service";
-import { Trash, Edit } from "lucide-react";
+import { FaTrash, FaEdit, FaPen } from "react-icons/fa";
 import { Modal } from "@/components/ui/Modal";
 import Image from "next/image";
 
@@ -183,187 +183,276 @@ export default function ProfileContent() {
   };
 
   return (
-    <div>
-      <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-lg mt-8">
-        <div className="flex flex-col md:flex-row gap-0 md:gap-8">
-          <div className="flex flex-col items-center md:items-start md:w-1/3 p-8 pt-10 bg-gradient-to-b from-gray-50 to-white rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none border-b md:border-b-0 md:border-r border-gray-100">
-            <div className="relative mb-4">
-              {userData.image ? (
-                <div
-                  className="relative w-24 h-24 rounded-full overflow-hidden cursor-pointer"
+    <div className="w-full">
+      <div className="w-full rounded-2xl mt-8">
+        {updateMessage && (
+          <div
+            className={`mb-6 p-4 ${
+              updateMessage.type === "success"
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-red-50 text-red-700 border-red-200"
+            } border rounded-md`}
+          >
+            {updateMessage.text}
+          </div>
+        )}
+
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-800">Perfil público</h1>
+        </div>
+
+        <div className="flex flex-col p-6">
+          <div className="flex flex-col md:flex-row gap-8">
+            <div className="md:w-1/3">
+              <h2 className="text-lg font-medium text-gray-700 mb-4 text-center">
+                Foto de perfil
+              </h2>
+              <div className="relative flex justify-center mb-6">
+                {userData.image ? (
+                  <div
+                    className="relative w-60 h-60 rounded-full overflow-hidden cursor-pointer border border-gray-200"
+                    onClick={handleImageClick}
+                  >
+                    <Image
+                      src={userData.image}
+                      alt={userData.name}
+                      fill
+                      className="object-cover"
+                    />
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className="relative w-60 h-60 rounded-full bg-secondary-blue flex items-center justify-center text-white text-5xl font-bold cursor-pointer border border-gray-200"
+                    onClick={handleImageClick}
+                  >
+                    {getInitials(userData.name)}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <button
                   onClick={handleImageClick}
+                  className="absolute bottom-2 right-2 bg-gray-800 text-white rounded-md p-2 hover:bg-gray-700 transition-colors"
                 >
-                  <Image
-                    src={userData.image}
-                    alt={userData.name}
-                    fill
-                    className="object-cover"
-                  />
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                  <FaEdit className="w-4 h-4" />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  onChange={handleImageChange}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 mb-6">
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setFormData({
+                      phone: userData.phone,
+                      country: userData.country,
+                      city: userData.city,
+                      address: userData.address,
+                    });
+                  }}
+                  className="px-5 py-3 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors font-medium flex items-center justify-center gap-2 shadow-sm text-base"
+                >
+                  <FaEdit className="w-5 h-5" />
+                  <span>Editar perfil</span>
+                </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="px-5 py-3 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-medium shadow-sm text-base"
+                >
+                  <FaTrash className="w-5 h-5" />
+                  <span>Eliminar cuenta</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              {isEditing ? (
+                <form onSubmit={handleSubmit}>
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        Nombre
+                      </h2>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name || userData.name || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                        disabled
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Tu nombre puede aparecer en tus publicaciones o
+                        anuncios.
+                      </p>
                     </div>
-                  )}
-                </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        Email público
+                      </h2>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email || userData.email || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                        disabled
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Tu email es privado.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        Teléfono
+                      </h2>
+                      <input
+                        type="number"
+                        name="phone"
+                        value={formData.phone || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        País
+                      </h2>
+                      <input
+                        type="text"
+                        name="country"
+                        value={formData.country || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        Ciudad
+                      </h2>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-medium text-gray-700 mb-2">
+                        Dirección
+                      </h2>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-3 border border-gray-300 rounded-md text-base"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="px-5 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700 font-medium text-base"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={updating}
+                        className="px-5 py-3 bg-principal-blue text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-70 font-medium flex items-center gap-2 text-base"
+                      >
+                        {updating ? "Actualizando..." : "Guardar Cambios"}
+                      </button>
+                    </div>
+                  </div>
+                </form>
               ) : (
-                <div
-                  className="w-24 h-24 rounded-full bg-secondary-blue flex items-center justify-center text-white text-3xl font-bold cursor-pointer"
-                  onClick={handleImageClick}
-                >
-                  {getInitials(userData.name)}
-                  {isUploading && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      Nombre
+                    </h2>
+                    <div>
+                      <p className="text-lg">{userData.name}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Tu nombre puede aparecer en tus publicaciones o
+                        anuncios.
+                      </p>
                     </div>
-                  )}
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      Email público
+                    </h2>
+                    <div>
+                      <p className="text-lg">{userData.email}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Tu email es privado.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      Teléfono
+                    </h2>
+                    <p className="text-lg">
+                      {formatPhoneNumber(userData.phone)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      País
+                    </h2>
+                    <p className="text-lg">
+                      {userData.country || "No especificado"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      Ciudad
+                    </h2>
+                    <p className="text-lg">
+                      {userData.city || "No especificado"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-700 mb-2">
+                      Dirección
+                    </h2>
+                    <p className="text-lg">
+                      {userData.address || "No especificado"}
+                    </p>
+                  </div>
                 </div>
               )}
-              <div className="absolute bottom-0 right-0 bg-white rounded-full p-1 shadow-md">
-                <Edit className="w-4 h-4 text-principal-blue" />
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/jpeg,image/png,image/gif,image/webp"
-                onChange={handleImageChange}
-              />
             </div>
-            <h2 className="text-xl font-bold text-center">{userData.name}</h2>
-            <p className="text-gray-500 text-center mb-4">{userData.email}</p>
-            <button
-              onClick={() => {
-                setIsEditing(true);
-                setFormData({
-                  phone: userData.phone,
-                  country: userData.country,
-                  city: userData.city,
-                  address: userData.address,
-                });
-              }}
-              className="w-full py-2 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors mb-2"
-            >
-              Editar perfil
-            </button>
-            <button
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="w-full py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <Trash className="w-4 h-4" />
-              <span>Eliminar cuenta</span>
-            </button>
-          </div>
-
-          <div className="flex-1 p-8">
-            {updateMessage && (
-              <div
-                className={`mb-6 p-3 ${
-                  updateMessage.type === "success"
-                    ? "bg-green-50 text-green-700 border-green-200"
-                    : "bg-red-50 text-red-700 border-red-200"
-                } border rounded-md`}
-              >
-                {updateMessage.text}
-              </div>
-            )}
-
-            {isEditing ? (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">
-                      Teléfono
-                    </label>
-                    <input
-                      type="number"
-                      name="phone"
-                      value={formData.phone || ""}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">
-                      País
-                    </label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={formData.country || ""}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">
-                      Ciudad
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city || ""}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-500 mb-1">
-                      Dirección
-                    </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address || ""}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={updating}
-                    className="px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-70"
-                  >
-                    {updating ? "Actualizando..." : "Guardar Cambios"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Teléfono</p>
-                  <p className="font-medium">
-                    {formatPhoneNumber(userData.phone)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">País</p>
-                  <p className="font-medium">
-                    {userData.country || "No especificado"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Ciudad</p>
-                  <p className="font-medium">
-                    {userData.city || "No especificado"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Dirección</p>
-                  <p className="font-medium">
-                    {userData.address || "No especificado"}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -388,7 +477,7 @@ export default function ProfileContent() {
             <button
               onClick={handleDeleteAccount}
               disabled={deleting}
-              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {deleting ? (
                 <>
@@ -397,7 +486,7 @@ export default function ProfileContent() {
                 </>
               ) : (
                 <>
-                  <Trash className="w-4 h-4" />
+                  <FaTrash className="w-4 h-4" />
                   <span>Eliminar</span>
                 </>
               )}
