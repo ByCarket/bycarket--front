@@ -127,11 +127,22 @@ export const getPosts = async (
 	limit: number = 10,
 	filters: any = {}
 ): Promise<GetPostsResponse> => {
-	const params = { 
+	const params: Record<string, any> = { 
 		page, 
-		limit,
-		...filters
+		limit
 	};
+	
+	Object.entries(filters).forEach(([key, value]) => {
+		if (value !== undefined && value !== null && value !== '') {
+			params[key] = value;
+		}
+	});
+	
+	Object.keys(params).forEach(key => {
+		if (Array.isArray(params[key])) {
+			params[key] = params[key].join(',');
+		}
+	});
 	
 	const response = await http.get<GetPostsResponse>("/posts", {
 		params

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { VehicleTypeEnum } from "@/enums/vehicleType.enum";
 import { VehicleCondition } from "@/enums/vehicleCondition.enum";
 import { CurrencyEnum } from "@/enums/currency.enum";
@@ -26,7 +26,7 @@ export interface FilterState {
 export const useFilters = (initialFilters: FilterState = {}) => {
 	const [filters, setFilters] = useState<FilterState>(initialFilters);
 
-	const updateFilter = (key: keyof FilterState, value: any) => {
+	const updateFilter = useCallback((key: keyof FilterState, value: any) => {
 		if (value === undefined || value === "") {
 			const newFilters = { ...filters };
 			delete newFilters[key];
@@ -34,13 +34,13 @@ export const useFilters = (initialFilters: FilterState = {}) => {
 		} else {
 			setFilters((prev) => ({ ...prev, [key]: value }));
 		}
-	};
+	}, [filters]);
 
-	const resetFilters = () => {
+	const resetFilters = useCallback(() => {
 		setFilters({});
-	};
+	}, []);
 
-	const setPriceRange = (range: string) => {
+	const setPriceRange = useCallback((range: string) => {
 		const newFilters = { ...filters };
 
 		switch (range) {
@@ -62,7 +62,7 @@ export const useFilters = (initialFilters: FilterState = {}) => {
 				break;
 			case "> $25M":
 				newFilters.minPrice = 25000000;
-				delete newFilters.maxPrice;
+				newFilters.maxPrice = Number.MAX_SAFE_INTEGER;
 				break;
 			default:
 				delete newFilters.minPrice;
@@ -70,31 +70,32 @@ export const useFilters = (initialFilters: FilterState = {}) => {
 		}
 
 		setFilters(newFilters);
-	};
+	}, [filters]);
 
-	const setYearRange = (range: string) => {
+	const setYearRange = useCallback((range: string) => {
 		const currentYear = new Date().getFullYear();
 		const newFilters = { ...filters };
 
 		switch (range) {
-			case "23-24":
-				newFilters.minYear = 2023;
+			case "2020 - Actual":
+				newFilters.minYear = 2020;
 				newFilters.maxYear = currentYear;
 				break;
-			case "20-22":
-				newFilters.minYear = 2020;
-				newFilters.maxYear = 2022;
-				break;
-			case "15-19":
+			case "2015 - 2019":
 				newFilters.minYear = 2015;
 				newFilters.maxYear = 2019;
 				break;
-			case "10-14":
+			case "2010 - 2014":
 				newFilters.minYear = 2010;
 				newFilters.maxYear = 2014;
 				break;
-			case "<10":
+			case "2000 - 2009":
+				newFilters.minYear = 2000;
 				newFilters.maxYear = 2009;
+				break;
+			case "< 2000":
+				newFilters.minYear = 1950;
+				newFilters.maxYear = 1999;
 				break;
 			default:
 				delete newFilters.minYear;
@@ -102,13 +103,18 @@ export const useFilters = (initialFilters: FilterState = {}) => {
 		}
 
 		setFilters(newFilters);
-	};
+	}, [filters]);
 
+	const setMultipleFilters = useCallback((newFilters: FilterState) => {
+		setFilters(prev => ({ ...prev, ...newFilters }));
+	}, []);
+	
 	return {
 		filters,
 		updateFilter,
 		resetFilters,
 		setPriceRange,
 		setYearRange,
+		setMultipleFilters,
 	};
 };
