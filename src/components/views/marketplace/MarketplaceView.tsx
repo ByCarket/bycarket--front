@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import ProductCard from "./components/ProductCard";
 import Pagination from "./components/pagination";
@@ -9,25 +9,95 @@ import SearchBar from "@/components/ui/SearchBar";
 import { FilterState } from "@/hooks/useFilters";
 import { OrderByPostsEnum } from "@/enums/orderByPosts.enum";
 import { OrderDirectionEnum } from "@/enums/order.enum";
+import { VehicleTypeEnum } from "@/enums/vehicleType.enum";
+import { useSearchParams } from "next/navigation";
 
 export default function MarketplaceView() {
-  const [filters, setFilters] = useState<FilterState>({});
+  const searchParams = useSearchParams();
+  const [initialFilters, setInitialFilters] = useState<FilterState>({});
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const { posts, loading, error, currentPage, totalPages, handlePageChange } =
-    useFetchPosts(1, 10, filters);
+  
+  const { 
+    posts, 
+    loading, 
+    error, 
+    currentPage, 
+    totalPages, 
+    handlePageChange,
+    setFilters,
+    currentFilters 
+  } = useFetchPosts(1, 10, initialFilters);
 
   const handleFilterChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
+    const validFilters: FilterState = {};
+    
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        validFilters[key as keyof FilterState] = value;
+      }
+    });
+    
+    setFilters(validFilters);
     setIsMobileFilterOpen(false);
   };
 
   const handleSearch = (query: string) => {
-    setFilters((prev) => ({ ...prev, search: query || undefined }));
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      setFilters({ ...currentFilters, search: trimmedQuery });
+    } else {
+      const newFilters = { ...currentFilters };
+      delete newFilters.search;
+      setFilters(newFilters);
+    }
   };
 
   const handleSort = (orderBy: OrderByPostsEnum, order: OrderDirectionEnum) => {
-    setFilters((prev) => ({ ...prev, orderBy, order }));
+    if (orderBy && order) {
+      setFilters({ ...currentFilters, orderBy, order });
+    }
   };
+  
+  useEffect(() => {
+    const initialFiltersFromUrl: FilterState = {};
+    
+    const search = searchParams.get('search');
+    if (search) initialFiltersFromUrl.search = search;
+    
+    const orderBy = searchParams.get('orderBy');
+    if (orderBy) initialFiltersFromUrl.orderBy = orderBy as OrderByPostsEnum;
+    
+    const order = searchParams.get('order');
+    if (order) initialFiltersFromUrl.order = order as OrderDirectionEnum;
+    
+    const brandId = searchParams.get('brandId');
+    if (brandId) initialFiltersFromUrl.brandId = brandId;
+    
+    const typeOfVehicle = searchParams.get('typeOfVehicle');
+    if (typeOfVehicle) initialFiltersFromUrl.typeOfVehicle = typeOfVehicle as VehicleTypeEnum;
+    
+    const minPrice = searchParams.get('minPrice');
+    if (minPrice) initialFiltersFromUrl.minPrice = Number(minPrice);
+    
+    const maxPrice = searchParams.get('maxPrice');
+    if (maxPrice) initialFiltersFromUrl.maxPrice = Number(maxPrice);
+    
+    const minYear = searchParams.get('minYear');
+    if (minYear) initialFiltersFromUrl.minYear = Number(minYear);
+    
+    const maxYear = searchParams.get('maxYear');
+    if (maxYear) initialFiltersFromUrl.maxYear = Number(maxYear);
+    
+    const minMileage = searchParams.get('minMileage');
+    if (minMileage) initialFiltersFromUrl.minMileage = Number(minMileage);
+    
+    const maxMileage = searchParams.get('maxMileage');
+    if (maxMileage) initialFiltersFromUrl.maxMileage = Number(maxMileage);
+    
+    if (Object.keys(initialFiltersFromUrl).length > 0) {
+      setInitialFilters(initialFiltersFromUrl);
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -44,16 +114,16 @@ export default function MarketplaceView() {
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <Sidebar filters={filters} onFilterChange={handleFilterChange} />
+          <Sidebar filters={currentFilters} onFilterChange={handleFilterChange} />
         </div>
       )}
       <div className="hidden md:block">
-        <Sidebar filters={filters} onFilterChange={handleFilterChange} />
+        <Sidebar filters={currentFilters} onFilterChange={handleFilterChange} />
       </div>
 
       <main className="flex-1 p-4 md:p-6">
         <div className="mb-6">
-          <SearchBar onSearch={handleSearch} initialQuery={filters.search} />
+          <SearchBar onSearch={handleSearch} initialQuery={currentFilters.search} />
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -93,9 +163,9 @@ export default function MarketplaceView() {
                     order as OrderDirectionEnum
                   );
                 }}
-                defaultValue={`${
-                  filters.orderBy || OrderByPostsEnum.POST_DATE
-                }:${filters.order || OrderDirectionEnum.DESC}`}
+                value={`${
+                  currentFilters.orderBy || OrderByPostsEnum.POST_DATE
+                }:${currentFilters.order || OrderDirectionEnum.DESC}`}
               >
                 <option
                   value={`${OrderByPostsEnum.POST_DATE}:${OrderDirectionEnum.DESC}`}

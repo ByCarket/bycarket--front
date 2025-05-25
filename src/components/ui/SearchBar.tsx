@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SearchBarProps {
 	onSearch: (query: string) => void;
@@ -10,6 +10,10 @@ interface SearchBarProps {
 const SearchBar = ({ onSearch, initialQuery = "" }: SearchBarProps) => {
 	const [searchQuery, setSearchQuery] = useState(initialQuery);
 	const [focused, setFocused] = useState(false);
+	
+	useEffect(() => {
+		setSearchQuery(initialQuery || "");
+	}, [initialQuery]);
 
 	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
