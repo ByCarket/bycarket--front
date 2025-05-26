@@ -55,7 +55,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 rounded-full bg-[#0d2e55] text-white hover:bg-[#103663] transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 rounded-full bg-[#0d2e55] text-white hover:bg-principal-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +80,7 @@ export default function Pagination({
             className={`px-3 py-1 rounded-full text-sm font-medium transition ${
               currentPage === page
                 ? "bg-[#facc15] text-[#0d2e55]"
-                : "bg-[#0d2e55] text-white hover:bg-[#103663]"
+                : "bg-[#0d2e55] text-white hover:bg-principal-blue"
             }`}
           >
             {page}
@@ -95,7 +95,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-full bg-[#0d2e55] text-white hover:bg-[#103663] transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="p-2 rounded-full bg-[#0d2e55] text-white hover:bg-principal-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
