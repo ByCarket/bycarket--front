@@ -208,17 +208,26 @@ export default function ProfileContent() {
                 Foto de perfil
               </h2>
               <div className="relative flex justify-center mb-6">
-                {userData.image ? (
+                {userData?.image &&
+                typeof userData.image === "string" &&
+                userData.image.trim() !== "" ? (
                   <div
                     className="relative w-60 h-60 rounded-full overflow-hidden cursor-pointer border border-gray-200"
                     onClick={handleImageClick}
                   >
-                    <Image
-                      src={userData.image}
-                      alt={userData.name}
-                      fill
-                      className="object-cover"
-                    />
+                    {userData.image && (
+                      <Image
+                        src={userData.image}
+                        alt={userData.name || "Usuario"}
+                        fill
+                        className="object-cover"
+                        priority
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                        }}
+                      />
+                    )}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
@@ -230,7 +239,7 @@ export default function ProfileContent() {
                     className="relative w-60 h-60 rounded-full bg-secondary-blue flex items-center justify-center text-white text-5xl font-bold cursor-pointer border border-gray-200"
                     onClick={handleImageClick}
                   >
-                    {getInitials(userData.name)}
+                    {userData?.name ? getInitials(userData.name) : "U"}
                     {isUploading && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
