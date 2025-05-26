@@ -105,7 +105,7 @@ export interface UserData {
 	city?: string;
 	address?: string;
 	role?: string;
-	image?: string;
+	image?: string | { secure_url: string };
 	posts?: {
 		id: string;
 		postDate: string;

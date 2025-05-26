@@ -176,7 +176,7 @@ export default function UserData() {
 								className='relative w-16 h-16 rounded-full overflow-hidden cursor-pointer'
 								onClick={handleImageClick}>
 								<Image
-									src={userData.image}
+									src={typeof userData.image === 'object' && userData.image !== null ? userData.image.secure_url : (userData.image || '')}
 									alt={userData.name}
 									fill
 									className='object-cover'
