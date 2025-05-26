@@ -40,15 +40,23 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       <div className="p-6">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-full bg-principal-blue flex items-center justify-center text-white font-bold transition-transform duration-300 hover:scale-110 overflow-hidden">
-            {userData?.image ? (
+            {userData?.image &&
+            typeof userData.image === "string" &&
+            userData.image.trim() !== "" ? (
               <div className="relative w-full h-full">
-                <Image
-                  src={userData.image}
-                  alt={userData.name || "Usuario"}
-                  fill
-                  className="object-cover"
-                  priority
-                />
+                {userData.image && (
+                  <Image
+                    src={userData.image}
+                    alt={userData.name || "Usuario"}
+                    fill
+                    className="object-cover"
+                    priority
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = "none";
+                    }}
+                  />
+                )}
               </div>
             ) : (
               <span className="w-full h-full flex items-center justify-center">
