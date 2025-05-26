@@ -542,7 +542,7 @@ export default function Sidebar({ filters, onFilterChange }: SidebarProps) {
       <div className="p-4 md:hidden">
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center justify-center w-full bg-[#facc15] text-[#103663] py-2 rounded-md font-semibold shadow-sm transition"
+          className="flex items-center justify-center w-full bg-[#facc15] text-principal-blue py-2 rounded-md font-semibold shadow-sm transition"
         >
           Filtros
         </button>
@@ -555,7 +555,7 @@ export default function Sidebar({ filters, onFilterChange }: SidebarProps) {
             onClick={() => setOpen(false)}
           />
 
-          <aside className="relative w-80 bg-[#103663] text-white p-5 space-y-5 overflow-y-auto max-h-screen">
+          <aside className="relative w-80 bg-principal-blue text-white p-5 space-y-5 overflow-y-auto max-h-screen">
             <button
               onClick={() => setOpen(false)}
               className="absolute top-4 right-4 text-white p-1 rounded-full hover:bg-white/10"
@@ -587,7 +587,7 @@ export default function Sidebar({ filters, onFilterChange }: SidebarProps) {
             <div className="flex flex-col space-y-3 pt-2 border-t border-white/10">
               <button
                 onClick={applyFilters}
-                className="w-full bg-[#facc15] text-[#103663] hover:brightness-95 py-2 rounded-md font-semibold shadow-sm transition text-sm flex items-center justify-center"
+                className="w-full bg-[#facc15] text-principal-blue hover:brightness-95 py-2 rounded-md font-semibold shadow-sm transition text-sm flex items-center justify-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -630,7 +630,7 @@ export default function Sidebar({ filters, onFilterChange }: SidebarProps) {
         </div>
       )}
 
-      <aside className="hidden md:block w-full md:w-64 bg-[#103663] text-white p-5 space-y-5 rounded-lg">
+      <aside className="hidden md:block w-full md:w-64 bg-principal-blue text-white p-5 space-y-5 rounded-lg">
         <div className="border-b border-white/10 pb-3">
           <h2 className="text-lg font-bold text-white">Filtros</h2>
           <p className="text-xs text-white/70 mt-1">Personaliza tu búsqueda</p>
@@ -641,7 +641,7 @@ export default function Sidebar({ filters, onFilterChange }: SidebarProps) {
         <div className="flex flex-col space-y-3 pt-2 border-t border-white/10">
           <button
             onClick={applyFilters}
-            className="w-full bg-[#facc15] text-[#103663] hover:brightness-95 py-2 rounded-md font-semibold shadow-sm transition text-sm flex items-center justify-center"
+            className="w-full bg-[#facc15] text-principal-blue hover:brightness-95 py-2 rounded-md font-semibold shadow-sm transition text-sm flex items-center justify-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -708,7 +708,9 @@ function FilterSection({
     <div>
       <h3 className="text-base font-semibold text-white mb-3 flex items-center">
         {title}
-        <span className="ml-auto text-xs text-white/50 bg-white/5 px-2 py-0.5 rounded-full">{options.length}</span>
+        <span className="ml-auto text-xs text-white/50 bg-white/5 px-2 py-0.5 rounded-full">
+          {options.length}
+        </span>
       </h3>
       <div className="space-y-3">
         {options.map((option, index) => {

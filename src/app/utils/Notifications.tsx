@@ -15,11 +15,11 @@ export const NotificationsProvider = () => {
           fontFamily: "var(--font-be-vietnam)",
         },
         classNames: {
-          success: "bg-[#f0f7ff] border-[#4a77a8] text-[#103663]",
+          success: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
           error: "bg-[#fff0f0] border-[#ff4a4a] text-[#631010]",
           warning: "bg-[#fffbf0] border-[#ffc14a] text-[#634310]",
-          info: "bg-[#f0f7ff] border-[#4a77a8] text-[#103663]",
-          loading: "bg-[#f0f7ff] border-[#4a77a8] text-[#103663]",
+          info: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
+          loading: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
         },
       }}
       closeButton
