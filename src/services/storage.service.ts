@@ -26,3 +26,24 @@ export const getRememberedEmail = () => {
 export const removeRememberedEmail = () => {
 	Cookies.remove(REMEMBER_ME_EMAIL_KEY);
 };
+
+const SESSION_ID_KEY = "stripe_session_id";
+
+export const setSessionId = (sessionId: string) => {
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem(SESSION_ID_KEY, sessionId);
+  }
+};
+
+export const getSessionId = (): string | null => {
+  if (typeof window !== "undefined") {
+    return sessionStorage.getItem(SESSION_ID_KEY);
+  }
+  return null;
+};
+
+export const clearSessionId = () => {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem(SESSION_ID_KEY);
+  }
+};

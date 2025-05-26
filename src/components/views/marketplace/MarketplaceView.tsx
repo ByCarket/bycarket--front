@@ -16,27 +16,27 @@ export default function MarketplaceView() {
   const searchParams = useSearchParams();
   const [initialFilters, setInitialFilters] = useState<FilterState>({});
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  
-  const { 
-    posts, 
-    loading, 
-    error, 
-    currentPage, 
-    totalPages, 
+
+  const {
+    posts,
+    loading,
+    error,
+    currentPage,
+    totalPages,
     handlePageChange,
     setFilters,
-    currentFilters 
+    currentFilters,
   } = useFetchPosts(1, 10, initialFilters);
 
   const handleFilterChange = (newFilters: FilterState) => {
     const validFilters: FilterState = {};
-    
+
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
+      if (value !== undefined && value !== null && value !== "") {
         validFilters[key as keyof FilterState] = value;
       }
     });
-    
+
     setFilters(validFilters);
     setIsMobileFilterOpen(false);
   };
@@ -57,43 +57,44 @@ export default function MarketplaceView() {
       setFilters({ ...currentFilters, orderBy, order });
     }
   };
-  
+
   useEffect(() => {
     const initialFiltersFromUrl: FilterState = {};
-    
-    const search = searchParams.get('search');
+
+    const search = searchParams.get("search");
     if (search) initialFiltersFromUrl.search = search;
-    
-    const orderBy = searchParams.get('orderBy');
+
+    const orderBy = searchParams.get("orderBy");
     if (orderBy) initialFiltersFromUrl.orderBy = orderBy as OrderByPostsEnum;
-    
-    const order = searchParams.get('order');
+
+    const order = searchParams.get("order");
     if (order) initialFiltersFromUrl.order = order as OrderDirectionEnum;
-    
-    const brandId = searchParams.get('brandId');
+
+    const brandId = searchParams.get("brandId");
     if (brandId) initialFiltersFromUrl.brandId = brandId;
-    
-    const typeOfVehicle = searchParams.get('typeOfVehicle');
-    if (typeOfVehicle) initialFiltersFromUrl.typeOfVehicle = typeOfVehicle as VehicleTypeEnum;
-    
-    const minPrice = searchParams.get('minPrice');
+
+    const typeOfVehicle = searchParams.get("typeOfVehicle");
+    if (typeOfVehicle)
+      initialFiltersFromUrl.typeOfVehicle = typeOfVehicle as VehicleTypeEnum;
+
+    const minPrice = searchParams.get("minPrice");
     if (minPrice) initialFiltersFromUrl.minPrice = Number(minPrice);
-    
-    const maxPrice = searchParams.get('maxPrice');
+
+    const maxPrice = searchParams.get("maxPrice");
     if (maxPrice) initialFiltersFromUrl.maxPrice = Number(maxPrice);
-    
-    const minYear = searchParams.get('minYear');
+
+    const minYear = searchParams.get("minYear");
     if (minYear) initialFiltersFromUrl.minYear = Number(minYear);
-    
-    const maxYear = searchParams.get('maxYear');
+
+    const maxYear = searchParams.get("maxYear");
     if (maxYear) initialFiltersFromUrl.maxYear = Number(maxYear);
-    
-    const minMileage = searchParams.get('minMileage');
+
+    const minMileage = searchParams.get("minMileage");
     if (minMileage) initialFiltersFromUrl.minMileage = Number(minMileage);
-    
-    const maxMileage = searchParams.get('maxMileage');
+
+    const maxMileage = searchParams.get("maxMileage");
     if (maxMileage) initialFiltersFromUrl.maxMileage = Number(maxMileage);
-    
+
     if (Object.keys(initialFiltersFromUrl).length > 0) {
       setInitialFilters(initialFiltersFromUrl);
     }
@@ -103,8 +104,10 @@ export default function MarketplaceView() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#103663]"></div>
-          <p className="text-[#103663] font-medium">Cargando vehículos...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-principal-blue"></div>
+          <p className="text-principal-blue font-medium">
+            Cargando vehículos...
+          </p>
         </div>
       </div>
     );
@@ -114,7 +117,10 @@ export default function MarketplaceView() {
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <Sidebar filters={currentFilters} onFilterChange={handleFilterChange} />
+          <Sidebar
+            filters={currentFilters}
+            onFilterChange={handleFilterChange}
+          />
         </div>
       )}
       <div className="hidden md:block">
@@ -123,12 +129,15 @@ export default function MarketplaceView() {
 
       <main className="flex-1 p-4 md:p-6">
         <div className="mb-6">
-          <SearchBar onSearch={handleSearch} initialQuery={currentFilters.search} />
+          <SearchBar
+            onSearch={handleSearch}
+            initialQuery={currentFilters.search}
+          />
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[#103663]">
+            <h1 className="text-2xl font-bold text-principal-blue">
               Catálogo de vehículos
             </h1>
             <p className="text-gray-500 text-sm mt-1">
@@ -141,7 +150,7 @@ export default function MarketplaceView() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="md:hidden flex items-center justify-center bg-[#facc15] text-[#103663] py-2 px-4 rounded-md font-semibold shadow-sm transition text-sm"
+              className="md:hidden flex items-center justify-center bg-[#facc15] text-principal-blue py-2 px-4 rounded-md font-semibold shadow-sm transition text-sm"
             >
               Filtros
             </button>
@@ -210,7 +219,7 @@ export default function MarketplaceView() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-2xl shadow-sm border border-gray-100 mt-4">
-            <div className="w-20 h-20 mb-6 bg-[#103663] rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 mb-6 bg-principal-blue rounded-full flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="32"
@@ -228,7 +237,7 @@ export default function MarketplaceView() {
                 <circle cx="17" cy="17" r="2" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-[#103663] mb-2">
+            <h2 className="text-xl font-bold text-principal-blue mb-2">
               No hay vehículos disponibles
             </h2>
             <p className="text-gray-500 max-w-md">
