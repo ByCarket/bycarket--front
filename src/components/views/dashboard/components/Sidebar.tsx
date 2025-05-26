@@ -2,7 +2,7 @@
 
 import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -11,8 +11,23 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
-  const { userData } = useUserData();
+  const { userData, refetch } = useUserData();
   const [isHovered, setIsHovered] = useState<string | null>(null);
+  const [imageKey, setImageKey] = useState<number>(0);
+
+  useEffect(() => {
+    if (userData?.image) {
+      setImageKey((prevKey) => prevKey + 1);
+    }
+  }, [userData?.image]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const menuItems = [
     { id: "profile", label: "Datos Personales", icon: User },
@@ -44,19 +59,18 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             typeof userData.image === "string" &&
             userData.image.trim() !== "" ? (
               <div className="relative w-full h-full">
-                {userData.image && (
-                  <Image
-                    src={userData.image}
-                    alt={userData.name || "Usuario"}
-                    fill
-                    className="object-cover"
-                    priority
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
-                    }}
-                  />
-                )}
+                <Image
+                  key={`profile-image-${imageKey}`}
+                  src={`${userData.image}?t=${Date.now()}`}
+                  alt={userData.name || "Usuario"}
+                  fill
+                  className="object-cover"
+                  priority
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
+                />
               </div>
             ) : (
               <span className="w-full h-full flex items-center justify-center">
