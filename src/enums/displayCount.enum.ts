@@ -1,0 +1,6 @@
+export enum DisplayCountEnum {
+	INITIAL_VEHICLE_TYPES = 5,
+	INITIAL_BRANDS = 5,
+	INITIAL_PRICE_RANGES = 3,
+	INITIAL_YEAR_RANGES = 3,
+}
