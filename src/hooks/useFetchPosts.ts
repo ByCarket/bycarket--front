@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { getPosts, GetPostsResponse, PostResponse } from "@/services/vehicle.service";
-import { FilterState } from "./useFilters";
+import {
+  getPosts,
+  GetPostsResponse,
+  PostResponse,
+} from "@/services/vehicle.service";
+import { FilterState } from "./useVehicleFilters";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export const useFetchPosts = (
@@ -24,11 +28,11 @@ export const useFetchPosts = (
   const updateUrlParams = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
 
-    params.set('page', currentPage.toString());
-    params.set('limit', initialLimit.toString());
+    params.set("page", currentPage.toString());
+    params.set("limit", initialLimit.toString());
 
     Object.entries(currentFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
+      if (value !== undefined && value !== null && value !== "") {
         if (Array.isArray(value)) {
           params.delete(key);
           value.forEach((val) => params.append(key, val.toString()));
@@ -41,7 +45,14 @@ export const useFetchPosts = (
     });
 
     router.replace(`${pathname}?${params.toString()}`);
-  }, [pathname, router, searchParams, currentPage, initialLimit, currentFilters]);
+  }, [
+    pathname,
+    router,
+    searchParams,
+    currentPage,
+    initialLimit,
+    currentFilters,
+  ]);
 
   const fetchPostsData = useCallback(async () => {
     try {
@@ -50,11 +61,15 @@ export const useFetchPosts = (
 
       const normalizedFilters = { ...currentFilters };
 
-      if (normalizedFilters.search === '') {
+      if (normalizedFilters.search === "") {
         delete normalizedFilters.search;
       }
 
-      const response = await getPosts(currentPage, initialLimit, normalizedFilters);
+      const response = await getPosts(
+        currentPage,
+        initialLimit,
+        normalizedFilters
+      );
       setPosts(response.data || []);
       setTotalItems(response.total || 0);
       setTotalPages(response.totalPages || 1);
@@ -83,7 +98,10 @@ export const useFetchPosts = (
   }, []);
 
   useEffect(() => {
-    if (Object.keys(filters).length > 0 || Object.keys(currentFilters).length > 0) {
+    if (
+      Object.keys(filters).length > 0 ||
+      Object.keys(currentFilters).length > 0
+    ) {
       setCurrentFilters(filters);
       setCurrentPage(1);
     }
@@ -91,7 +109,7 @@ export const useFetchPosts = (
 
   useEffect(() => {
     if (isInitialLoad) {
-      const page = searchParams.get('page');
+      const page = searchParams.get("page");
       if (page && !isNaN(Number(page))) {
         setCurrentPage(Number(page));
       }
@@ -107,7 +125,7 @@ export const useFetchPosts = (
   const setFilters = (newFilters: FilterState) => {
     const cleanFilters: FilterState = {};
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
+      if (value !== undefined && value !== null && value !== "") {
         cleanFilters[key as keyof FilterState] = value;
       }
     });
@@ -125,6 +143,6 @@ export const useFetchPosts = (
     totalItems,
     handlePageChange,
     setFilters,
-    currentFilters
+    currentFilters,
   };
 };

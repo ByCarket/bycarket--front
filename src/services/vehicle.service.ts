@@ -64,8 +64,11 @@ export interface PostResponse {
 
 export interface GetPostsResponse {
   data: PostResponse[];
+  vehicles?: PostResponse[];
   total: number;
+  totalItems?: number;
   page: number;
+  currentPage?: number;
   limit: number;
   totalPages: number;
 }
@@ -144,7 +147,7 @@ export const getPosts = async (
     }
   });
 
-  const response = await http.get<GetPostsResponse>("/posts/me", {
+  const response = await http.get<GetPostsResponse>("/posts", {
     params,
   });
   return response.data;
