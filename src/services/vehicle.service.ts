@@ -79,15 +79,29 @@ export const getBrands = async (): Promise<Brand[]> => {
 };
 
 export const getModels = async (brandId?: string): Promise<Model[]> => {
-  const url = brandId ? `/models?brandId=${brandId}` : "/models";
+  const url = brandId ? `/brands/${brandId}/models` : "/models";
   const response = await http.get<Model[]>(url);
   return response.data;
 };
 
+export const getModelsByBrand = async (brandId: string): Promise<Model[]> => {
+  const response = await http.get<{ models: Model[] }>(`/brands/${brandId}`);
+  return response.data.models || [];
+};
+
 export const getVersions = async (modelId?: string): Promise<Version[]> => {
-  const url = modelId ? `/versions?modelId=${modelId}` : "/versions";
+  const url = modelId ? `/models/${modelId}/versions` : "/versions";
   const response = await http.get<Version[]>(url);
   return response.data;
+};
+
+export const getVersionsByModel = async (
+  modelId: string
+): Promise<Version[]> => {
+  const response = await http.get<{ versions: Version[] }>(
+    `/models/${modelId}`
+  );
+  return response.data.versions || [];
 };
 
 export const createVehicle = async (

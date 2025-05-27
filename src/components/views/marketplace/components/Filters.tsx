@@ -7,9 +7,10 @@ import {
   Model,
   Version,
   getBrands,
-  getModels,
-  getVersions,
+  getModelsByBrand,
+  getVersionsByModel,
 } from "@/services/vehicle.service";
+import { FiChevronDown } from "react-icons/fi";
 
 export function Filters() {
   const {
@@ -69,39 +70,47 @@ export function Filters() {
   ];
 
   useEffect(() => {
-    const loadBrands = async () => {
+    const fetchBrands = async () => {
+      setIsLoading(true);
       try {
         const data = await getBrands();
         setBrands(data);
       } catch (error) {
         setBrands([]);
+      } finally {
+        setIsLoading(false);
       }
     };
-    loadBrands();
+
+    fetchBrands();
   }, []);
 
   useEffect(() => {
-    const loadModels = async () => {
+    const fetchModels = async () => {
       if (!params.brandId) {
         setModels([]);
+        setVersions([]);
         return;
       }
 
       setIsLoading(true);
       try {
-        const data = await getModels(params.brandId);
-        setModels(data);
+        const modelsData = await getModelsByBrand(params.brandId);
+        setModels(modelsData);
+        setVersions([]);
       } catch (error) {
         setModels([]);
+        setVersions([]);
       } finally {
         setIsLoading(false);
       }
     };
-    loadModels();
+
+    fetchModels();
   }, [params.brandId]);
 
   useEffect(() => {
-    const loadVersions = async () => {
+    const fetchVersions = async () => {
       if (!params.modelId) {
         setVersions([]);
         return;
@@ -109,15 +118,16 @@ export function Filters() {
 
       setIsLoading(true);
       try {
-        const data = await getVersions(params.modelId);
-        setVersions(data);
+        const versionsData = await getVersionsByModel(params.modelId);
+        setVersions(versionsData);
       } catch (error) {
         setVersions([]);
       } finally {
         setIsLoading(false);
       }
     };
-    loadVersions();
+
+    fetchVersions();
   }, [params.modelId]);
 
   return (
@@ -142,7 +152,7 @@ export function Filters() {
         </label>
         <div className="relative">
           <select
-            className="w-full appearance-none bg-white border-2 border-gray-200 hover:border-secondary-blue focus:border-principal-blue rounded-xl py-2.5 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 cursor-pointer"
+            className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
             value={params.brandId || ""}
             onChange={(e) => setBrandId(e.target.value || undefined)}
           >
@@ -153,14 +163,8 @@ export function Filters() {
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg
-              className="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+            <FiChevronDown className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -185,11 +189,11 @@ export function Filters() {
         </label>
         <div className="relative">
           <select
-            className={`w-full appearance-none bg-white border-2 ${
+            className={`w-full appearance-none bg-white border ${
               !params.brandId || isLoading
-                ? "border-gray-100"
-                : "border-gray-200 hover:border-secondary-blue"
-            } focus:border-principal-blue rounded-xl py-2.5 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 cursor-pointer`}
+                ? "border-gray-100 text-gray-400"
+                : "border-gray-200 text-gray-700"
+            } rounded-lg py-2.5 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer`}
             value={params.modelId || ""}
             onChange={(e) => setModelId(e.target.value || undefined)}
             disabled={!params.brandId || isLoading}
@@ -201,14 +205,8 @@ export function Filters() {
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg
-              className="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+            <FiChevronDown className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -226,18 +224,18 @@ export function Filters() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
             />
           </svg>
           Versión
         </label>
         <div className="relative">
           <select
-            className={`w-full appearance-none bg-white border-2 ${
+            className={`w-full appearance-none bg-white border ${
               !params.modelId || isLoading
-                ? "border-gray-100"
-                : "border-gray-200 hover:border-secondary-blue"
-            } focus:border-principal-blue rounded-xl py-2.5 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 cursor-pointer`}
+                ? "border-gray-100 text-gray-400"
+                : "border-gray-200 text-gray-700"
+            } rounded-lg py-2.5 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer`}
             value={params.versionId || ""}
             onChange={(e) => setVersionId(e.target.value || undefined)}
             disabled={!params.modelId || isLoading}
@@ -253,14 +251,8 @@ export function Filters() {
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg
-              className="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+            <FiChevronDown className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -285,7 +277,7 @@ export function Filters() {
         </label>
         <div className="relative">
           <select
-            className="w-full appearance-none bg-white border-2 border-gray-200 hover:border-secondary-blue focus:border-principal-blue rounded-xl py-2.5 px-4 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 cursor-pointer"
+            className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
             value={params.typeOfVehicle || ""}
             onChange={(e) =>
               setTypeOfVehicle((e.target.value as any) || undefined)
@@ -302,14 +294,8 @@ export function Filters() {
               </option>
             ))}
           </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <svg
-              className="fill-current h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+            <FiChevronDown className="w-4 h-4" />
           </div>
         </div>
       </div>
