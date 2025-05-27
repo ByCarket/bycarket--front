@@ -1,120 +1,66 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
-import {
-  getPosts,
-  GetPostsResponse,
-  PostResponse,
-} from "@/services/vehicle.service";
-import { FilterState } from "./useVehicleFilters";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { getPosts, getMyPosts, deletePost, PostResponse, GetPostsResponse, createPost as createPostService } from "@/services/vehicle.service";
+
+export type FilterState = {
+  search?: string;
+  brand?: string[];
+  model?: string[];
+  typeOfVehicle?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  sort?: string;
+  [key: string]: string | string[] | number | undefined;
+};
 
 export const useFetchPosts = (
-  initialPage: number = 1,
-  initialLimit: number = 10,
-  filters: FilterState = {}
+  initialPage = 1,
+  initialLimit = 10,
+  initialFilters: FilterState = {},
+  fetchUserPostsOnly = false
 ) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [posts, setPosts] = useState<PostResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [currentFilters, setCurrentFilters] = useState<FilterState>(filters);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  const updateUrlParams = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    params.set("page", currentPage.toString());
-    params.set("limit", initialLimit.toString());
-
-    Object.entries(currentFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        if (Array.isArray(value)) {
-          params.delete(key);
-          value.forEach((val) => params.append(key, val.toString()));
-        } else {
-          params.set(key, value.toString());
-        }
-      } else {
-        params.delete(key);
-      }
-    });
-
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [
-    pathname,
-    router,
-    searchParams,
-    currentPage,
-    initialLimit,
-    currentFilters,
-  ]);
+  const [filters, setFilters] = useState<FilterState>(initialFilters);
 
   const fetchPostsData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const normalizedFilters = { ...currentFilters };
-
-      if (normalizedFilters.search === "") {
-        delete normalizedFilters.search;
+      if (fetchUserPostsOnly) {
+        const response = await getMyPosts();
+        const postsData = Array.isArray(response) ? response : response?.data || [];
+        setPosts(postsData);
+        setTotalItems(postsData.length);
+        setTotalPages(1);
+      } else {
+        const response = await getPosts(currentPage, initialLimit, filters);
+        const postsData = response.data || response.vehicles || [];
+        setPosts(postsData);
+        setTotalItems(response.total || response.totalItems || postsData.length || 0);
+        setTotalPages(response.totalPages || 1);
       }
-
-      const response = await getPosts(
-        currentPage,
-        initialLimit,
-        normalizedFilters
-      );
-      setPosts(response.data || []);
-      setTotalItems(response.total || 0);
-      setTotalPages(response.totalPages || 1);
-    } catch (err: any) {
+    } catch (err) {
       setPosts([]);
       setTotalItems(0);
       setTotalPages(1);
-      setError(null);
+      setError("Error al cargar las publicaciones");
     } finally {
       setLoading(false);
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-      }
     }
-  }, [currentPage, initialLimit, currentFilters]);
-
-  useEffect(() => {
-    if (!isInitialLoad) {
-      fetchPostsData();
-      updateUrlParams();
-    }
-  }, [fetchPostsData, updateUrlParams, isInitialLoad]);
+  }, [currentPage, initialLimit, filters, fetchUserPostsOnly]);
 
   useEffect(() => {
     fetchPostsData();
-  }, []);
-
-  useEffect(() => {
-    if (
-      Object.keys(filters).length > 0 ||
-      Object.keys(currentFilters).length > 0
-    ) {
-      setCurrentFilters(filters);
-      setCurrentPage(1);
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    if (isInitialLoad) {
-      const page = searchParams.get("page");
-      if (page && !isNaN(Number(page))) {
-        setCurrentPage(Number(page));
-      }
-    }
-  }, [searchParams, isInitialLoad]);
+  }, [fetchPostsData]);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -122,16 +68,45 @@ export const useFetchPosts = (
     }
   };
 
-  const setFilters = (newFilters: FilterState) => {
+  const removePost = async (postId: string) => {
+    try {
+      setLoading(true);
+      await deletePost(postId);
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+      return true;
+    } catch (err) {
+      setError("Error al eliminar la publicación");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateFilters = (newFilters: FilterState) => {
     const cleanFilters: FilterState = {};
+    
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") {
         cleanFilters[key as keyof FilterState] = value;
       }
     });
 
-    setCurrentFilters(cleanFilters);
+    setFilters(cleanFilters);
     setCurrentPage(1);
+  };
+
+  const createNewPost = async (data: { vehicleId: string; description?: string }) => {
+    try {
+      setLoading(true);
+      const newPost = await createPostService(data.vehicleId, data.description);
+      await fetchPostsData();
+      return { success: true, data: newPost };
+    } catch (err) {
+      setError("Error al crear la publicación");
+      return { success: false, error: "Error al crear la publicación" };
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -142,7 +117,10 @@ export const useFetchPosts = (
     totalPages,
     totalItems,
     handlePageChange,
-    setFilters,
-    currentFilters,
+    deletePost: removePost,
+    createPost: createNewPost,
+    setFilters: updateFilters,
+    currentFilters: filters,
+    refetch: fetchPostsData
   };
 };

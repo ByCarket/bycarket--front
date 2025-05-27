@@ -229,7 +229,7 @@ export const uploadVehicleImages = async (
       },
     });
   } catch (error) {
-    console.error("Error uploading images:", error);
+    console.error("Error al subir la imagen:", error);
     throw error;
   }
 };
@@ -241,7 +241,20 @@ export const deleteVehicleImage = async (
   try {
     await http.delete(`/files/${vehicleId}/images/${publicId}`);
   } catch (error) {
-    console.error("Error deleting image:", error);
+    console.error("Error al eliminar la imagen:", error);
     throw error;
   }
+};
+
+export const createPost = async (vehicleId: string, description?: string): Promise<PostResponse> => {
+  const response = await http.post<ApiResponse<PostResponse>>("/posts", {
+    vehicleId,
+    description
+  });
+  return response.data.data;
+};
+
+export const getMyPosts = async (): Promise<GetPostsResponse> => {
+  const response = await http.get<ApiResponse<GetPostsResponse>>("/posts/me");
+  return response.data.data;
 };
