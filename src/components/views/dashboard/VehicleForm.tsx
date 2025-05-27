@@ -522,6 +522,7 @@ const VehicleForm: React.FC = () => {
               type="number"
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              disabled={formik.values.condition === "new"}
               value={formik.values.mileage}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
             />
