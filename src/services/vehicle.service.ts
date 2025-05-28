@@ -155,8 +155,6 @@ export const getPosts = async (
     }
   });
 
-
-
   const response = await http.get<GetPostsResponse>("/posts", {
     params,
   });
@@ -242,10 +240,13 @@ export const deleteVehicleImage = async (
   }
 };
 
-export const createPost = async (vehicleId: string, description?: string): Promise<PostResponse> => {
+export const createPost = async (
+  vehicleId: string,
+  description?: string
+): Promise<PostResponse> => {
   const response = await http.post<ApiResponse<PostResponse>>("/posts", {
     vehicleId,
-    description
+    description,
   });
   return response.data.data;
 };
@@ -253,4 +254,73 @@ export const createPost = async (vehicleId: string, description?: string): Promi
 export const getMyPosts = async (): Promise<GetPostsResponse> => {
   const response = await http.get<ApiResponse<GetPostsResponse>>("/posts/me");
   return response.data.data;
+};
+
+export const generateVehicleDescription = async (vehicleData: {
+  brand: string;
+  model: string;
+  version?: string;
+  year?: number;
+  price?: number;
+  mileage?: number;
+  condition?: string;
+  typeOfVehicle?: string;
+}): Promise<string> => {
+  try {
+    if (!vehicleData.brand?.trim() || !vehicleData.model?.trim()) {
+      throw new Error("Se requieren marca y modelo");
+    }
+
+    const payload: {
+      brand: string;
+      model: string;
+      version?: string;
+      year?: number;
+      price?: number;
+      mileage?: number;
+      condition?: string;
+      vehicle_type?: string;
+      description: string;
+    } = {
+      brand: vehicleData.brand.trim(),
+      model: vehicleData.model.trim(),
+      version: vehicleData.version?.trim(),
+      year: vehicleData.year ? Number(vehicleData.year) : undefined,
+      price: vehicleData.price ? Number(vehicleData.price) : undefined,
+      mileage: vehicleData.mileage ? Number(vehicleData.mileage) : undefined,
+      condition: vehicleData.condition,
+      vehicle_type: vehicleData.typeOfVehicle,
+      description: "Descripción generada automáticamente",
+    };
+
+    (Object.keys(payload) as Array<keyof typeof payload>).forEach((key) => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+    });
+
+    const response = await http.post<{ description: string }>(
+      "/openai/generate-description",
+      payload
+    );
+
+    if (!response.data?.description) {
+      throw new Error("La respuesta no contiene descripción");
+    }
+
+    return response.data.description;
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Error desconocido";
+    const status = (error as any)?.response?.status;
+    const data = (error as any)?.response?.data;
+
+    console.error("Error al generar descripción:", {
+      error: errorMessage,
+      status,
+      data,
+    });
+
+    throw new Error(errorMessage);
+  }
 };

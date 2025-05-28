@@ -285,11 +285,11 @@ export const getSubscription = async (
     );
     return response;
   } catch (error: any) {
-    console.error('Error fetching subscription:', error);
+    console.error("Error fetching subscription:", error);
     throw new Error(
       error.response?.data?.message ||
-      error.message ||
-      'Error al obtener los detalles de la suscripción'
+        error.message ||
+        "Error al obtener los detalles de la suscripción"
     );
   }
 };
@@ -305,7 +305,10 @@ export const createSubscription = async (
         paymentMethodId,
         metadata: {
           frontend_timestamp: new Date().toISOString(),
-          user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "server",
+          user_agent:
+            typeof window !== "undefined"
+              ? window.navigator.userAgent
+              : "server",
         },
       }
     );
@@ -326,4 +329,27 @@ export const createSubscription = async (
         "Error al crear la suscripción"
     );
   }
+};
+
+export interface ChatMessage {
+  role: "user" | "bot" | "system";
+  content: string;
+}
+
+export interface ChatCompletionRequest {
+  messages: ChatMessage[];
+}
+
+export interface ChatCompletionResponse {
+  message: string;
+}
+
+export const getChatCompletion = async (
+  messages: ChatMessage[]
+): Promise<ChatCompletionResponse> => {
+  const response = await http.post<ChatCompletionResponse>(
+    "/openai/chatCompletion",
+    { messages }
+  );
+  return response.data;
 };
