@@ -21,6 +21,8 @@ const VehicleForm: React.FC = () => {
     handleBrandChange,
     handleModelChange,
     submitVehicle,
+    getModelsByBrand,
+    getVersionsByModel,
   } = useVehicleForm();
 
   const [brandSearch, setBrandSearch] = useState("");
@@ -114,7 +116,7 @@ const VehicleForm: React.FC = () => {
       typeOfVehicle: "SUV",
       year: new Date().getFullYear(),
       condition: "new",
-      currency: "U$D",
+      currency: "",
       price: 0,
       mileage: 0,
       description: "",
@@ -122,11 +124,16 @@ const VehicleForm: React.FC = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      if (values.images.length === 0) {
-        setImageError("Debes subir al menos una imagen");
-        return;
+      try {
+        await submitVehicle(values);
+        formik.resetForm();
+        setBrandSearch("");
+        setModelSearch("");
+        setVersionSearch("");
+        setPreviewImages([]);
+      } catch (err) {
+        console.error(err);
       }
-      await submitVehicle(values);
     },
   });
 
@@ -167,24 +174,23 @@ const VehicleForm: React.FC = () => {
     setPreviewImages(newPreviews);
   };
 
-  const handleBrandSelect = (brandId: string, brandName: string) => {
+  const handleBrandSelect = async (brandId: string, brandName: string) => {
     formik.setFieldValue("brandId", brandId);
-    setBrandSearch(brandName);
-    setShowBrandDropdown(false);
-    handleBrandChange(brandId);
     formik.setFieldValue("modelId", "");
     formik.setFieldValue("versionId", "");
-    setModelSearch("");
-    setVersionSearch("");
+    setBrandSearch(brandName);
+    setShowBrandDropdown(false);
+    const models = await getModelsByBrand(brandId);
+    handleBrandChange(brandId, models);
   };
 
-  const handleModelSelect = (modelId: string, modelName: string) => {
+  const handleModelSelect = async (modelId: string, modelName: string) => {
     formik.setFieldValue("modelId", modelId);
+    formik.setFieldValue("versionId", "");
     setModelSearch(modelName);
     setShowModelDropdown(false);
-    handleModelChange(modelId);
-    formik.setFieldValue("versionId", "");
-    setVersionSearch("");
+    const versions = await getVersionsByModel(modelId);
+    handleModelChange(modelId, versions);
   };
 
   const handleVersionSelect = (versionId: string, versionName: string) => {
@@ -356,9 +362,11 @@ const VehicleForm: React.FC = () => {
                     <div
                       key={version.id}
                       className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() =>
-                        handleVersionSelect(version.id, version.name)
-                      }
+                      onClick={() => {
+                        handleVersionSelect(version.id, version.name);
+                        setShowVersionDropdown(false);
+                        setVersionSearch(version.name);
+                      }}
                     >
                       {version.name}
                     </div>
@@ -460,32 +468,31 @@ const VehicleForm: React.FC = () => {
             ) : null}
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Moneda <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="currency"
+              name="currency"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.currency}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+            >
+              <option value="">Seleccione una moneda</option>
+              <option value="U$D">Dólares (U$D)</option>
+              <option value="AR$">Pesos Argentinos (AR$)</option>
+            </select>
+            {formik.touched.currency && formik.errors.currency ? (
+              <div className="text-red-500 text-xs mt-1">
+                {formik.errors.currency}
+              </div>
+            ) : null}
+          </div>
+
           <div className="flex space-x-4">
             <div className="w-1/3">
-              <label
-                htmlFor="currency"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Moneda
-              </label>
-              <select
-                id="currency"
-                name="currency"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.currency}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
-              >
-                <option value="U$D">U$D</option>
-                <option value="AR$">$ ARS</option>
-              </select>
-              {formik.touched.currency && formik.errors.currency ? (
-                <div className="text-red-500 text-xs mt-1">
-                  {formik.errors.currency}
-                </div>
-              ) : null}
-            </div>
-            <div className="w-2/3">
               <label
                 htmlFor="price"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -507,30 +514,33 @@ const VehicleForm: React.FC = () => {
                 </div>
               ) : null}
             </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="mileage"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Kilometraje
-            </label>
-            <input
-              id="mileage"
-              name="mileage"
-              type="number"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              disabled={formik.values.condition === "new"}
-              value={formik.values.mileage}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
-            />
-            {formik.touched.mileage && formik.errors.mileage ? (
-              <div className="text-red-500 text-xs mt-1">
-                {formik.errors.mileage}
-              </div>
-            ) : null}
+            <div className="w-2/3">
+              <label
+                htmlFor="mileage"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Kilometraje
+              </label>
+              <input
+                id="mileage"
+                name="mileage"
+                type="number"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={formik.values.condition === "new"}
+                value={formik.values.mileage}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 ${
+                  formik.values.condition === "new"
+                    ? "bg-gray-100 border-gray-200 text-gray-400"
+                    : "border-gray-300 focus:ring-secondary-blue"
+                }`}
+              />
+              {formik.touched.mileage && formik.errors.mileage ? (
+                <div className="text-red-500 text-xs mt-1">
+                  {formik.errors.mileage}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 

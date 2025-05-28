@@ -64,8 +64,11 @@ export interface PostResponse {
 
 export interface GetPostsResponse {
   data: PostResponse[];
+  vehicles?: PostResponse[];
   total: number;
+  totalItems?: number;
   page: number;
+  currentPage?: number;
   limit: number;
   totalPages: number;
 }
@@ -76,15 +79,29 @@ export const getBrands = async (): Promise<Brand[]> => {
 };
 
 export const getModels = async (brandId?: string): Promise<Model[]> => {
-  const url = brandId ? `/models?brandId=${brandId}` : "/models";
+  const url = brandId ? `/brands/${brandId}/models` : "/models";
   const response = await http.get<Model[]>(url);
   return response.data;
 };
 
+export const getModelsByBrand = async (brandId: string): Promise<Model[]> => {
+  const response = await http.get<{ models: Model[] }>(`/brands/${brandId}`);
+  return response.data.models || [];
+};
+
 export const getVersions = async (modelId?: string): Promise<Version[]> => {
-  const url = modelId ? `/versions?modelId=${modelId}` : "/versions";
+  const url = modelId ? `/models/${modelId}/versions` : "/versions";
   const response = await http.get<Version[]>(url);
   return response.data;
+};
+
+export const getVersionsByModel = async (
+  modelId: string
+): Promise<Version[]> => {
+  const response = await http.get<{ versions: Version[] }>(
+    `/models/${modelId}`
+  );
+  return response.data.versions || [];
 };
 
 export const createVehicle = async (
@@ -119,7 +136,7 @@ export const getVehicles = async (
 
 export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
   const response = await http.get<VehicleResponse[]>("/vehicles/me");
-  return response.data;
+  return response.data || [];
 };
 
 export const getPosts = async (
@@ -144,7 +161,7 @@ export const getPosts = async (
     }
   });
 
-  const response = await http.get<GetPostsResponse>("/posts/me", {
+  const response = await http.get<GetPostsResponse>("/posts", {
     params,
   });
   return response.data;
@@ -212,7 +229,7 @@ export const uploadVehicleImages = async (
       },
     });
   } catch (error) {
-    console.error("Error uploading images:", error);
+    console.error("Error al subir la imagen:", error);
     throw error;
   }
 };
@@ -224,7 +241,20 @@ export const deleteVehicleImage = async (
   try {
     await http.delete(`/files/${vehicleId}/images/${publicId}`);
   } catch (error) {
-    console.error("Error deleting image:", error);
+    console.error("Error al eliminar la imagen:", error);
     throw error;
   }
+};
+
+export const createPost = async (vehicleId: string, description?: string): Promise<PostResponse> => {
+  const response = await http.post<ApiResponse<PostResponse>>("/posts", {
+    vehicleId,
+    description
+  });
+  return response.data.data;
+};
+
+export const getMyPosts = async (): Promise<GetPostsResponse> => {
+  const response = await http.get<ApiResponse<GetPostsResponse>>("/posts/me");
+  return response.data.data;
 };

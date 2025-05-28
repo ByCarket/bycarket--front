@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
 	getBrands,
-	getModels,
-	getVersions,
+	getModelsByBrand,
+	getVersionsByModel,
 	createVehicle,
 	Brand,
 	Model,
@@ -37,48 +37,16 @@ export const useVehicleForm = () => {
 		fetchBrands();
 	}, []);
 
-	useEffect(() => {
-		const fetchModels = async () => {
-			if (selectedBrand) {
-				try {
-					const data = await getModels(selectedBrand);
-					setFilteredModels(data);
-				} catch (err) {
-					setError("Error al cargar los modelos");
-				}
-			} else {
-				setFilteredModels([]);
-			}
-		};
-
-		fetchModels();
-	}, [selectedBrand]);
-
-	useEffect(() => {
-		const fetchVersions = async () => {
-			if (selectedModel) {
-				try {
-					const data = await getVersions(selectedModel);
-					setFilteredVersions(data);
-				} catch (err) {
-					setError("Error al cargar las versiones");
-				}
-			} else {
-				setFilteredVersions([]);
-			}
-		};
-
-		fetchVersions();
-	}, [selectedModel]);
-
-	const handleBrandChange = (brandId: string) => {
+	const handleBrandChange = (brandId: string, models: Model[] = []) => {
 		setSelectedBrand(brandId);
 		setSelectedModel("");
+		setFilteredModels(models);
 		setFilteredVersions([]);
 	};
 
-	const handleModelChange = (modelId: string) => {
+	const handleModelChange = (modelId: string, versions: Version[] = []) => {
 		setSelectedModel(modelId);
+		setFilteredVersions(versions);
 	};
 
 	const submitVehicle = async (vehicleData: VehicleData) => {
@@ -118,6 +86,8 @@ export const useVehicleForm = () => {
 		success,
 		selectedBrand,
 		selectedModel,
+		getModelsByBrand,
+		getVersionsByModel,
 		handleBrandChange,
 		handleModelChange,
 		submitVehicle,
