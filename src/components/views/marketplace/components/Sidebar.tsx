@@ -5,7 +5,7 @@ import { OrderBy } from "./OrderBy";
 
 export function Sidebar() {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-24 transition-all duration-300 hover:shadow-xl w-full">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl w-full">
       <div className="p-6 border-b border-gray-100 relative">
         <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center relative pl-4">
           <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-principal-blue rounded-full"></span>

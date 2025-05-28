@@ -23,12 +23,9 @@ export default function MarketplaceView() {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="w-full lg:w-80 shrink-0">
-            <Sidebar />
-          </div>
-
-          <div className="flex-1 min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+          <Sidebar />
+          <div className="space-y-6 overflow-y-auto">
             <MarketContainer
               posts={posts}
               isLoading={isLoading}
