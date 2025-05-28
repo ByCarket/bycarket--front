@@ -22,7 +22,7 @@ export default function AnimatedChatbot() {
   const getPostIdFromUrl = (): string | undefined => {
     if (!pathname) return undefined;
     
-    const regex = /\/vehiculos\/([\w-]+)$/;
+    const regex = /\/marketplace\/([\w-]+)$/;
     const match = pathname.match(regex);
     
     return match ? match[1] : undefined;
