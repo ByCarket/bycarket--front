@@ -10,7 +10,7 @@ import {
   getModelsByBrand,
   getVersionsByModel,
 } from "@/services/vehicle.service";
-import { FiChevronDown } from "react-icons/fi";
+import { FiCheck, FiChevronDown } from "react-icons/fi";
 
 export function Filters() {
   const {
@@ -30,6 +30,35 @@ export function Filters() {
   const [models, setModels] = useState<Model[]>([]);
   const [versions, setVersions] = useState<Version[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const handleBrandChange = (brandId: string) => {
+    const currentBrands = params.brandId || [];
+    const newBrands = currentBrands.includes(brandId)
+      ? currentBrands.filter(id => id !== brandId)
+      : [...currentBrands, brandId];
+    setBrandId(newBrands.length ? newBrands : undefined);
+  };
+
+  const handleModelChange = (modelId: string) => {
+    const currentModels = params.modelId || [];
+    const newModels = currentModels.includes(modelId)
+      ? currentModels.filter(id => id !== modelId)
+      : [...currentModels, modelId];
+    setModelId(newModels.length ? newModels : undefined);
+  };
+
+  const handleVersionChange = (versionId: string) => {
+    const currentVersions = params.versionId || [];
+    const newVersions = currentVersions.includes(versionId)
+      ? currentVersions.filter(id => id !== versionId)
+      : [...currentVersions, versionId];
+    setVersionId(newVersions.length ? newVersions : undefined);
+  };
 
   const vehicleTypes = [
     { value: "SUV", label: "SUV" },
@@ -87,7 +116,7 @@ export function Filters() {
 
   useEffect(() => {
     const fetchModels = async () => {
-      if (!params.brandId) {
+      if (!params.brandId?.length) {
         setModels([]);
         setVersions([]);
         return;
@@ -95,8 +124,10 @@ export function Filters() {
 
       setIsLoading(true);
       try {
-        const modelsData = await getModelsByBrand(params.brandId);
-        setModels(modelsData);
+        const modelsData = await Promise.all(
+          params.brandId.map(brandId => getModelsByBrand(brandId))
+        );
+        setModels(modelsData.flat());
         setVersions([]);
       } catch (error) {
         setModels([]);
@@ -111,15 +142,17 @@ export function Filters() {
 
   useEffect(() => {
     const fetchVersions = async () => {
-      if (!params.modelId) {
+      if (!params.modelId?.length) {
         setVersions([]);
         return;
       }
 
       setIsLoading(true);
       try {
-        const versionsData = await getVersionsByModel(params.modelId);
-        setVersions(versionsData);
+        const versionsData = await Promise.all(
+          params.modelId.map(modelId => getVersionsByModel(modelId))
+        );
+        setVersions(versionsData.flat());
       } catch (error) {
         setVersions([]);
       } finally {
@@ -133,129 +166,86 @@ export function Filters() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-          <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5.172a2 2 0 00-.586-1.414L5 12m14 9v-5.172a2 2 0 00-.586-1.414L15 12"
-            />
-          </svg>
-          Marca
-        </label>
-        <div className="relative">
-          <select
-            className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
-            value={params.brandId || ""}
-            onChange={(e) => setBrandId(e.target.value || undefined)}
-          >
-            <option value="">Todas las marcas</option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id} className="text-gray-700">
-                {brand.name}
-              </option>
+        <button 
+          onClick={() => toggleSection('brand')}
+          className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
+        >
+          <span>Marcas</span>
+          <FiChevronDown className={`transition-transform ${expandedSection === 'brand' ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {expandedSection === 'brand' && (
+          <div className="space-y-2 pl-2">
+            {brands.map(brand => (
+              <div key={brand.id} className="flex items-center">
+                <button
+                  onClick={() => handleBrandChange(brand.id)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.brandId || []).includes(brand.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                >
+                  {(params.brandId || []).includes(brand.id) && <FiCheck className="text-white w-3 h-3" />}
+                </button>
+                <span>{brand.name}</span>
+              </div>
             ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-            <FiChevronDown className="w-4 h-4" />
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-          <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      {!!(params.brandId?.length && models.length) && (
+        <div className="space-y-2">
+          <button 
+            onClick={() => toggleSection('model')}
+            className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-            />
-          </svg>
-          Modelo
-        </label>
-        <div className="relative">
-          <select
-            className={`w-full appearance-none bg-white border ${
-              !params.brandId || isLoading
-                ? "border-gray-100 text-gray-400"
-                : "border-gray-200 text-gray-700"
-            } rounded-lg py-2.5 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer`}
-            value={params.modelId || ""}
-            onChange={(e) => setModelId(e.target.value || undefined)}
-            disabled={!params.brandId || isLoading}
-          >
-            <option value="">Todos los modelos</option>
-            {models.map((model) => (
-              <option key={model.id} value={model.id} className="text-gray-700">
-                {model.name}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-            <FiChevronDown className="w-4 h-4" />
-          </div>
+            <span>Modelos</span>
+            <FiChevronDown className={`transition-transform ${expandedSection === 'model' ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {expandedSection === 'model' && (
+            <div className="space-y-2 pl-2">
+              {models.map(model => (
+                <div key={model.id} className="flex items-center">
+                  <button
+                    onClick={() => handleModelChange(model.id)}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.modelId || []).includes(model.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                  >
+                    {(params.modelId || []).includes(model.id) && <FiCheck className="text-white w-3 h-3" />}
+                  </button>
+                  <span>{model.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
-          <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      {!!(params.modelId?.length && versions.length) && (
+        <div className="space-y-2">
+          <button 
+            onClick={() => toggleSection('version')}
+            className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-            />
-          </svg>
-          Versión
-        </label>
-        <div className="relative">
-          <select
-            className={`w-full appearance-none bg-white border ${
-              !params.modelId || isLoading
-                ? "border-gray-100 text-gray-400"
-                : "border-gray-200 text-gray-700"
-            } rounded-lg py-2.5 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer`}
-            value={params.versionId || ""}
-            onChange={(e) => setVersionId(e.target.value || undefined)}
-            disabled={!params.modelId || isLoading}
-          >
-            <option value="">Todas las versiones</option>
-            {versions.map((version) => (
-              <option
-                key={version.id}
-                value={version.id}
-                className="text-gray-700"
-              >
-                {version.name}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-            <FiChevronDown className="w-4 h-4" />
-          </div>
+            <span>Versiones</span>
+            <FiChevronDown className={`transition-transform ${expandedSection === 'version' ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {expandedSection === 'version' && (
+            <div className="space-y-2 pl-2">
+              {versions.map(version => (
+                <div key={version.id} className="flex items-center">
+                  <button
+                    onClick={() => handleVersionChange(version.id)}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.versionId || []).includes(version.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                  >
+                    {(params.versionId || []).includes(version.id) && <FiCheck className="text-white w-3 h-3" />}
+                  </button>
+                  <span>{version.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       <div className="space-y-2">
         <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
