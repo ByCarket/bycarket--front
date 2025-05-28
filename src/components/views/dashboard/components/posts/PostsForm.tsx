@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { VehicleResponse } from "@/services/vehicle.service";
+import { generateVehicleDescription } from "@/services/vehicle.service";
+import { FaMagic } from "react-icons/fa";
 
 interface PostsFormProps {
   vehicle: VehicleResponse;
@@ -19,6 +21,7 @@ export default function PostsForm({
   const [description, setDescription] = useState<string>(
     vehicle.description || ""
   );
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +29,27 @@ export default function PostsForm({
       await onSubmit(vehicle.id, description);
     } catch (error) {
       console.error("Submission error:", error);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    try {
+      setIsGenerating(true);
+      const generatedDesc = await generateVehicleDescription({
+        brand: vehicle.brand.name,
+        model: vehicle.model.name,
+        version: vehicle.version?.name,
+        year: vehicle.year,
+        price: vehicle.price,
+        mileage: vehicle.mileage,
+        condition: vehicle.condition,
+        typeOfVehicle: vehicle.typeOfVehicle,
+      });
+      setDescription(generatedDesc);
+    } catch (error) {
+      console.error("Error generating description:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -117,12 +141,29 @@ export default function PostsForm({
 
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
-              <label
-                htmlFor="description"
-                className="block text-principal-blue font-medium mb-2"
-              >
-                Descripción (opcional)
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-principal-blue font-medium"
+                >
+                  Descripción (opcional)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerateDescription}
+                  disabled={isGenerating || loading}
+                  className="text-sm flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-secondary-blue/10 to-principal-blue/5 text-principal-blue rounded-lg hover:from-secondary-blue/20 hover:to-principal-blue/10 transition-all disabled:opacity-50 border border-secondary-blue/20"
+                >
+                  {isGenerating ? (
+                    "Generando..."
+                  ) : (
+                    <>
+                      <FaMagic className="text-secondary-blue" />
+                      <span>Generar con IA</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <textarea
                 id="description"
                 value={description}

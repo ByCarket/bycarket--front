@@ -177,9 +177,17 @@ export default function PostsDetail({
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
+                    className={`px-6 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-colors ${
+                      post.status.toLowerCase() === "inactive"
+                        ? "bg-principal-blue text-white"
+                        : "bg-red-500 text-white"
+                    }`}
                   >
-                    {isDeleting ? "Eliminando..." : "Eliminar publicación"}
+                    {isDeleting
+                      ? "Publicando..."
+                      : post.status.toLowerCase() === "inactive"
+                      ? "Publicar"
+                      : "Eliminar publicación"}
                   </button>
                 )}
               </div>

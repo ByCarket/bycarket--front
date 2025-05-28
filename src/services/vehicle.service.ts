@@ -155,8 +155,6 @@ export const getPosts = async (
     }
   });
 
-
-
   const response = await http.get<GetPostsResponse>("/posts", {
     params,
   });
@@ -242,10 +240,13 @@ export const deleteVehicleImage = async (
   }
 };
 
-export const createPost = async (vehicleId: string, description?: string): Promise<PostResponse> => {
+export const createPost = async (
+  vehicleId: string,
+  description?: string
+): Promise<PostResponse> => {
   const response = await http.post<ApiResponse<PostResponse>>("/posts", {
     vehicleId,
-    description
+    description,
   });
   return response.data.data;
 };
@@ -253,4 +254,19 @@ export const createPost = async (vehicleId: string, description?: string): Promi
 export const getMyPosts = async (): Promise<GetPostsResponse> => {
   const response = await http.get<ApiResponse<GetPostsResponse>>("/posts/me");
   return response.data.data;
+};
+
+export const generateVehicleDescription = async (vehicleData: {
+  brand: string;
+  model: string;
+  version?: string;
+  year?: number;
+  price?: number;
+  [key: string]: any;
+}): Promise<string> => {
+  const response = await http.post<{ description: string }>(
+    "/openai/generate-description",
+    vehicleData
+  );
+  return response.data.description;
 };
