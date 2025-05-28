@@ -45,9 +45,9 @@ type OrderByField =
 type OrderDirection = "ASC" | "DESC";
 
 export interface VehicleSearchParams {
-  brandId?: string;
-  modelId?: string;
-  versionId?: string;
+  brandId?: string[];
+  modelId?: string[];
+  versionId?: string[];
   typeOfVehicle?: VehicleType;
   condition?: Condition;
   currency?: Currency;
@@ -73,11 +73,11 @@ export const useSearchParams = () => {
     const params: VehicleSearchParams = {};
 
     if (searchParams.has("brandId"))
-      params.brandId = searchParams.get("brandId") || undefined;
+      params.brandId = searchParams.getAll("brandId") || undefined;
     if (searchParams.has("modelId"))
-      params.modelId = searchParams.get("modelId") || undefined;
+      params.modelId = searchParams.getAll("modelId") || undefined;
     if (searchParams.has("versionId"))
-      params.versionId = searchParams.get("versionId") || undefined;
+      params.versionId = searchParams.getAll("versionId") || undefined;
     if (searchParams.has("typeOfVehicle"))
       params.typeOfVehicle =
         (searchParams.get("typeOfVehicle") as VehicleType) || undefined;
@@ -116,8 +116,25 @@ export const useSearchParams = () => {
   const createQueryString = useCallback((params: VehicleSearchParams) => {
     const urlSearchParams = new URLSearchParams();
 
+    if (params.brandId) {
+      params.brandId.forEach((id) => urlSearchParams.append("brandId", String(id)));
+    }
+    if (params.modelId) {
+      params.modelId.forEach((id) => urlSearchParams.append("modelId", String(id)));
+    }
+    if (params.versionId) {
+      params.versionId.forEach((id) => urlSearchParams.append("versionId", String(id)));
+    }
+
     Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
+      if (
+        key !== "brandId" &&
+        key !== "modelId" &&
+        key !== "versionId" &&
+        value !== undefined &&
+        value !== null &&
+        value !== ""
+      ) {
         urlSearchParams.set(key, String(value));
       }
     });
@@ -157,21 +174,21 @@ export const useSearchParams = () => {
   );
 
   const setBrandId = useCallback(
-    (brandId: string | undefined) => {
+    (brandId: string[] | undefined) => {
       setParams({ brandId, modelId: undefined, versionId: undefined, page: 1 });
     },
     [setParams]
   );
 
   const setModelId = useCallback(
-    (modelId: string | undefined) => {
+    (modelId: string[] | undefined) => {
       setParams({ modelId, versionId: undefined, page: 1 });
     },
     [setParams]
   );
 
   const setVersionId = useCallback(
-    (versionId: string | undefined) => {
+    (versionId: string[] | undefined) => {
       setParams({ versionId, page: 1 });
     },
     [setParams]

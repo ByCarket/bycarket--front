@@ -155,11 +155,7 @@ export const getPosts = async (
     }
   });
 
-  Object.keys(params).forEach((key) => {
-    if (Array.isArray(params[key])) {
-      params[key] = params[key].join(",");
-    }
-  });
+
 
   const response = await http.get<GetPostsResponse>("/posts", {
     params,
