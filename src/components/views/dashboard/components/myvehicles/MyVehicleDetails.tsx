@@ -309,9 +309,26 @@ export default function MyVehicleDetails({
                       onChange={handleSelectChange}
                       className="w-full p-2 border rounded"
                     >
-                      <option value="auto">Auto</option>
-                      <option value="camioneta">Camioneta</option>
-                      <option value="moto">Moto</option>
+                      <option value="SUV">SUV</option>
+                      <option value="PICKUP">Pickup</option>
+                      <option value="MINIVAN">Minivan</option>
+                      <option value="LIGHT_TRUCK">Camioneta</option>
+                      <option value="COUPE">Coupé</option>
+                      <option value="HATCHBACK">Hatchback</option>
+                      <option value="FURGON">Furgón</option>
+                      <option value="SEDAN">Sedán</option>
+                      <option value="VAN">Van</option>
+                      <option value="RURAL">Rural</option>
+                      <option value="CABRIOLET">Cabriolet</option>
+                      <option value="SPORTSCAR">Deportivo</option>
+                      <option value="ROADSTER">Roadster</option>
+                      <option value="ELECTRIC">Eléctrico</option>
+                      <option value="HYBRID">Híbrido</option>
+                      <option value="LUXURY">Lujo</option>
+                      <option value="OFF_ROAD">Todo terreno</option>
+                      <option value="PICKUP_TRUCK">Camioneta pickup</option>
+                      <option value="CROSSOVER">Crossover</option>
+                      <option value="COMPACT">Compacto</option>
                     </select>
                   </div>
 

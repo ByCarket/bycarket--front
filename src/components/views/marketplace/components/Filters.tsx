@@ -395,9 +395,6 @@ export function Filters() {
         </label>
         <div className="grid grid-cols-2 gap-3">
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-              {params.currency === "AR$" ? "$" : "U$D"}
-            </span>
             <input
               type="number"
               placeholder="Mínimo"
@@ -408,13 +405,10 @@ export function Filters() {
                   params.maxPrice
                 )
               }
-              className="w-full rounded-xl border-2 border-gray-200 py-2.5 pl-8 pr-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
+              className="w-full pl-8 pr-3 rounded-xl border-2 border-gray-200 py-2.5 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
             />
           </div>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-              {params.currency === "AR$" ? "$" : "U$D"}
-            </span>
             <input
               type="number"
               placeholder="Máximo"
@@ -425,7 +419,7 @@ export function Filters() {
                   Number(e.target.value) || undefined
                 )
               }
-              className="w-full rounded-xl border-2 border-gray-200 py-2.5 pl-8 pr-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
+              className="w-full pl-8 pr-3 rounded-xl border-2 border-gray-200 py-2.5 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
             />
           </div>
         </div>
