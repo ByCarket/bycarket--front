@@ -18,7 +18,7 @@ export function ProductCard({ post }: ProductCardProps) {
 
   return (
     <Link
-      href={`/vehicle/${post.vehicle.id}`}
+      href={`/marketplace/${post.vehicle.id}`}
       className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-zinc-100 flex flex-col h-full hover:border-secondary-blue/30"
     >
       <div className="relative h-48 w-full bg-gray-50">

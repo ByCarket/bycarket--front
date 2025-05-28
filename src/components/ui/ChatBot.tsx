@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot, Mail, MailX } from "lucide-react";
 import { getChatCompletion } from "@/services/api.service";
+import { usePathname } from "next/navigation";
 
 export default function AnimatedChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,16 @@ export default function AnimatedChatbot() {
   >([{ id: 1, text: "¡Hola! ¿En qué puedo ayudarte hoy?", sender: "bot" }]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  
+  const getPostIdFromUrl = (): string | undefined => {
+    if (!pathname) return undefined;
+    
+    const regex = /\/vehiculos\/([\w-]+)$/;
+    const match = pathname.match(regex);
+    
+    return match ? match[1] : undefined;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,9 +46,11 @@ export default function AnimatedChatbot() {
     setMessage("");
 
     try {
-      const response = await getChatCompletion([
-        { role: "user", content: message },
-      ]);
+      const postId = getPostIdFromUrl();
+      const response = await getChatCompletion(
+        [{ role: "user", content: message }],
+        postId
+      );
 
       const botResponse = {
         id: Date.now() + 1,
@@ -57,7 +70,6 @@ export default function AnimatedChatbot() {
 
   return (
     <>
-      {/* Botón flotante */}
       <motion.div
         className="fixed bottom-4 right-4 z-50"
         initial={{ scale: 0, rotate: -180 }}
@@ -87,7 +99,6 @@ export default function AnimatedChatbot() {
             {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
           </motion.div>
 
-          {/* Efecto de ondas */}
           <motion.div
             className="absolute inset-0 bg-white rounded-full"
             initial={{ scale: 0, opacity: 0.7 }}
@@ -104,11 +115,9 @@ export default function AnimatedChatbot() {
         </motion.button>
       </motion.div>
 
-      {/* Panel del chatbot */}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Panel principal */}
             <motion.div
               className="fixed bottom-20 right-4 w-80 h-[480px] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden max-w-[calc(100vw-2rem)] flex flex-col"
               initial={{
@@ -131,7 +140,6 @@ export default function AnimatedChatbot() {
               }}
             >
               <div className="flex flex-col h-full">
-                {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white">
                   <div className="flex justify-between items-center">
                     <h3 className="font-semibold">
@@ -146,7 +154,6 @@ export default function AnimatedChatbot() {
                   </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex border-b border-gray-200">
                   <button
                     onClick={() => setActiveTab("chatbot")}
@@ -180,7 +187,6 @@ export default function AnimatedChatbot() {
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      {/* Área de mensajes con scroll */}
                       <div className="flex-1 overflow-y-auto p-4 space-y-3">
                         <AnimatePresence>
                           {messages.map((msg) => (
@@ -216,7 +222,6 @@ export default function AnimatedChatbot() {
                         <div ref={messagesEndRef} />
                       </div>
 
-                      {/* Input de mensaje */}
                       <div className="p-3 border-t border-gray-200 bg-white">
                         <form
                           onSubmit={handleSendMessage}
