@@ -34,6 +34,11 @@ export default function PostsForm({
 
   const handleGenerateDescription = async () => {
     try {
+      if (!vehicle?.brand?.name || !vehicle?.model?.name) {
+        console.error('Datos incompletos para generar descripción');
+        return;
+      }
+      
       setIsGenerating(true);
       const generatedDesc = await generateVehicleDescription({
         brand: vehicle.brand.name,
@@ -45,9 +50,12 @@ export default function PostsForm({
         condition: vehicle.condition,
         typeOfVehicle: vehicle.typeOfVehicle,
       });
-      setDescription(generatedDesc);
+      
+      if (generatedDesc) {
+        setDescription(generatedDesc);
+      }
     } catch (error) {
-      console.error("Error generating description:", error);
+      console.error("Error en generación de descripción:", error);
     } finally {
       setIsGenerating(false);
     }
