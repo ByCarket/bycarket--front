@@ -338,6 +338,7 @@ export interface ChatMessage {
 
 export interface ChatCompletionRequest {
   messages: ChatMessage[];
+  postId?: string;
 }
 
 export interface ChatCompletionResponse {
@@ -345,11 +346,12 @@ export interface ChatCompletionResponse {
 }
 
 export const getChatCompletion = async (
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  postId?: string
 ): Promise<ChatCompletionResponse> => {
   const response = await http.post<ChatCompletionResponse>(
     "/openai/chatCompletion",
-    { messages }
+    { messages, postId }
   );
   return response.data;
 };
