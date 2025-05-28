@@ -22,7 +22,11 @@ export default function PostsForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(vehicle.id, description);
+    try {
+      await onSubmit(vehicle.id, description);
+    } catch (error) {
+      console.error("Submission error:", error);
+    }
   };
 
   return (

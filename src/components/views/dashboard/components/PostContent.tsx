@@ -29,7 +29,7 @@ export default function PostContent() {
     vehicles,
     loading: vehiclesLoading,
     refetch: refetchVehicles,
-  } = useFetchVehicles(1, 100, true);
+  } = useFetchVehicles(1, 100);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -41,17 +41,19 @@ export default function PostContent() {
   }, []);
 
   const handleCreatePost = async (vehicleId: string, description?: string) => {
+    setIsCreating(true);
     try {
-      setIsCreating(true);
-      await createPost({
-        vehicleId,
-        description: description || undefined,
-      });
-      setShowForm(false);
-      setSelectedVehicle(null);
-      setShowVehicleSelector(false);
-      await refetchPosts();
-      await refetchVehicles();
+      const result = await createPost({ vehicleId, description });
+      if (result.success) {
+        setShowForm(false);
+        setShowVehicleSelector(false);
+        setSelectedVehicle(null);
+        await refetchPosts();
+      } else {
+        alert(result.error);
+      }
+    } catch (error) {
+      alert("Error inesperado al crear la publicación");
     } finally {
       setIsCreating(false);
     }

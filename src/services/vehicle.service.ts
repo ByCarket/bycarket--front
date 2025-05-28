@@ -136,7 +136,7 @@ export const getVehicles = async (
 
 export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
   const response = await http.get<VehicleResponse[]>("/vehicles/me");
-  return response.data;
+  return response.data || [];
 };
 
 export const getPosts = async (

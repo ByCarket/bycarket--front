@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getPosts, getMyPosts, deletePost, PostResponse, GetPostsResponse, createPost as createPostService } from "@/services/vehicle.service";
+import {
+  getPosts,
+  getMyPosts,
+  deletePost,
+  PostResponse,
+  GetPostsResponse,
+  createPost as createPostService,
+} from "@/services/vehicle.service";
 
 export type FilterState = {
   search?: string;
@@ -37,7 +44,9 @@ export const useFetchPosts = (
 
       if (fetchUserPostsOnly) {
         const response = await getMyPosts();
-        const postsData = Array.isArray(response) ? response : response?.data || [];
+        const postsData = Array.isArray(response)
+          ? response
+          : response?.data || [];
         setPosts(postsData);
         setTotalItems(postsData.length);
         setTotalPages(1);
@@ -45,7 +54,9 @@ export const useFetchPosts = (
         const response = await getPosts(currentPage, initialLimit, filters);
         const postsData = response.data || response.vehicles || [];
         setPosts(postsData);
-        setTotalItems(response.total || response.totalItems || postsData.length || 0);
+        setTotalItems(
+          response.total || response.totalItems || postsData.length || 0
+        );
         setTotalPages(response.totalPages || 1);
       }
     } catch (err) {
@@ -72,7 +83,7 @@ export const useFetchPosts = (
     try {
       setLoading(true);
       await deletePost(postId);
-      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
       return true;
     } catch (err) {
       setError("Error al eliminar la publicación");
@@ -84,7 +95,7 @@ export const useFetchPosts = (
 
   const updateFilters = (newFilters: FilterState) => {
     const cleanFilters: FilterState = {};
-    
+
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== "") {
         cleanFilters[key as keyof FilterState] = value;
@@ -95,15 +106,39 @@ export const useFetchPosts = (
     setCurrentPage(1);
   };
 
-  const createNewPost = async (data: { vehicleId: string; description?: string }) => {
+  const createNewPost = async (data: {
+    vehicleId: string;
+    description?: string;
+  }) => {
     try {
       setLoading(true);
-      const newPost = await createPostService(data.vehicleId, data.description);
+      const response = await createPostService(
+        data.vehicleId,
+        data.description
+      );
+      if (!response) {
+        throw new Error("No se recibió respuesta del servidor");
+      }
       await fetchPostsData();
-      return { success: true, data: newPost };
-    } catch (err) {
-      setError("Error al crear la publicación");
-      return { success: false, error: "Error al crear la publicación" };
+      return { success: true, data: response };
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return { success: false, error: err.message };
+      } else if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosError = err as {
+          response?: { data?: { message?: string } };
+        };
+        return {
+          success: false,
+          error:
+            axiosError.response?.data?.message ||
+            "Error al crear la publicación",
+        };
+      }
+      return {
+        success: false,
+        error: "Error desconocido al crear la publicación",
+      };
     } finally {
       setLoading(false);
     }
@@ -121,6 +156,6 @@ export const useFetchPosts = (
     createPost: createNewPost,
     setFilters: updateFilters,
     currentFilters: filters,
-    refetch: fetchPostsData
+    refetch: fetchPostsData,
   };
 };
