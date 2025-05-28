@@ -16,7 +16,7 @@ export default function Footer() {
             height={40}
             className="h-10 w-10"
           />
-          <span className="text-3xl font-semibold text-principal-blue">
+          <span className="text-2xl sm:text-3xl font-semibold text-principal-blue">
             ByCarket
           </span>
         </Link>
@@ -35,7 +35,7 @@ export default function Footer() {
             bycarket@gmail.com
           </a>
 
-          <div className="flex space-x-5">
+          <div className="flex flex-col sm:flex-row gap-5">
             <Link
               href="#"
               className="text-gray-600 hover:text-principal-blue transition"
@@ -53,6 +53,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
+      
 
       <div className="border-t border-principal-blue/20 w-full"></div>
 
