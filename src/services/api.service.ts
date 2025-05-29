@@ -66,10 +66,8 @@ export const registerUser = async (
   return response.data;
 };
 
-export const loginUser = async (
-  loginData: LoginData
-): Promise<LoginResponse> => {
-  const response = await http.post<LoginResponse>("/auth/login", loginData);
+export const loginUser = async (loginData: LoginData) => {
+  const response = await http.post("/auth/login", loginData);
   return response.data;
 };
 
@@ -102,6 +100,7 @@ export interface UserData {
   city?: string;
   address?: string;
   role?: string;
+  isActive?: boolean;
   image?: string | { secure_url: string };
   posts?: {
     id: string;
@@ -352,6 +351,35 @@ export const getChatCompletion = async (
   const response = await http.post<ChatCompletionResponse>(
     "/openai/chatCompletion",
     { messages, postId }
+  );
+  return response.data;
+};
+
+export interface UserListResponse {
+  data: UserData[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const getUsers = async (
+  page = 1,
+  limit = 9,
+  search = ""
+): Promise<UserListResponse> => {
+  const response = await http.get<UserListResponse>(
+    `/users?page=${page}&limit=${limit}${
+      search ? `&name=${encodeURIComponent(search)}` : ""
+    }`
+  );
+  return response.data;
+};
+
+export const banUser = async (
+  userId: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await http.delete<{ success: boolean; message: string }>(
+    `/users/${userId}`
   );
   return response.data;
 };

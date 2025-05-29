@@ -54,13 +54,13 @@ http.interceptors.response.use(
 		let message = errorMessage;
 
 		if (status === 401) {
-			message = "Error de autenticación";
+			message = "Credenciales inválidas";
 		} else if (status === 400) {
-			message = `Error de validación: ${errorMessage}`;
+			message = errorMessage || "Error de validación";
 		} else if (status === 404) {
-			message = `Recurso no encontrado: ${errorMessage}`;
+			message = errorMessage || "Recurso no encontrado";
 		} else if (status === 500) {
-			message = `Error del servidor (${status}): ${errorMessage}`;
+			message = errorMessage || `Error del servidor (${status})`;
 		}
 
 		const customError = new Error(message);

@@ -1,7 +1,8 @@
 "use client";
 
-import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
+import { User, Car, FileText, Crown, PlusCircle, Users } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
@@ -12,6 +13,7 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const { userData, refetch } = useUserData();
+  const { isAdmin } = useRolePermissions();
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [imageKey, setImageKey] = useState<number>(0);
 
@@ -29,7 +31,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     return () => clearInterval(interval);
   }, [refetch]);
 
-  const menuItems = [
+  const baseMenuItems = [
     { id: "profile", label: "Datos Personales", icon: User },
     { id: "vehicles", label: "Mis vehículos", icon: Car },
     { id: "publications", label: "Mis publicaciones", icon: FileText },
@@ -40,6 +42,14 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     },
     { id: "premium", label: "Premium", icon: Crown },
   ];
+
+  const menuItems = isAdmin
+    ? [
+        ...baseMenuItems,
+        { id: "users", label: "Lista de usuarios", icon: Users },
+        { id: "user-posts", label: "Lista de publicaciones", icon: FileText },
+      ]
+    : baseMenuItems;
 
   const getInitials = (name: string) => {
     return name

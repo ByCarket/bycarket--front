@@ -8,8 +8,11 @@ import VehiclesContent from "./components/VehiclesContent";
 import PublicationsContent from "./components/PostContent";
 import PremiumContent from "./components/PremiumContent";
 import VehicleForm from "./components/VehicleForm";
+import UserListContent from "./components/UserListContent";
+import UserPostsContent from "./components/UserPostsContent";
 import { useUserData } from "@/hooks/useUserData";
-import { User, Car, FileText, Crown, PlusCircle } from "lucide-react";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { User, Car, FileText, Crown, PlusCircle, Users } from "lucide-react";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -17,6 +20,7 @@ export default function Dashboard() {
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState("profile");
   const { loading, userData } = useUserData();
+  const { isAdmin } = useRolePermissions();
 
   useEffect(() => {
     if (tabParam) {
@@ -28,11 +32,18 @@ export default function Dashboard() {
         "publish-vehicle",
         "premium",
       ];
+      
+      if (isAdmin) {
+        validTabs.push("users");
+      }
+      
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
+      } else {
+        setActiveTab("profile");
       }
     }
-  }, [tabParam]);
+  }, [tabParam, isAdmin]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -59,18 +70,26 @@ export default function Dashboard() {
         return <VehicleForm />;
       case "premium":
         return <PremiumContent />;
+      case "users":
+        return isAdmin ? <UserListContent /> : <ProfileContent />;
+      case "user-posts":
+        return isAdmin ? <UserPostsContent /> : <ProfileContent />;
       default:
         return <ProfileContent />;
     }
   };
 
-  const menuItems = [
+  const baseMenuItems = [
     { id: "profile", label: "Perfil", icon: User },
     { id: "vehicles", label: "Vehículos", icon: Car },
     { id: "publications", label: "Publicaciones", icon: FileText },
     { id: "register-vehicle", label: "Registrar", icon: PlusCircle },
     { id: "vip", label: "VIP", icon: Crown },
   ];
+  
+  const menuItems = isAdmin 
+    ? [...baseMenuItems, { id: "users", label: "Usuarios", icon: Users }]
+    : baseMenuItems;
 
   return (
     <div className="flex min-h-screen bg-white">

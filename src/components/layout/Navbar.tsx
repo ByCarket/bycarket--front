@@ -8,9 +8,9 @@ import { Menu, X } from "lucide-react";
 import { FaUser } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { useAuthStore } from "@/context/AuthContext";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import notify from "@/app/utils/Notifications";
+import { showSuccess } from "@/app/utils/Notifications";
 
 export default function Navbar() {
   const { isAuthenticated, logout } = useAuthStore();
@@ -21,17 +21,23 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsUserAuthenticated(isAuthenticated || status === "authenticated");
+    const checkAuth = async () => {
+      const isAuth = isAuthenticated || status === "authenticated";
+      setIsUserAuthenticated(isAuth);
+    };
+
+    checkAuth();
   }, [isAuthenticated, status]);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     logout();
-    notify.success("Sesión cerrada correctamente");
+    await signOut({ redirect: false });
+    showSuccess("Sesión cerrada correctamente");
     setTimeout(() => {
-      router.push("/home");
-    }, 4000);
+      window.location.href = "/home";
+    }, 1000);
   };
 
   return (

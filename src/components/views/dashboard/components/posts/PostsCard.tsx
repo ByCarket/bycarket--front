@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { PostResponse } from "@/services/vehicle.service";
 import Image from "next/image";
+import { PostResponse } from "@/services/vehicle.service";
 
-interface PostsCardProps {
+type PostsCardProps = {
   post: PostResponse;
   onDelete?: (id: string) => Promise<boolean>;
   onView?: (post: PostResponse) => void;
-}
+  user: any;
+};
 
 export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -25,111 +25,95 @@ export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
     }
   };
 
-  const handleView = () => {
-    if (onView) {
-      onView(post);
-    }
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onView) onView(post);
   };
 
   const vehicle = post.vehicle;
-  const mainImage =
-    vehicle.images && vehicle.images.length > 0
+  const vehicleImage =
+    vehicle.images?.length > 0
       ? vehicle.images[0].secure_url
-      : "/placeholder-vehicle.jpg";
+      : "/images/default-car.png";
+
+  const vehicleName = `${vehicle.brand.name} ${vehicle.model.name} ${
+    vehicle.version?.name || ""
+  }`;
 
   const statusColors: Record<string, string> = {
-    published: "bg-green-500",
-    draft: "bg-yellow-500",
-    sold: "bg-red-500",
-    default: "bg-secondary-blue",
+    published: "bg-green-100 text-green-800",
+    active: "bg-green-100 text-green-800",
+    draft: "bg-yellow-100 text-yellow-800",
+    sold: "bg-red-100 text-red-800",
+    inactive: "bg-gray-100 text-gray-800",
+    default: "bg-blue-100 text-blue-800",
   };
 
-  const statusColor =
+  const statusText: Record<string, string> = {
+    active: "Activo",
+    sold: "Vendido",
+    inactive: "Inactivo",
+    default: post.status,
+  };
+
+  const statusClass =
     statusColors[post.status.toLowerCase()] || statusColors.default;
+  const statusLabel =
+    statusText[post.status.toLowerCase()] || statusText.default;
 
   return (
-    <div
-      className="rounded-xl overflow-hidden shadow-lg transition-all duration-300 bg-white hover:shadow-xl cursor-pointer"
-      style={{
-        transform: isHovered ? "translateY(-5px)" : "translateY(0)",
-        transition: "transform 0.3s ease-in-out",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleView}
-    >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={mainImage}
-          alt={`${vehicle.brand.name} ${vehicle.model.name}`}
-          className="w-full h-full object-cover transition-transform duration-500"
-          style={{
-            transform: isHovered ? "scale(1.05)" : "scale(1)",
-          }}
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
+      <div className="relative w-full h-48">
+        <Image
+          src={vehicleImage}
+          alt={vehicleName}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
         />
         <div
-          className={`absolute top-3 right-3 ${statusColor} text-white px-3 py-1 rounded-full text-xs font-medium`}
+          className={`absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded-full ${statusClass}`}
         >
-          {post.status}
+          {statusLabel}
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-principal-blue/80 to-transparent h-16"></div>
       </div>
 
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-xl text-principal-blue">
-            {vehicle.brand.name} {vehicle.model.name}
-          </h3>
-          <p className="font-bold text-lg text-secondary-blue">
-            {vehicle.year}
-          </p>
-        </div>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-principal-blue line-clamp-1">
+          {vehicleName}
+        </h3>
 
-        <div className="flex items-center gap-2 mb-3">
-          <span className="bg-principal-blue/10 text-principal-blue px-2 py-1 rounded-full text-xs">
-            {vehicle.typeOfVehicle}
-          </span>
-          <span className="bg-secondary-blue/10 text-secondary-blue px-2 py-1 rounded-full text-xs">
-            {vehicle.condition}
-          </span>
-          <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-            {vehicle.mileage.toLocaleString()} km
-          </span>
-        </div>
+        <p className="text-gray-600 mt-1 text-sm">
+          {vehicle.year} | {vehicle.mileage.toLocaleString()} km |{" "}
+          {vehicle.condition}
+        </p>
 
-        <p className="font-bold text-2xl mb-3 text-principal-blue">
+        <p className="text-principal-blue font-semibold mt-2">
           {vehicle.currency} {vehicle.price.toLocaleString()}
         </p>
 
-        <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-          {vehicle.description}
-        </p>
-
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onView) onView(post);
-            }}
-            className="bg-principal-blue text-white px-4 py-2 rounded-lg hover:bg-principal-blue/90 transition-colors duration-200"
+            onClick={handleView}
+            className="px-3 py-1 bg-secondary-blue text-white text-sm rounded hover:bg-principal-blue transition-colors"
           >
-            Ver detalles
+            Ver detalle
           </button>
 
           {onDelete && (
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+              className={`px-3 py-1 text-sm rounded transition-colors ${
                 post.status.toLowerCase() === "inactive"
                   ? "bg-principal-blue text-white hover:bg-principal-blue/90"
                   : "bg-red-500 text-white hover:bg-red-600"
-              } disabled:opacity-50`}
+              } disabled:opacity-50 flex items-center`}
             >
               {isDeleting ? (
-                <span className="flex items-center">
+                <>
                   <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -149,11 +133,11 @@ export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
                     ></path>
                   </svg>
                   {post.status.toLowerCase() === "inactive"
-                    ? "Publicando..."
+                    ? "Activando..."
                     : "Eliminando"}
-                </span>
+                </>
               ) : post.status.toLowerCase() === "inactive" ? (
-                "Publicar"
+                "Activar"
               ) : (
                 "Eliminar"
               )}
