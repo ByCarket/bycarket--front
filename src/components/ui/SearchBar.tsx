@@ -1,89 +1,55 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;
-  initialQuery?: string;
+  onSearch: (query: string | undefined) => void;
+  placeholder?: string;
+  initialValue?: string;
+  debounceMs?: number;
 }
 
-const SearchBar = ({ onSearch, initialQuery = "" }: SearchBarProps) => {
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [focused, setFocused] = useState(false);
+export function SearchBar({
+  onSearch,
+  placeholder = "Buscar vehículos...",
+  initialValue = "",
+  debounceMs = 500,
+}: SearchBarProps) {
+  const [searchTerm, setSearchTerm] = useState(initialValue);
 
   useEffect(() => {
-    setSearchQuery(initialQuery || "");
-  }, [initialQuery]);
+    const handler = setTimeout(() => {
+      onSearch(searchTerm || undefined);
+    }, debounceMs);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const trimmedQuery = searchQuery.trim();
-    onSearch(trimmedQuery);
-  };
+    return () => clearTimeout(handler);
+  }, [searchTerm, onSearch, debounceMs]);
 
   return (
-    <form
-      onSubmit={handleSearch}
-      className="w-full max-w-2xl mx-auto flex items-center gap-2"
-    >
-      <div
-        className={`flex-1 flex items-center border ${
-          focused
-            ? "border-principal-blue ring-2 ring-principal-blue/20"
-            : "border-gray-200"
-        } bg-white rounded-xl px-3 transition-all duration-200 shadow-sm`}
-      >
+    <div className="relative w-full">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
         <svg
+          className="w-4 h-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill={focused ? "#103663" : "#9CA3AF"}
-          viewBox="0 0 16 16"
-          className="mr-2 flex-shrink-0"
         >
-          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l.1.115 3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
         </svg>
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder="Buscar vehículos por marca, modelo o versión..."
-          className="w-full py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery("")}
-            className="ml-1 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        )}
       </div>
-      <button
-        type="submit"
-        className="py-2.5 px-4 rounded-xl bg-principal-blue hover:bg-[#0d2e55] text-white font-medium text-sm transition-colors flex items-center shadow-sm"
-        aria-label="Buscar"
-      >
-        <span>Buscar</span>
-      </button>
-    </form>
+      <input
+        type="text"
+        className="block w-full p-2.5 pl-10 text-sm text-gray-800 border border-gray-200 rounded-lg focus:ring-2 focus:ring-principal-blue/50 focus:border-principal-blue focus:outline-none bg-white transition-all duration-200 hover:border-gray-300"
+        placeholder={placeholder}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
   );
-};
-
-export default SearchBar;
+}

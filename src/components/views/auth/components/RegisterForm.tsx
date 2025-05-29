@@ -11,7 +11,7 @@ import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 
 import { useSession } from "next-auth/react";
-import notify from "@/app/utils/Notifications";
+import { showSuccess, showError } from "@/app/utils/Notifications";
 
 interface FormValues {
   name: string;
@@ -194,29 +194,28 @@ export default function RegisterForm() {
       };
       try {
         await register(registrationData);
-        notify.success(
-          "¡Registro exitoso!",
-          "Tu cuenta ha sido creada correctamente. Por favor inicia sesión."
+        showSuccess(
+          "¡Registro exitoso! Por favor inicia sesión con tus credenciales."
         );
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
+        router.push("/login");
       } catch (err: any) {
         const errorMessage =
           err?.response?.data?.message ||
           "Error en el registro. Por favor, verifica los datos e inténtalo de nuevo.";
-        notify.error("Error en el registro", errorMessage);
 
         if (err?.response?.data?.field) {
           formik.setFieldError(
             err.response.data.field,
             err.response.data.message
           );
+          setError(errorMessage);
         } else if (err instanceof Error) {
           setError(errorMessage);
         } else {
           setError("Error en el registro. Inténtalo de nuevo.");
         }
+
+        showError(errorMessage);
       }
     },
   });

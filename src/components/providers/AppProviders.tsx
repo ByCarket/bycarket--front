@@ -3,7 +3,9 @@
 import { AuthProvider } from "@/context/AuthProvider";
 import { SessionProvider } from "next-auth/react";
 import React from "react";
-import { NotificationsProvider } from "@/app/utils/Notifications";
+import ChatBot from "@/components/ui/ChatBot";
+import { NotificationsContainer } from "@/app/utils/Notifications";
+import { SpinnerProvider } from "@/context/SpinnerContext";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -13,8 +15,11 @@ export default function AppProviders({ children }: AppProvidersProps) {
   return (
     <SessionProvider>
       <AuthProvider>
-        <NotificationsProvider />
-        {children}
+        <SpinnerProvider>
+          <ChatBot />
+          {children}
+        </SpinnerProvider>
+        <NotificationsContainer />
       </AuthProvider>
     </SessionProvider>
   );

@@ -1,61 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-	getVehicles,
-	GetVehiclesResponse,
-	VehicleResponse,
-} from "@/services/vehicle.service";
+import { useState, useEffect, useCallback } from "react";
+import { getUserVehicles, VehicleResponse } from "@/services/vehicle.service";
 
-export const useFetchVehicles = (
-	initialPage: number = 1,
-	initialLimit: number = 10
-) => {
-	const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [currentPage, setCurrentPage] = useState(initialPage);
-	const [totalPages, setTotalPages] = useState(1);
-	const [totalItems, setTotalItems] = useState(0);
+export const useFetchVehicles = () => {
+  const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		const fetchVehiclesData = async () => {
-			try {
-				setLoading(true);
-				setError(null);
-				const data: GetVehiclesResponse = await getVehicles(
-					currentPage,
-					initialLimit
-				);
-				setVehicles(data.vehicles);
-				setTotalPages(data.totalPages);
-				setTotalItems(data.totalItems);
-				setCurrentPage(data.currentPage);
-			} catch (err: any) {
-				setError(
-					"Hubo un error al cargar los vehículos. Inténtalo de nuevo más tarde. Uwaa~"
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
+  const fetchVehiclesData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const vehs = await getUserVehicles();
+      setVehicles(Array.isArray(vehs) ? vehs : []);
+    } catch (error) {
+      setVehicles([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-		fetchVehiclesData();
-	}, [currentPage, initialLimit]);
+  useEffect(() => {
+    fetchVehiclesData();
+  }, [fetchVehiclesData]);
 
-	const handlePageChange = (page: number) => {
-		if (page >= 1 && page <= totalPages) {
-			setCurrentPage(page);
-		}
-	};
-
-	return {
-		vehicles,
-		loading,
-		error,
-		currentPage,
-		totalPages,
-		totalItems,
-		handlePageChange,
-	};
+  return {
+    vehicles,
+    loading,
+    refetch: fetchVehiclesData,
+  };
 };

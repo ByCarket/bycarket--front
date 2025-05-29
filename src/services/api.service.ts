@@ -66,10 +66,8 @@ export const registerUser = async (
   return response.data;
 };
 
-export const loginUser = async (
-  loginData: LoginData
-): Promise<LoginResponse> => {
-  const response = await http.post<LoginResponse>("/auth/login", loginData);
+export const loginUser = async (loginData: LoginData) => {
+  const response = await http.post("/auth/login", loginData);
   return response.data;
 };
 
@@ -102,6 +100,7 @@ export interface UserData {
   city?: string;
   address?: string;
   role?: string;
+  isActive?: boolean;
   image?: string | { secure_url: string };
   posts?: {
     id: string;
@@ -285,11 +284,11 @@ export const getSubscription = async (
     );
     return response;
   } catch (error: any) {
-    console.error('Error fetching subscription:', error);
+    console.error("Error fetching subscription:", error);
     throw new Error(
       error.response?.data?.message ||
-      error.message ||
-      'Error al obtener los detalles de la suscripción'
+        error.message ||
+        "Error al obtener los detalles de la suscripción"
     );
   }
 };
@@ -305,7 +304,10 @@ export const createSubscription = async (
         paymentMethodId,
         metadata: {
           frontend_timestamp: new Date().toISOString(),
-          user_agent: typeof window !== "undefined" ? window.navigator.userAgent : "server",
+          user_agent:
+            typeof window !== "undefined"
+              ? window.navigator.userAgent
+              : "server",
         },
       }
     );
@@ -326,4 +328,58 @@ export const createSubscription = async (
         "Error al crear la suscripción"
     );
   }
+};
+
+export interface ChatMessage {
+  role: "user" | "bot" | "system";
+  content: string;
+}
+
+export interface ChatCompletionRequest {
+  messages: ChatMessage[];
+  postId?: string;
+}
+
+export interface ChatCompletionResponse {
+  message: string;
+}
+
+export const getChatCompletion = async (
+  messages: ChatMessage[],
+  postId?: string
+): Promise<ChatCompletionResponse> => {
+  const response = await http.post<ChatCompletionResponse>(
+    "/openai/chatCompletion",
+    { messages, postId }
+  );
+  return response.data;
+};
+
+export interface UserListResponse {
+  data: UserData[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const getUsers = async (
+  page = 1,
+  limit = 9,
+  search = ""
+): Promise<UserListResponse> => {
+  const response = await http.get<UserListResponse>(
+    `/users?page=${page}&limit=${limit}${
+      search ? `&name=${encodeURIComponent(search)}` : ""
+    }`
+  );
+  return response.data;
+};
+
+export const banUser = async (
+  userId: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await http.delete<{ success: boolean; message: string }>(
+    `/users/${userId}`
+  );
+  return response.data;
 };

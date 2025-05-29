@@ -1,641 +1,242 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-	getUserVehicles,
-	VehicleResponse,
-	getPosts,
-	PostResponse,
-	deletePost,
-} from "@/services/vehicle.service";
-import { createPost } from "@/services/api.service";
-import { notify } from "@/app/utils/Notifications";
-import { useRouter } from "next/navigation";
-import { Car as CarIcon, Share2, Trash as TrashIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { PostResponse, VehicleResponse } from "@/services/vehicle.service";
+import { useFetchPosts } from "@/hooks/useFetchPosts";
+import { useFetchVehicles } from "@/hooks/useFetchVehicles";
+import PostsList from "./posts/PostsList";
+import PostsForm from "./posts/PostsForm";
+import PostsDetail from "./posts/PostsDetail";
 
-export default function PublicationsContent() {
-	const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
-	const [posts, setPosts] = useState<PostResponse[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [posting, setPosting] = useState<string | null>(null);
-	const [deleting, setDeleting] = useState<string | null>(null);
-	const [republishing, setRepublishing] = useState<string | null>(null);
-	const [successMessage, setSuccessMessage] = useState<string | null>(null);
-	const router = useRouter();
+export default function PostContent() {
+  const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showVehicleSelector, setShowVehicleSelector] =
+    useState<boolean>(false);
+  const [selectedVehicle, setSelectedVehicle] =
+    useState<VehicleResponse | null>(null);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
 
-	const [selectedVehicle, setSelectedVehicle] =
-		useState<VehicleResponse | null>(null);
-	const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
-	const [description, setDescription] = useState("");
-	const [publishSuccess, setPublishSuccess] = useState(false);
-	const [isRepublishing, setIsRepublishing] = useState(false);
-	const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const {
+    posts,
+    loading: postsLoading,
+    deletePost,
+    createPost,
+    refetch: refetchPosts,
+  } = useFetchPosts(1, 100, {}, true);
 
-	const fetchData = async () => {
-		try {
-			setLoading(true);
-			setError(null);
-			const [userVehicles, postsResponse] = await Promise.all([
-				getUserVehicles(),
-				getPosts(1, 100),
-			]);
-			setVehicles(userVehicles);
-			setPosts(postsResponse.data);
-		} catch (err) {
-			notify.error("Error", "No se pudieron cargar las publicaciones");
-		} finally {
-			setLoading(false);
-		}
-	};
+  const {
+    vehicles,
+    loading: vehiclesLoading,
+    refetch: refetchVehicles,
+  } = useFetchVehicles();
 
-	useEffect(() => {
-		fetchData();
-	}, []);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      await refetchPosts();
+      await refetchVehicles();
+    };
 
-	const handlePostVehicle = async (vehicleId: string) => {
-		try {
-			setPosting(vehicleId);
-			const loadingId = notify.loading(isRepublishing ? "Republicando vehículo..." : "Publicando vehículo...");
-			
-			await createPost(vehicleId, description);
-			
-			notify.dismiss(loadingId);
-			notify.success("Éxito", isRepublishing ? "¡Vehículo republicado con éxito!" : "¡Vehículo publicado con éxito!");
+    loadInitialData();
+  }, []);
 
-			setPublishSuccess(true);
-			setSuccessMessage(
-				isRepublishing
-					? "¡Vehículo republicado con éxito!"
-					: "¡Vehículo publicado con éxito!"
-			);
+  const handleCreatePost = async (vehicleId: string, description?: string) => {
+    setIsCreating(true);
+    try {
+      const result = await createPost({ vehicleId, description });
+      if (result.success) {
+        setShowForm(false);
+        setShowVehicleSelector(false);
+        setSelectedVehicle(null);
+        await refetchPosts();
+      } else {
+        alert(result.error);
+      }
+    } catch (error) {
+      alert("Error inesperado al crear la publicación");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
-			setTimeout(() => {
-				closeDetail();
-				setPublishSuccess(false);
-				setDescription("");
-				setIsRepublishing(false);
-				fetchData();
-			}, 2000);
-		} catch (err: any) {
-			notify.error("Error", err.message || "Hubo un error al publicar el vehículo");
-			setError(err.message || "Hubo un error al publicar el vehículo");
-			setTimeout(() => {
-				setError(null);
-			}, 3000);
-		} finally {
-			setPosting(null);
-			setRepublishing(null);
-		}
-	};
+  const handleDeletePost = async (postId: string): Promise<boolean> => {
+    try {
+      await deletePost(postId);
+      if (selectedPost?.id === postId) {
+        setSelectedPost(null);
+      }
+      await refetchPosts();
+      await refetchVehicles();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
 
-	const openPublishModal = (vehicle: VehicleResponse) => {
-		setSelectedVehicle(vehicle);
-		setSelectedVehicleId(vehicle.id);
-		setDescription("");
-		setPublishSuccess(false);
-		setIsRepublishing(false);
-		setSelectedImageIndex(0);
-	};
+  const handleViewPost = (post: PostResponse) => {
+    setSelectedPost(post);
+  };
 
-	const openRepublishModal = (post: PostResponse) => {
-		setSelectedVehicle(post.vehicle);
-		setSelectedVehicleId(post.vehicle.id);
-		setDescription("");
-		setPublishSuccess(false);
-		setIsRepublishing(true);
-		setSelectedImageIndex(0);
-	};
+  const handleNewPost = (vehicle: VehicleResponse) => {
+    setSelectedVehicle(vehicle);
+    setShowVehicleSelector(false);
+    setShowForm(true);
+  };
 
-	const closeDetail = () => {
-		setSelectedVehicleId(null);
-		setSelectedVehicle(null);
-		setDescription("");
-		setPublishSuccess(false);
-	};
+  const availableVehicles = vehicles.filter(
+    (vehicle) => !posts.some((post) => post.vehicle.id === vehicle.id)
+  );
 
-	const handleDeletePost = async (postId: string) => {
-		if (window.confirm("¿Estás seguro que deseas eliminar esta publicación?")) {
-			try {
-				setDeleting(postId);
-				setError(null);
-				const loadingId = notify.loading("Eliminando publicación...");
+  return (
+    <div className="container mx-auto py-6 px-4">
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-principal-blue">
+            Mis Publicaciones
+          </h2>
 
-				await deletePost(postId);
-				notify.dismiss(loadingId);
-				notify.success("Éxito", "Publicación eliminada correctamente");
+          {availableVehicles.length > 0 && (
+            <button
+              onClick={() => setShowVehicleSelector(true)}
+              className="bg-principal-blue text-white px-4 py-2 rounded-lg hover:bg-principal-blue/90 transition-colors flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Nueva Publicación
+            </button>
+          )}
+        </div>
 
-				setSuccessMessage("Publicación eliminada correctamente");
-				fetchData();
+        <PostsList
+          posts={posts}
+          loading={postsLoading}
+          onDelete={handleDeletePost}
+          onView={handleViewPost}
+          emptyMessage={
+            vehicles.length === 0
+              ? "No tienes vehículos para publicar"
+              : "Aún no tienes publicaciones"
+          }
+        />
+      </div>
 
-				setTimeout(() => {
-					setSuccessMessage(null);
-				}, 3000);
-			} catch (err: any) {
-				notify.error("Error", err.message || "Hubo un error al eliminar la publicación");
-				setError(
-					err.message || "Hubo un error al eliminar la publicación"
-				);
-				setTimeout(() => {
-					setError(null);
-				}, 3000);
-			} finally {
-				setDeleting(null);
-			}
-		}
-	};
+      {showVehicleSelector && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-bold text-principal-blue">
+                Selecciona un vehículo para publicar
+              </h2>
+              <button
+                onClick={() => setShowVehicleSelector(false)}
+                className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4">
+              {vehiclesLoading ? (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-principal-blue"></div>
+                </div>
+              ) : availableVehicles.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No tienes vehículos disponibles para publicar
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {availableVehicles.map((vehicle) => (
+                    <div
+                      key={vehicle.id}
+                      className="border rounded-lg p-4 hover:shadow-md cursor-pointer transition-all"
+                      onClick={() => handleNewPost(vehicle)}
+                    >
+                      <div className="flex items-center gap-3">
+                        {vehicle.images && vehicle.images.length > 0 ? (
+                          <img
+                            src={vehicle.images[0].secure_url}
+                            alt={`${vehicle.brand.name} ${vehicle.model.name}`}
+                            className="w-20 h-20 object-cover rounded-md"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-medium">
+                            {vehicle.brand.name} {vehicle.model.name}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {vehicle.version.name} {vehicle.year}
+                          </p>
+                          <p className="text-sm font-semibold mt-1">
+                            {vehicle.currency} {vehicle.price.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
-	if (loading) {
-		return (
-			<div className='flex items-center justify-center min-h-[300px]'>
-				<div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-principal-blue'></div>
-			</div>
-		);
-	}
+      {showForm && selectedVehicle && (
+        <PostsForm
+          vehicle={selectedVehicle}
+          onSubmit={handleCreatePost}
+          onCancel={() => {
+            setShowForm(false);
+            setSelectedVehicle(null);
+          }}
+          loading={isCreating}
+        />
+      )}
 
-	return (
-		<div>
-			<div className='border-b pb-4 mb-6'>
-				<h1 className='text-2xl font-bold text-principal-blue'>
-					Mis publicaciones
-				</h1>
-				<p className='text-gray-500 mt-1'>
-					Gestiona tus publicaciones o crea nuevas
-				</p>
-			</div>
-
-			{successMessage && (
-				<div className='bg-green-50 border border-green-200 rounded-lg p-4 my-4'>
-					<p className='text-green-600'>{successMessage}</p>
-				</div>
-			)}
-
-			{error && (
-				<div className='bg-red-50 border border-red-200 rounded-lg p-4 my-4'>
-					<p className='text-red-600'>{error}</p>
-				</div>
-			)}
-
-			{posts.length > 0 && (
-				<>
-					<h2 className='text-xl font-semibold mb-4 text-principal-blue'>
-						Publicaciones activas
-					</h2>
-					<div className='grid gap-4 mb-8'>
-						{posts.map((post) => (
-							<div key={post.id}>
-								<div
-									className='bg-white p-6 rounded-lg border border-gray-200 flex flex-col md:flex-row md:items-center gap-4'>
-									<div className='w-16 h-16 bg-secondary-blue rounded-md flex items-center justify-center text-white'>
-										<CarIcon className='w-8 h-8' />
-									</div>
-
-									<div className='flex-1'>
-										<h3 className='font-semibold text-lg'>
-											{post.vehicle.brand.name}{" "}
-											{post.vehicle.model.name}
-										</h3>
-										<div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-2'>
-											<div>
-												<p className='text-xs text-gray-500'>
-													Año
-												</p>
-												<p>{post.vehicle.year}</p>
-											</div>
-											<div>
-												<p className='text-xs text-gray-500'>
-													Versión
-												</p>
-												<p>{post.vehicle.version.name}</p>
-											</div>
-											<div>
-												<p className='text-xs text-gray-500'>
-													Kilometraje
-												</p>
-												<p>
-													{post.vehicle.mileage.toLocaleString()}{" "}
-													KM
-												</p>
-											</div>
-											<div>
-												<p className='text-xs text-gray-500'>
-													Precio
-												</p>
-												<p>
-													$
-													{post.vehicle.price.toLocaleString()}
-												</p>
-											</div>
-										</div>
-										<div className='mt-2'>
-											<p className='text-xs text-gray-500'>
-												Estado
-											</p>
-											<p className='text-sm'>
-												<span className='inline-block px-2 py-1 bg-green-100 text-green-800 rounded-full'>
-													{post.status}
-												</span>
-											</p>
-										</div>
-									</div>
-
-									<div className='flex flex-col md:flex-row gap-2'>
-										<button
-											onClick={() => openRepublishModal(post)}
-											className='px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors flex items-center gap-2'>
-											<Share2 className='w-5 h-5' />
-											<span>Ver detalles</span>
-										</button>
-
-										<button
-											onClick={() =>
-												handleDeletePost(post.id)
-											}
-											disabled={deleting === post.id}
-											className='px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'>
-											{deleting === post.id ? (
-												<>
-													<div className='animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white'></div>
-													<span>Eliminando...</span>
-												</>
-											) : (
-												<>
-													<TrashIcon className='w-5 h-5' />
-													<span>Eliminar</span>
-												</>
-											)}
-										</button>
-									</div>
-								</div>
-								
-								{selectedVehicleId === post.vehicle.id && selectedVehicle && (
-									<div className='mt-2 border border-gray-200 rounded-lg bg-white p-4 transition-all duration-300 ease-in-out'>
-										{publishSuccess ? (
-											<div className='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4'>
-												{isRepublishing
-													? "¡Vehículo republicado exitosamente!"
-													: "¡Vehículo publicado exitosamente!"}
-											</div>
-										) : (
-											<div className='max-w-4xl mx-auto'>
-												<div className='flex justify-between items-center mb-4'>
-													<h3 className='text-xl font-bold text-principal-blue'>
-														{isRepublishing ? "Republicar Vehículo" : "Publicar Vehículo"}
-													</h3>
-													<button 
-														onClick={closeDetail}
-														className='text-gray-500 hover:text-gray-700'
-													>
-														<ChevronUp className='w-5 h-5' />
-													</button>
-												</div>
-												<div className='flex flex-col lg:flex-row gap-6'>
-													{selectedVehicle.images && selectedVehicle.images.length > 0 && (
-														<div className='lg:w-1/2'>
-															<div className='mb-3'>
-																<div className='relative w-full h-64 md:h-80 rounded-lg overflow-hidden bg-gray-100 border border-gray-200'>
-																	<img
-																		src={selectedVehicle.images[selectedImageIndex].secure_url}
-																		alt={`Vehicle main image`}
-																		className='object-contain w-full h-full'
-																	/>
-																</div>
-															</div>
-															{selectedVehicle.images.length > 1 && (
-																<div className='flex gap-2 overflow-x-auto pb-2'>
-																	{selectedVehicle.images.map((image, index) => (
-																		<button
-																			key={index}
-																			onClick={() => setSelectedImageIndex(index)}
-																			className={`relative w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
-																				selectedImageIndex === index
-																					? 'border-principal-blue shadow-md'
-																					: 'border-gray-200 hover:border-gray-300'
-																			}`}>
-																			<img
-																				src={image.secure_url}
-																				alt={`Vehicle thumbnail ${index + 1}`}
-																				className='object-cover w-full h-full'
-																			/>
-																		</button>
-																	))}
-																</div>
-															)}
-														</div>
-													)}
-
-													<div className='lg:w-1/2'>
-														<div className='bg-white border border-gray-200 rounded-lg p-4 mb-4'>
-															<h3 className='text-xl font-bold text-principal-blue mb-3'>
-																{selectedVehicle.brand.name} {selectedVehicle.model.name}
-															</h3>
-															
-															<div className='mb-4'>
-																<div className='text-2xl font-bold text-green-600 mb-2'>
-																	{selectedVehicle.currency} {selectedVehicle.price.toLocaleString()}
-																</div>
-																<div className='inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium'>
-																	{selectedVehicle.condition === "new" ? "Nuevo" : "Usado"}
-																</div>
-															</div>
-
-															<div className='grid grid-cols-2 gap-4'>
-																<div className='bg-gray-50 p-3 rounded-md'>
-																	<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Año</p>
-																	<p className='font-semibold text-gray-900'>{selectedVehicle.year}</p>
-																</div>
-																<div className='bg-gray-50 p-3 rounded-md'>
-																	<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Kilometraje</p>
-																	<p className='font-semibold text-gray-900'>{selectedVehicle.mileage.toLocaleString()} KM</p>
-																</div>
-																<div className='bg-gray-50 p-3 rounded-md col-span-2'>
-																	<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Versión</p>
-																	<p className='font-semibold text-gray-900'>{selectedVehicle.version.name}</p>
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>
-
-												<div className='mt-6'>
-													<label className='block text-sm font-medium text-gray-700 mb-2'>
-														Descripción adicional (opcional)
-													</label>
-													<textarea
-														value={description}
-														onChange={(e) => setDescription(e.target.value)}
-														className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-principal-blue focus:border-transparent resize-none'
-														rows={4}
-														placeholder='Añade detalles adicionales sobre tu vehículo, características especiales, historial de mantenimiento, etc...'
-													/>
-												</div>
-
-												<div className='flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-200'>
-													<button
-														onClick={closeDetail}
-														className='px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors'>
-														Cancelar
-													</button>
-													<button
-														onClick={() => selectedVehicle && handlePostVehicle(selectedVehicle.id)}
-														disabled={posting === selectedVehicle.id || republishing === selectedVehicle.id}
-														className='px-6 py-2 bg-principal-blue text-white rounded-lg hover:bg-secondary-blue transition-colors disabled:opacity-50 font-medium min-w-[120px]'>
-														{isRepublishing
-															? republishing === selectedVehicle.id
-																? "Republicando..."
-																: "Republicar"
-															: posting === selectedVehicle.id
-															? "Publicando..."
-															: "Publicar"}
-													</button>
-												</div>
-											</div>
-										)}
-									</div>
-								)}
-							</div>
-						))}
-					</div>
-				</>
-			)}
-
-			{vehicles.length > 0 && (
-				<>
-					<h2 className='text-xl font-semibold mb-4 text-principal-blue'>
-						Vehículos disponibles para publicar
-					</h2>
-
-					<div className='grid gap-4'>
-						{vehicles
-							.filter(
-								(vehicle) =>
-									!posts.some(
-										(post) => post.vehicle.id === vehicle.id
-									)
-							)
-							.map((vehicle) => (
-								<div key={vehicle.id}>
-									<div className='bg-white p-6 rounded-lg border border-gray-200 flex flex-col md:flex-row md:items-center gap-4'>
-										<div className='w-16 h-16 bg-secondary-blue rounded-md flex items-center justify-center text-white'>
-											<CarIcon className='w-8 h-8' />
-										</div>
-
-										<div className='flex-1'>
-											<h3 className='font-semibold text-lg'>
-												{vehicle.brand.name}{" "}
-												{vehicle.model.name}
-											</h3>
-											<div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-2'>
-												<div>
-													<p className='text-xs text-gray-500'>
-														Año
-													</p>
-													<p>{vehicle.year}</p>
-												</div>
-												<div>
-													<p className='text-xs text-gray-500'>
-														Versión
-													</p>
-													<p>{vehicle.version.name}</p>
-												</div>
-												<div>
-													<p className='text-xs text-gray-500'>
-														Kilometraje
-													</p>
-													<p>
-														{vehicle.mileage.toLocaleString()}{" "}
-														KM
-													</p>
-												</div>
-												<div>
-													<p className='text-xs text-gray-500'>
-														Precio
-													</p>
-													<p>
-														$
-														{vehicle.price.toLocaleString()}
-													</p>
-												</div>
-											</div>
-										</div>
-
-										<button
-											onClick={() => openPublishModal(vehicle)}
-											disabled={posting === vehicle.id}
-											className='px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'>
-											{posting === vehicle.id ? (
-												<>
-													<div className='animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white'></div>
-													<span>Publicando...</span>
-												</>
-											) : (
-												<>
-													<Share2 className='w-5 h-5' />
-													<span>Publicar</span>
-												</>
-											)}
-										</button>
-									</div>
-									
-									{selectedVehicleId === vehicle.id && selectedVehicle && (
-										<div className='mt-2 border border-gray-200 rounded-lg bg-white p-4 transition-all duration-300 ease-in-out'>
-											{publishSuccess ? (
-												<div className='bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4'>
-													{isRepublishing
-														? "¡Vehículo republicado exitosamente!"
-														: "¡Vehículo publicado exitosamente!"}
-												</div>
-											) : (
-												<div className='max-w-4xl mx-auto'>
-													<div className='flex justify-between items-center mb-4'>
-														<h3 className='text-xl font-bold text-principal-blue'>
-															{isRepublishing ? "Republicar Vehículo" : "Publicar Vehículo"}
-														</h3>
-														<button 
-															onClick={closeDetail}
-															className='text-gray-500 hover:text-gray-700'
-														>
-															<ChevronUp className='w-5 h-5' />
-														</button>
-													</div>
-													<div className='flex flex-col lg:flex-row gap-6'>
-														{selectedVehicle.images && selectedVehicle.images.length > 0 && (
-															<div className='lg:w-1/2'>
-																<div className='mb-3'>
-																	<div className='relative w-full h-64 md:h-80 rounded-lg overflow-hidden bg-gray-100 border border-gray-200'>
-																		<img
-																			src={selectedVehicle.images[selectedImageIndex].secure_url}
-																			alt={`Vehicle main image`}
-																			className='object-contain w-full h-full'
-																		/>
-																	</div>
-																</div>
-																{selectedVehicle.images.length > 1 && (
-																	<div className='flex gap-2 overflow-x-auto pb-2'>
-																		{selectedVehicle.images.map((image, index) => (
-																			<button
-																				key={index}
-																				onClick={() => setSelectedImageIndex(index)}
-																				className={`relative w-16 h-16 md:w-20 md:h-20 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
-																					selectedImageIndex === index
-																						? 'border-principal-blue shadow-md'
-																						: 'border-gray-200 hover:border-gray-300'
-																				}`}>
-																				<img
-																					src={image.secure_url}
-																					alt={`Vehicle thumbnail ${index + 1}`}
-																					className='object-cover w-full h-full'
-																				/>
-																			</button>
-																		))}
-																	</div>
-																)}
-															</div>
-														)}
-
-														<div className='lg:w-1/2'>
-															<div className='bg-white border border-gray-200 rounded-lg p-4 mb-4'>
-																<h3 className='text-xl font-bold text-principal-blue mb-3'>
-																	{selectedVehicle.brand.name} {selectedVehicle.model.name}
-																</h3>
-																
-																<div className='mb-4'>
-																	<div className='text-2xl font-bold text-green-600 mb-2'>
-																		{selectedVehicle.currency} {selectedVehicle.price.toLocaleString()}
-																	</div>
-																	<div className='inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium'>
-																		{selectedVehicle.condition === "new" ? "Nuevo" : "Usado"}
-																	</div>
-																</div>
-
-																<div className='grid grid-cols-2 gap-4'>
-																	<div className='bg-gray-50 p-3 rounded-md'>
-																		<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Año</p>
-																		<p className='font-semibold text-gray-900'>{selectedVehicle.year}</p>
-																	</div>
-																	<div className='bg-gray-50 p-3 rounded-md'>
-																		<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Kilometraje</p>
-																		<p className='font-semibold text-gray-900'>{selectedVehicle.mileage.toLocaleString()} KM</p>
-																	</div>
-																	<div className='bg-gray-50 p-3 rounded-md col-span-2'>
-																		<p className='text-xs text-gray-500 uppercase tracking-wide mb-1'>Versión</p>
-																		<p className='font-semibold text-gray-900'>{selectedVehicle.version.name}</p>
-																	</div>
-																</div>
-															</div>
-														</div>
-													</div>
-
-													<div className='mt-6'>
-														<label className='block text-sm font-medium text-gray-700 mb-2'>
-															Descripción adicional (opcional)
-														</label>
-														<textarea
-															value={description}
-															onChange={(e) => setDescription(e.target.value)}
-															className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-principal-blue focus:border-transparent resize-none'
-															rows={4}
-															placeholder='Añade detalles adicionales sobre tu vehículo, características especiales, historial de mantenimiento, etc...'
-														/>
-													</div>
-
-													<div className='flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-200'>
-														<button
-															onClick={closeDetail}
-															className='px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors'>
-															Cancelar
-														</button>
-														<button
-															onClick={() => selectedVehicle && handlePostVehicle(selectedVehicle.id)}
-															disabled={posting === selectedVehicle.id || republishing === selectedVehicle.id}
-															className='px-6 py-2 bg-principal-blue text-white rounded-lg hover:bg-secondary-blue transition-colors disabled:opacity-50 font-medium min-w-[120px]'>
-															{isRepublishing
-																? republishing === selectedVehicle.id
-																	? "Republicando..."
-																	: "Republicar"
-																: posting === selectedVehicle.id
-																? "Publicando..."
-																: "Publicar"}
-														</button>
-													</div>
-												</div>
-											)}
-										</div>
-									)}
-								</div>
-							))}
-					</div>
-				</>
-			)}
-
-			{vehicles.length === 0 && posts.length === 0 && (
-				<div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 my-4'>
-					<p className='text-yellow-600'>
-						No tienes vehículos para publicar. Registra un vehículo
-						primero.
-					</p>
-				</div>
-			)}
-		</div>
-	);
-}
-
-function Trash(props: any) {
-	return (
-		<svg
-			xmlns='http://www.w3.org/2000/svg'
-			width='24'
-			height='24'
-			viewBox='0 0 24 24'
-			fill='none'
-			stroke='currentColor'
-			strokeWidth='2'
-			strokeLinecap='round'
-			strokeLinejoin='round'
-			{...props}>
-			<path d='M3 6h18' />
-			<path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6' />
-			<path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2' />
-		</svg>
-	);
+      {selectedPost && (
+        <PostsDetail
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+          onDelete={handleDeletePost}
+        />
+      )}
+    </div>
+  );
 }

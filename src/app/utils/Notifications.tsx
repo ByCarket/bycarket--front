@@ -1,95 +1,171 @@
-"use client";
+import { toast, ToastContainer, ToastOptions, TypeOptions } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './notifications.css';
+import { ReactNode } from "react";
 
-import React from "react";
-import { toast, Toaster } from "sonner";
+const toastBaseOptions: ToastOptions = {
+  position: "top-right",
+  autoClose: 4000,
+  hideProgressBar: true,
+  closeOnClick: false,
+  pauseOnHover: true,
+  draggable: false,
+  className: 'custom-toast',
+};
 
-export const NotificationsProvider = () => {
-  return (
-    <Toaster
-      position="bottom-right"
-      toastOptions={{
-        style: {
-          backgroundColor: "white",
-          color: "#103663",
-          border: "1px solid #4a77a8",
-          fontFamily: "var(--font-be-vietnam)",
-        },
-        classNames: {
-          success: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
-          error: "bg-[#fff0f0] border-[#ff4a4a] text-[#631010]",
-          warning: "bg-[#fffbf0] border-[#ffc14a] text-[#634310]",
-          info: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
-          loading: "bg-[#f0f7ff] border-secondary-blue text-principal-blue",
-        },
-      }}
-      closeButton
-      richColors
-      expand
-      duration={4000}
-    />
+const toastIcons: Record<string, string> = {
+  success: '✓',
+  error: '✕',
+  warning: '⚠',
+  info: 'i',
+  default: '•',
+};
+
+const ToastContent = ({
+  message,
+  type = 'default',
+  onClose,
+}: {
+  message: string;
+  type?: TypeOptions;
+  onClose: () => void;
+}) => (
+  <div className="flex items-start">
+    <span className="toast-icon">{toastIcons[type]}</span>
+    <div className="toast-content">
+      <p className="toast-message">{message}</p>
+    </div>
+    <button 
+      className="toast-close"
+      onClick={onClose}
+      aria-label="Cerrar"
+    >
+      &times;
+    </button>
+  </div>
+);
+
+export const showSuccess = (message: string, options: ToastOptions = {}) => {
+  toast(
+    ({ closeToast }) => (
+      <ToastContent message={message} type="success" onClose={closeToast!} />
+    ),
+    {
+      ...toastBaseOptions,
+      className: `${toastBaseOptions.className} toast-success`,
+      ...options,
+    }
   );
 };
 
-type ToastOptions = {
-  description?: string;
-  style?: React.CSSProperties;
-  icon?: React.ReactNode;
-  id?: string | number;
-  [key: string]: any;
-};
-
-export const notify = {
-  success: (message: string, description?: string) => {
-    toast.success(message, {
-      description: description,
-      icon: "✅",
-    });
-  },
-  error: (message: string, description?: string) => {
-    toast.error(message, {
-      description: description,
-      icon: "❌",
-    });
-  },
-  warning: (message: string, description?: string) => {
-    toast.warning(message, {
-      description: description,
-      icon: "⚠️",
-    });
-  },
-  info: (message: string, description?: string) => {
-    toast.info(message, {
-      description: description,
-      icon: "ℹ️",
-      style: {
-        backgroundColor: "#f0f7ff",
-        border: "1px solid #4a77a8",
-        color: "#103663",
-      },
-    });
-  },
-  loading: (message: string, description?: string) => {
-    return toast.loading(message, {
-      description: description,
-      icon: "⏳",
-    });
-  },
-  promise: <T,>(
-    promise: Promise<T>,
-    messages: {
-      loading: string;
-      success: string;
-      error: string;
+export const showError = (message: string, options: ToastOptions = {}) => {
+  toast(
+    ({ closeToast }) => (
+      <ToastContent message={message} type="error" onClose={closeToast!} />
+    ),
+    {
+      ...toastBaseOptions,
+      className: `${toastBaseOptions.className} toast-error`,
+      ...options,
     }
-  ) => {
-    return toast.promise(promise, messages);
-  },
-  custom: (message: string, options?: ToastOptions) => {
-    return toast(message, options);
-  },
-  dismiss: (toastId?: string | number) => {
-    toast.dismiss(toastId);
-  },
+  );
 };
 
-export default notify;
+export const showWarning = (message: string, options: ToastOptions = {}) => {
+  toast(
+    ({ closeToast }) => (
+      <ToastContent message={message} type="warning" onClose={closeToast!} />
+    ),
+    {
+      ...toastBaseOptions,
+      className: `${toastBaseOptions.className} toast-warning`,
+      ...options,
+    }
+  );
+};
+
+export const showInfo = (message: string, options: ToastOptions = {}) => {
+  toast(
+    ({ closeToast }) => (
+      <ToastContent message={message} type="info" onClose={closeToast!} />
+    ),
+    {
+      ...toastBaseOptions,
+      className: `${toastBaseOptions.className} toast-info`,
+      ...options,
+    }
+  );
+};
+
+export const showConfirm = (
+  message: ReactNode,
+  onYes: () => void,
+  onNo?: () => void,
+  options: ToastOptions = {}
+) => {
+  const handleYes = () => {
+    onYes();
+    if (toastId) {
+      toast.dismiss(toastId);
+    }
+  };
+
+  const handleNo = () => {
+    onNo?.();
+    if (toastId) {
+      toast.dismiss(toastId);
+    }
+  };
+
+  const toastId = toast(
+    <div className="confirm-dialog">
+      <div className="confirm-message">{message}</div>
+      <div className="confirm-buttons">
+        <button
+          onClick={handleNo}
+          className="confirm-button confirm-no"
+        >
+          No
+        </button>
+        <button
+          onClick={handleYes}
+          className="confirm-button confirm-yes"
+        >
+          Sí
+        </button>
+      </div>
+    </div>,
+    {
+      ...toastBaseOptions,
+      autoClose: false,
+      closeOnClick: false,
+      draggable: false,
+      closeButton: false,
+      className: `${toastBaseOptions.className} confirm-toast`,
+      ...options,
+    }
+  );
+};
+
+export const NotificationsContainer = () => (
+  <ToastContainer
+    position="top-right"
+    autoClose={4000}
+    hideProgressBar
+    newestOnTop
+    closeOnClick={false}
+    rtl={false}
+    pauseOnFocusLoss={false}
+    draggable={false}
+    pauseOnHover
+    closeButton={false}
+    className="!p-0"
+    toastClassName="!m-0 !p-0 !bg-transparent !shadow-none !rounded-none !min-h-0"
+    style={{
+      width: 'auto',
+      maxWidth: '100%',
+      padding: 0,
+      margin: 0,
+    }}
+  />
+);
