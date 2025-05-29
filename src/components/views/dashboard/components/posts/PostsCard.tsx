@@ -8,7 +8,6 @@ type PostsCardProps = {
   post: PostResponse;
   onDelete?: (id: string) => Promise<boolean>;
   onView?: (post: PostResponse) => void;
-  user: any;
 };
 
 export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
