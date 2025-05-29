@@ -254,7 +254,7 @@ const VehicleDetailView = () => {
               >
                 bycarket@gmail.com
               </a>{" "}
-              y te nos pondremos en contacto contigo.
+              y nos pondremos en contacto contigo.
             </p>
           </div>
         </div>
