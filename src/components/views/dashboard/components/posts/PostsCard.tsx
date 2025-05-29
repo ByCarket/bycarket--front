@@ -103,11 +103,7 @@ export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                post.status.toLowerCase() === "inactive"
-                  ? "bg-principal-blue text-white hover:bg-principal-blue/90"
-                  : "bg-red-500 text-white hover:bg-red-600"
-              } disabled:opacity-50 flex items-center`}
+              className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center"
             >
               {isDeleting ? (
                 <>
@@ -131,12 +127,8 @@ export default function PostsCard({ post, onDelete, onView }: PostsCardProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  {post.status.toLowerCase() === "inactive"
-                    ? "Activando..."
-                    : "Eliminando"}
+                  Eliminando...
                 </>
-              ) : post.status.toLowerCase() === "inactive" ? (
-                "Activar"
               ) : (
                 "Eliminar"
               )}
