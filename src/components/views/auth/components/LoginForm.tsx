@@ -14,14 +14,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
-import notify from "@/app/utils/Notifications";
+import { showSuccess, showError } from "@/app/utils/Notifications";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-  const { status } = useSession();
+  const { status, update } = useSession();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -49,21 +49,23 @@ export default function LoginForm() {
           password: values.password,
         };
 
-        await login(loginData);
-
         if (rememberMe) {
           setRememberedEmail(values.email);
         } else {
           removeRememberedEmail();
         }
 
-        notify.success("¡Bienvenido!", "Has iniciado sesión correctamente");
-        router.push("/");
+        const response = await login(loginData);
+
+        if (response?.token) {
+          showSuccess("¡Bienvenido! Has iniciado sesión correctamente");
+          router.push("/home");
+        }
       } catch (error: any) {
         const errorMessage =
           error?.response?.data?.message ||
           "Error al iniciar sesión. Por favor, verifica tus credenciales.";
-        notify.error("Error", errorMessage);
+        showError(errorMessage);
 
         if (error?.response?.data?.field) {
           setFieldError(error.response.data.field, error.response.data.message);
@@ -84,9 +86,9 @@ export default function LoginForm() {
 
   React.useEffect(() => {
     if (status === "authenticated") {
-      router.push("/");
+      window.location.href = "/";
     }
-  }, [status, router]);
+  }, [status]);
 
   return (
     <div className="flex min-h-screen w-full overflow-hidden">

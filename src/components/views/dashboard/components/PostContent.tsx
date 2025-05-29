@@ -29,7 +29,7 @@ export default function PostContent() {
     vehicles,
     loading: vehiclesLoading,
     refetch: refetchVehicles,
-  } = useFetchVehicles(1, 100);
+  } = useFetchVehicles();
 
   useEffect(() => {
     const loadInitialData = async () => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { VehicleResponse } from "@/services/vehicle.service";
 import { generateVehicleDescription } from "@/services/vehicle.service";
-import { FaMagic } from "react-icons/fa";
+import GenerateAIButton from "@/components/ui/GenerateAIButton";
 
 interface PostsFormProps {
   vehicle: VehicleResponse;
@@ -35,10 +35,10 @@ export default function PostsForm({
   const handleGenerateDescription = async () => {
     try {
       if (!vehicle?.brand?.name || !vehicle?.model?.name) {
-        console.error('Datos incompletos para generar descripción');
+        console.error("Datos incompletos para generar descripción");
         return;
       }
-      
+
       setIsGenerating(true);
       const generatedDesc = await generateVehicleDescription({
         brand: vehicle.brand.name,
@@ -50,7 +50,7 @@ export default function PostsForm({
         condition: vehicle.condition,
         typeOfVehicle: vehicle.typeOfVehicle,
       });
-      
+
       if (generatedDesc) {
         setDescription(generatedDesc);
       }
@@ -156,21 +156,11 @@ export default function PostsForm({
                 >
                   Descripción (opcional)
                 </label>
-                <button
-                  type="button"
+                <GenerateAIButton
                   onClick={handleGenerateDescription}
-                  disabled={isGenerating || loading}
-                  className="text-sm flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-secondary-blue/10 to-principal-blue/5 text-principal-blue rounded-lg hover:from-secondary-blue/20 hover:to-principal-blue/10 transition-all disabled:opacity-50 border border-secondary-blue/20"
-                >
-                  {isGenerating ? (
-                    "Generando..."
-                  ) : (
-                    <>
-                      <FaMagic className="text-secondary-blue" />
-                      <span>Generar con IA</span>
-                    </>
-                  )}
-                </button>
+                  isGenerating={isGenerating}
+                  disabled={loading}
+                />
               </div>
               <textarea
                 id="description"

@@ -7,6 +7,7 @@ import { useVehicleForm } from "@/hooks/useVehicleForm";
 import { VehicleData } from "@/services/vehicle.service";
 import { Search, Upload, X } from "lucide-react";
 import Image from "next/image";
+import { showError, showSuccess } from "@/app/utils/Notifications";
 
 const VehicleForm: React.FC = () => {
   const {
@@ -31,6 +32,10 @@ const VehicleForm: React.FC = () => {
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
@@ -123,16 +128,17 @@ const VehicleForm: React.FC = () => {
       images: [],
     },
     validationSchema,
-    onSubmit: async (values) => {
+    onSubmit: async (values, { resetForm }) => {
       try {
         await submitVehicle(values);
-        formik.resetForm();
+        resetForm();
         setBrandSearch("");
         setModelSearch("");
         setVersionSearch("");
         setPreviewImages([]);
+        showSuccess("¡Vehículo registrado exitosamente!");
       } catch (err) {
-        console.error(err);
+        showError("Error al registrar el vehículo");
       }
     },
   });
@@ -143,7 +149,9 @@ const VehicleForm: React.FC = () => {
       const validFiles = filesArray.filter((file) => file.size <= 1024 * 1024);
 
       if (validFiles.length !== filesArray.length) {
-        setImageError("Algunas imágenes superan 1MB y no fueron incluidas");
+        const message = "Algunas imágenes superan 1MB y no fueron incluidas";
+        setImageError(message);
+        showError(message);
       }
 
       const totalImages = [...(formik.values.images || []), ...validFiles];
@@ -205,15 +213,15 @@ const VehicleForm: React.FC = () => {
         Registrar Vehículo
       </h1>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          ¡Vehículo registrado exitosamente!
+      {notification && (
+        <div
+          className={`mb-4 p-4 rounded ${
+            notification.type === "success"
+              ? "bg-green-100 border border-green-400 text-green-700"
+              : "bg-red-100 border border-red-400 text-red-700"
+          }`}
+        >
+          {notification.message}
         </div>
       )}
 

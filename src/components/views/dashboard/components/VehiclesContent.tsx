@@ -5,22 +5,28 @@ import { VehicleResponse } from "@/services/vehicle.service";
 import MyVehicleLists from "./myvehicles/MyVehicleLists";
 import MyVehicleDetails from "./myvehicles/MyVehicleDetails";
 import { useRouter } from "next/navigation";
-import { useFetchVehicles } from "@/hooks/useFetchVehicles";
+import { useVehicles } from "@/hooks/useVehicles";
 
 export default function VehiclesContent() {
-  const [selectedVehicle, setSelectedVehicle] = useState<VehicleResponse | null>(null);
-  const { vehicles } = useFetchVehicles();
+  const [selectedVehicle, setSelectedVehicle] =
+    useState<VehicleResponse | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { vehicles, loading, deleteVehicle, refetch } = useVehicles();
   const router = useRouter();
 
   const handleViewDetails = (vehicle: VehicleResponse) => {
     setSelectedVehicle(vehicle);
+    setIsModalOpen(true);
   };
 
   const handleDeleteVehicle = async (id: string): Promise<boolean> => {
     try {
-      return true;
+      const success = await deleteVehicle(id);
+      if (success && selectedVehicle?.id === id) {
+        setSelectedVehicle(null);
+      }
+      return success;
     } catch (error) {
-      console.error("Error deleting vehicle:", error);
       return false;
     }
   };
@@ -47,19 +53,39 @@ export default function VehiclesContent() {
         </button>
       </div>
 
-      <MyVehicleLists
-        vehicles={vehicles}
-        loading={false}
-        onView={handleViewDetails}
-        onDelete={handleDeleteVehicle}
-      />
-
-      {selectedVehicle && (
-        <MyVehicleDetails
-          vehicle={selectedVehicle}
-          onClose={() => setSelectedVehicle(null)}
-          onUpdate={handleUpdateVehicle}
-        />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-principal-blue"></div>
+        </div>
+      ) : vehicles.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No tienes vehículos registrados.</p>
+          <button
+            onClick={handleAddVehicle}
+            className="mt-4 px-4 py-2 bg-principal-blue text-white rounded-md hover:bg-principal-blue/90 transition-colors"
+          >
+            Añadir tu primer vehículo
+          </button>
+        </div>
+      ) : (
+        <>
+          <MyVehicleLists
+            vehicles={vehicles}
+            loading={loading}
+            onView={handleViewDetails}
+            onDelete={handleDeleteVehicle}
+          />
+          {isModalOpen && selectedVehicle && (
+            <MyVehicleDetails
+              vehicle={selectedVehicle}
+              onClose={() => {
+                setIsModalOpen(false);
+                setTimeout(() => setSelectedVehicle(null), 300);
+              }}
+              onUpdate={handleUpdateVehicle}
+            />
+          )}
+        </>
       )}
     </div>
   );

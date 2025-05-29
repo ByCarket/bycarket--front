@@ -55,10 +55,12 @@ export interface GetVehiclesResponse {
   currentPage: number;
 }
 
+export type PostStatus = "Pending" | "Approved" | "Rejected" | "Inactive";
+
 export interface PostResponse {
   id: string;
   vehicle: VehicleResponse;
-  status: string;
+  status: PostStatus;
   postDate: string;
 }
 
@@ -71,6 +73,7 @@ export interface GetPostsResponse {
   currentPage?: number;
   limit: number;
   totalPages: number;
+  status?: PostStatus;
 }
 
 export const getBrands = async (): Promise<Brand[]> => {
@@ -135,8 +138,17 @@ export const getVehicles = async (
 };
 
 export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
-  const response = await http.get<VehicleResponse[]>("/vehicles/me");
-  return response.data || [];
+  const response = await http.get<any>("/vehicles/me");
+  if (response.data?.data) {
+    return response.data.data;
+  }
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  if (Array.isArray(response.data?.vehicles)) {
+    return response.data.vehicles;
+  }
+  return [];
 };
 
 export const getPosts = async (
@@ -223,7 +235,6 @@ export const uploadVehicleImages = async (
       },
     });
   } catch (error) {
-    console.error("Error al subir la imagen:", error);
     throw error;
   }
 };
@@ -235,7 +246,6 @@ export const deleteVehicleImage = async (
   try {
     await http.delete(`/files/${vehicleId}/images/${publicId}`);
   } catch (error) {
-    console.error("Error al eliminar la imagen:", error);
     throw error;
   }
 };
@@ -254,6 +264,55 @@ export const createPost = async (
 export const getMyPosts = async (): Promise<GetPostsResponse> => {
   const response = await http.get<ApiResponse<GetPostsResponse>>("/posts/me");
   return response.data.data;
+};
+
+export const getPendingPosts = async (): Promise<GetPostsResponse> => {
+  const response = await http.get<ApiResponse<GetPostsResponse>>("/posts", {
+    params: {
+      status: "Pending",
+      limit: 100,
+      page: 1,
+    },
+  });
+
+  if (response.data && response.data.data) {
+    const allPosts = response.data.data;
+    const pendingPosts = (
+      Array.isArray(allPosts) ? allPosts : allPosts.data || []
+    ).filter((post: PostResponse) => post.status === "Pending");
+
+    return {
+      data: pendingPosts,
+      total: pendingPosts.length,
+      page: 1,
+      limit: 1000,
+      totalPages: 1,
+    };
+  }
+
+  return {
+    data: [],
+    total: 0,
+    page: 1,
+    limit: 1000,
+    totalPages: 1,
+  };
+};
+
+export const acceptPost = async (postId: string): Promise<void> => {
+  try {
+    await http.patch(`/posts/accept/${postId}`);
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const rejectPost = async (postId: string): Promise<void> => {
+  try {
+    await http.patch(`/posts/reject/${postId}`);
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const generateVehicleDescription = async (vehicleData: {
@@ -315,11 +374,7 @@ export const generateVehicleDescription = async (vehicleData: {
     const status = (error as any)?.response?.status;
     const data = (error as any)?.response?.data;
 
-    console.error("Error al generar descripción:", {
-      error: errorMessage,
-      status,
-      data,
-    });
+
 
     throw new Error(errorMessage);
   }

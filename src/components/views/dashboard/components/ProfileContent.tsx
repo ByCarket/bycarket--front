@@ -6,6 +6,7 @@ import { UpdateUserData } from "@/services/api.service";
 import { FaTrash, FaEdit, FaPen } from "react-icons/fa";
 import { Modal } from "@/components/ui/Modal";
 import Image from "next/image";
+import { RoleBadge } from "@/components/ui/RoleBadge"; // Import RoleBadge component
 
 export default function ProfileContent() {
   const {
@@ -383,7 +384,7 @@ export default function ProfileContent() {
                       <button
                         type="button"
                         onClick={handleCancel}
-                        className="px-5 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors text-gray-700 font-medium text-base"
+                        className="px-5 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
                       >
                         Cancelar
                       </button>
@@ -399,12 +400,19 @@ export default function ProfileContent() {
                 </form>
               ) : (
                 <div className="space-y-6">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-medium">
+                      Información de cuenta
+                    </h2>
+                  </div>
+
                   <div>
                     <h2 className="text-lg font-medium text-gray-700 mb-2">
                       Nombre
                     </h2>
                     <div>
                       <p className="text-lg">{userData.name}</p>
+                      <RoleBadge />
                       <p className="text-sm text-gray-500 mt-1">
                         Tu nombre puede aparecer en tus publicaciones o
                         anuncios.
