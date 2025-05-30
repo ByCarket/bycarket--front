@@ -374,8 +374,6 @@ export const generateVehicleDescription = async (vehicleData: {
     const status = (error as any)?.response?.status;
     const data = (error as any)?.response?.data;
 
-
-
     throw new Error(errorMessage);
   }
 };

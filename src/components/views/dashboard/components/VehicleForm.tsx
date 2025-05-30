@@ -96,7 +96,9 @@ const VehicleForm: React.FC = () => {
         `El año no puede ser mayor a ${new Date().getFullYear() + 1}`
       ),
     condition: Yup.string().required("La condición es obligatoria"),
-    currency: Yup.string().required("La moneda es obligatoria"),
+    currency: Yup.string()
+      .required("La moneda es obligatoria")
+      .oneOf(["U$D", "AR$"], "Moneda no válida"),
     price: Yup.number()
       .required("El precio es obligatorio")
       .min(1, "El precio debe ser mayor a 0"),
@@ -120,7 +122,7 @@ const VehicleForm: React.FC = () => {
       typeOfVehicle: "",
       year: new Date().getFullYear(),
       condition: "",
-      currency: "USD",
+      currency: "",
       price: 0,
       mileage: 0,
       description: "",

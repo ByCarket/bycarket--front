@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { VehicleResponse } from "@/services/vehicle.service";
 import MyVehicleCard from "./MyVehicleCard";
+import { useSpinner } from "@/context/SpinnerContext";
 
 interface MyVehicleListsProps {
   vehicles: VehicleResponse[];
@@ -28,8 +29,9 @@ export default function MyVehicleLists({
   onPageChange,
 }: MyVehicleListsProps) {
   const [sortBy, setSortBy] = useState<string>("newest");
+  const { loading: spinnerLoading } = useSpinner();
 
-  if (loading) {
+  if (loading || spinnerLoading) {
     return (
       <div className="w-full py-12 flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-principal-blue"></div>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { PostResponse } from "@/services/vehicle.service";
 import PostsCard from "./PostsCard";
+import { useSpinner } from "@/context/SpinnerContext";
+import { showError, showSuccess } from "@/app/utils/Notifications";
 
 interface PostsListProps {
   posts: PostResponse[];
@@ -21,6 +23,31 @@ export default function PostsList({
 }: PostsListProps) {
   const [filter, setFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { setLoading } = useSpinner();
+
+  const handleDelete = async (id: string): Promise<boolean> => {
+    if (!onDelete) return false;
+
+    setDeletingId(id);
+    setLoading(true);
+    try {
+      const success = await onDelete(id);
+      if (success) {
+        showSuccess("Publicación eliminada correctamente");
+      } else {
+        showError("No se pudo eliminar la publicación");
+      }
+      return success;
+    } catch (error) {
+      showError("Error al eliminar la publicación");
+      console.error("Error deleting post:", error);
+      return false;
+    } finally {
+      setDeletingId(null);
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -86,12 +113,39 @@ export default function PostsList({
   }, {} as Record<string, number>);
 
   const statusOptions = [
-    { value: "all", label: `Todos (${posts.length})`, color: "bg-gray-100 text-gray-800", dot: "bg-gray-500" },
-    { value: "active", label: `Activo (${statusCounts['active'] || 0})`, color: "bg-green-100 text-green-800", dot: "bg-green-500" },
-    { value: "inactive", label: `Inactivo (${statusCounts['inactive'] || 0})`, color: "bg-gray-100 text-gray-800", dot: "bg-gray-500" },
-    { value: "pending", label: `Pendiente (${statusCounts['pending'] || 0})`, color: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500" },
-    { value: "rejected", label: `Rechazado (${statusCounts['rejected'] || 0})`, color: "bg-red-100 text-red-800", dot: "bg-red-500" },
-  ].filter(option => option.value === "all" || statusCounts[option.value] > 0);
+    {
+      value: "all",
+      label: `Todos (${posts.length})`,
+      color: "bg-gray-100 text-gray-800",
+      dot: "bg-gray-500",
+    },
+    {
+      value: "active",
+      label: `Activo (${statusCounts["active"] || 0})`,
+      color: "bg-green-100 text-green-800",
+      dot: "bg-green-500",
+    },
+    {
+      value: "inactive",
+      label: `Inactivo (${statusCounts["inactive"] || 0})`,
+      color: "bg-gray-100 text-gray-800",
+      dot: "bg-gray-500",
+    },
+    {
+      value: "pending",
+      label: `Pendiente (${statusCounts["pending"] || 0})`,
+      color: "bg-yellow-100 text-yellow-800",
+      dot: "bg-yellow-500",
+    },
+    {
+      value: "rejected",
+      label: `Rechazado (${statusCounts["rejected"] || 0})`,
+      color: "bg-red-100 text-red-800",
+      dot: "bg-red-500",
+    },
+  ].filter(
+    (option) => option.value === "all" || statusCounts[option.value] > 0
+  );
 
   const sortOptions = [
     { value: "newest", label: "Más recientes" },
@@ -117,7 +171,9 @@ export default function PostsList({
                   : "bg-white text-gray-500 hover:bg-gray-50 border-gray-200"
               }`}
             >
-              <span className={`w-2 h-2 ${option.dot} rounded-full mr-2`}></span>
+              <span
+                className={`w-2 h-2 ${option.dot} rounded-full mr-2`}
+              ></span>
               {option.label}
             </button>
           ))}
@@ -136,7 +192,11 @@ export default function PostsList({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <svg
+              className="fill-current h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
               <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
             </svg>
           </div>
@@ -155,7 +215,7 @@ export default function PostsList({
             <PostsCard
               key={post.id}
               post={post}
-              onDelete={onDelete}
+              onDelete={() => handleDelete(post.id)}
               onView={onView}
             />
           ))}
