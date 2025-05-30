@@ -70,23 +70,22 @@ export const useVehicleForm = () => {
   const submitVehicle = async (vehicleData: VehicleData) => {
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
       const createdVehicle = await createVehicle(vehicleData);
 
       if (vehicleData.images && vehicleData.images.length > 0) {
-        try {
-          await uploadVehicleImages(createdVehicle.id, vehicleData.images);
-        } catch (uploadError) {
-          setError("Error al subir las imágenes del vehículo");
-          return;
-        }
+        await uploadVehicleImages(createdVehicle.id, vehicleData.images);
       }
 
       setSuccess(true);
       router.push("/dashboard");
-    } catch (createError) {
-      setError("Error al crear el vehículo");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Error al crear el vehículo";
+      setError(errorMessage);
+      throw error;
     } finally {
       setLoading(false);
     }

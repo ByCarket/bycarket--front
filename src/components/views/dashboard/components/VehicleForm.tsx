@@ -157,12 +157,20 @@ const VehicleForm: React.FC = () => {
           return;
         }
 
-        await submitVehicle(values);
+        const backendValues = {
+          ...values,
+          condition: values.condition === "Nuevo" ? "new" : "used",
+        };
+
+        await submitVehicle(backendValues);
         showSuccess("Vehículo registrado correctamente");
         resetForm();
         setPreviewImages([]);
-      } catch (error) {
-        showError("Ha ocurrido un error inesperado. Inténtalo de nuevo.");
+      } catch (error: any) {
+        const errorMessage =
+          error?.response?.data?.message ||
+          "Ha ocurrido un error inesperado. Inténtalo de nuevo.";
+        showError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -569,9 +577,9 @@ const VehicleForm: React.FC = () => {
                   : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
             >
-              <option value="">Seleccionar</option>
-              <option value="Nuevo">Nuevo</option>
-              <option value="Usado">Usado</option>
+              <option value="">Selecciona una condición</option>
+              <option value="new">Nuevo</option>
+              <option value="used">Usado</option>
             </select>
             {formik.touched.condition && formik.errors.condition ? (
               <div className="text-red-500 text-xs mt-1">
@@ -651,11 +659,11 @@ const VehicleForm: React.FC = () => {
                   ? "border-red-500"
                   : "border-gray-300"
               } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue ${
-                formik.values.condition === "Nuevo"
+                formik.values.condition === "new"
                   ? "bg-gray-100 text-gray-500"
                   : ""
               }`}
-              disabled={formik.values.condition === "Nuevo"}
+              disabled={formik.values.condition === "new"}
             />
             {formik.touched.mileage && formik.errors.mileage ? (
               <div className="text-red-500 text-xs mt-1">

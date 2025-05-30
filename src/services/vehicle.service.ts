@@ -110,20 +110,29 @@ export const getVersionsByModel = async (
 export const createVehicle = async (
   vehicleData: VehicleData
 ): Promise<VehicleResponse> => {
-  const payload = {
-    brandId: vehicleData.brandId,
-    modelId: vehicleData.modelId,
-    versionId: vehicleData.versionId,
-    typeOfVehicle: vehicleData.typeOfVehicle,
-    year: vehicleData.year,
-    condition: vehicleData.condition,
-    currency: vehicleData.currency,
-    price: vehicleData.price,
-    mileage: vehicleData.mileage,
-    description: vehicleData.description,
-  };
+  const formData = new FormData();
 
-  const response = await http.post<any>("/vehicles", payload);
+  formData.append("brandId", vehicleData.brandId);
+  formData.append("modelId", vehicleData.modelId);
+  formData.append("versionId", vehicleData.versionId);
+  formData.append("typeOfVehicle", vehicleData.typeOfVehicle);
+  formData.append("year", vehicleData.year.toString());
+  formData.append("condition", vehicleData.condition);
+  formData.append("currency", vehicleData.currency);
+  formData.append("price", vehicleData.price.toString());
+  formData.append("mileage", vehicleData.mileage.toString());
+  formData.append("description", vehicleData.description);
+
+  vehicleData.images.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const response = await http.post<any>("/vehicles", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return response.data.data;
 };
 
