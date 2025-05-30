@@ -9,9 +9,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
-
 import { useSession } from "next-auth/react";
-import { showSuccess, showError } from "@/app/utils/Notifications";
+import { showSuccess, showError, showWarning } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 interface FormValues {
   name: string;
@@ -51,7 +51,11 @@ const InputField = ({
       onChange={formik.handleChange}
       onBlur={formik.handleBlur}
       value={formik.values[id] ?? ""}
-      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+      className={`w-full px-3 py-2 border ${
+        formik.touched[id] && formik.errors[id]
+          ? "border-red-500"
+          : "border-gray-300"
+      } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
       {...props}
     />
     {formik.touched[id] && formik.errors[id] ? (
@@ -101,7 +105,11 @@ const PasswordField = ({
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           value={formik.values[id]}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+          className={`w-full px-3 py-2 border ${
+            formik.touched[id] && formik.errors[id]
+              ? "border-red-500"
+              : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
         />
         <button
           type="button"
@@ -141,6 +149,7 @@ export default function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { register } = useAuth();
+  const { setLoading } = useSpinner();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
@@ -180,7 +189,17 @@ export default function RegisterForm() {
       city: Yup.string().required("La ciudad es obligatoria"),
       address: Yup.string().required("La dirección es obligatoria"),
     }),
-    onSubmit: async (values) => {
+    validateOnChange: false,
+    validateOnBlur: true,
+    onSubmit: async (values, { validateForm }) => {
+      const errors = await validateForm();
+
+      if (Object.keys(errors).length > 0) {
+        const firstError = Object.values(errors)[0];
+        showWarning(firstError);
+        return;
+      }
+
       setError(null);
       const registrationData: RegistrationData = {
         name: values.name,
@@ -192,7 +211,9 @@ export default function RegisterForm() {
         city: values.city,
         address: values.address,
       };
+
       try {
+        setLoading(true);
         await register(registrationData);
         showSuccess(
           "¡Registro exitoso! Por favor inicia sesión con tus credenciales."
@@ -208,14 +229,11 @@ export default function RegisterForm() {
             err.response.data.field,
             err.response.data.message
           );
-          setError(errorMessage);
-        } else if (err instanceof Error) {
-          setError(errorMessage);
-        } else {
-          setError("Error en el registro. Inténtalo de nuevo.");
         }
 
         showError(errorMessage);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -286,9 +304,10 @@ export default function RegisterForm() {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 mt-4 bg-principal-blue hover:bg-secondary-blue text-white font-medium rounded-md transition duration-300"
+              disabled={formik.isSubmitting}
+              className="w-full py-2 px-4 mt-4 bg-principal-blue hover:bg-secondary-blue text-white font-medium rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Registrarse
+              {formik.isSubmitting ? "Registrando..." : "Registrarse"}
             </button>
 
             <div className="flex flex-col items-center mt-4 space-y-4">

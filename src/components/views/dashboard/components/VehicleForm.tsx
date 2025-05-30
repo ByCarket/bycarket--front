@@ -7,7 +7,8 @@ import { useVehicleForm } from "@/hooks/useVehicleForm";
 import { VehicleData } from "@/services/vehicle.service";
 import { Search, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { showError, showSuccess } from "@/app/utils/Notifications";
+import { showError, showSuccess, showWarning } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 const VehicleForm: React.FC = () => {
   const {
@@ -26,16 +27,14 @@ const VehicleForm: React.FC = () => {
     getVersionsByModel,
   } = useVehicleForm();
 
+  const { setLoading } = useSpinner();
+
   const [brandSearch, setBrandSearch] = useState("");
   const [modelSearch, setModelSearch] = useState("");
   const [versionSearch, setVersionSearch] = useState("");
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
-  const [notification, setNotification] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
@@ -118,87 +117,130 @@ const VehicleForm: React.FC = () => {
       brandId: "",
       modelId: "",
       versionId: "",
-      typeOfVehicle: "SUV",
+      typeOfVehicle: "",
       year: new Date().getFullYear(),
-      condition: "new",
-      currency: "",
+      condition: "",
+      currency: "USD",
       price: 0,
       mileage: 0,
       description: "",
       images: [],
     },
     validationSchema,
+    validateOnChange: false,
+    validateOnBlur: true,
     onSubmit: async (values, { resetForm }) => {
       try {
+        setLoading(true);
+        const errors = await formik.validateForm();
+
+        if (Object.keys(errors).length > 0) {
+          let errorMessage = "Por favor, verifica los campos del formulario";
+
+          const firstKey = Object.keys(errors)[0];
+          const firstErrorValue = errors[firstKey as keyof typeof errors];
+
+          if (typeof firstErrorValue === "string") {
+            errorMessage = firstErrorValue;
+          } else if (
+            Array.isArray(firstErrorValue) &&
+            firstErrorValue.length > 0
+          ) {
+            if (typeof firstErrorValue[0] === "string") {
+              errorMessage = firstErrorValue[0];
+            }
+          }
+
+          showWarning(errorMessage);
+          return;
+        }
+
         await submitVehicle(values);
+        showSuccess("Vehículo registrado correctamente");
         resetForm();
-        setBrandSearch("");
-        setModelSearch("");
-        setVersionSearch("");
         setPreviewImages([]);
-        showSuccess("¡Vehículo registrado exitosamente!");
-      } catch (err) {
-        showError("Error al registrar el vehículo");
+      } catch (error) {
+        showError("Ha ocurrido un error inesperado. Inténtalo de nuevo.");
+      } finally {
+        setLoading(false);
       }
     },
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
-      const validFiles = filesArray.filter((file) => file.size <= 1024 * 1024);
+    setImageError("");
+    const files = e.target.files;
+    if (!files) return;
 
-      if (validFiles.length !== filesArray.length) {
-        const message = "Algunas imágenes superan 1MB y no fueron incluidas";
-        setImageError(message);
-        showError(message);
-      }
+    const newFiles = Array.from(files);
+    const totalFiles = previewImages.length + newFiles.length;
 
-      const totalImages = [...(formik.values.images || []), ...validFiles];
-
-      if (totalImages.length > 6) {
-        setImageError("Solo puedes subir un máximo de 6 imágenes");
-        return;
-      }
-
-      formik.setFieldValue("images", totalImages);
-      setImageError("");
-
-      const newPreviewUrls = validFiles.map((file) =>
-        URL.createObjectURL(file)
-      );
-      setPreviewImages([...previewImages, ...newPreviewUrls]);
+    if (totalFiles > 6) {
+      setImageError("Máximo 6 imágenes permitidas");
+      showWarning("Máximo 6 imágenes permitidas");
+      return;
     }
+
+    const oversizedFiles = newFiles.filter((file) => file.size > 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      setImageError("Algunas imágenes superan 1MB");
+      showWarning("Algunas imágenes superan el tamaño máximo de 1MB");
+      return;
+    }
+
+    const newImages: string[] = [];
+    const newImageFiles: File[] = [];
+
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (result && typeof result === "string") {
+          newImages.push(result);
+          if (newImages.length === newFiles.length) {
+            setPreviewImages([...previewImages, ...newImages]);
+            formik.setFieldValue("images", [
+              ...formik.values.images,
+              ...newImageFiles,
+            ]);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+      newImageFiles.push(file);
+    });
   };
 
   const removeImage = (index: number) => {
-    const newImages = formik.values.images ? [...formik.values.images] : [];
-    newImages.splice(index, 1);
-    formik.setFieldValue("images", newImages);
+    const updatedPreviews = [...previewImages];
+    updatedPreviews.splice(index, 1);
+    setPreviewImages(updatedPreviews);
 
-    const newPreviews = [...previewImages];
-    URL.revokeObjectURL(newPreviews[index]);
-    newPreviews.splice(index, 1);
-    setPreviewImages(newPreviews);
+    const updatedImages = [...formik.values.images];
+    updatedImages.splice(index, 1);
+    formik.setFieldValue("images", updatedImages);
   };
 
-  const handleBrandSelect = async (brandId: string, brandName: string) => {
+  const handleBrandSelect = (brandId: string, brandName: string) => {
     formik.setFieldValue("brandId", brandId);
     formik.setFieldValue("modelId", "");
     formik.setFieldValue("versionId", "");
     setBrandSearch(brandName);
+    setModelSearch("");
+    setVersionSearch("");
     setShowBrandDropdown(false);
-    const models = await getModelsByBrand(brandId);
-    handleBrandChange(brandId, models);
+    handleBrandChange(brandId);
+    getModelsByBrand(brandId);
   };
 
-  const handleModelSelect = async (modelId: string, modelName: string) => {
+  const handleModelSelect = (modelId: string, modelName: string) => {
     formik.setFieldValue("modelId", modelId);
     formik.setFieldValue("versionId", "");
     setModelSearch(modelName);
+    setVersionSearch("");
     setShowModelDropdown(false);
-    const versions = await getVersionsByModel(modelId);
-    handleModelChange(modelId, versions);
+    handleModelChange(modelId);
+    getVersionsByModel(modelId);
   };
 
   const handleVersionSelect = (versionId: string, versionName: string) => {
@@ -208,64 +250,70 @@ const VehicleForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-light text-principal-blue mb-6 text-center">
+    <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+      <h2 className="text-2xl font-bold text-principal-blue mb-6">
         Registrar Vehículo
-      </h1>
-
-      {notification && (
-        <div
-          className={`mb-4 p-4 rounded ${
-            notification.type === "success"
-              ? "bg-green-100 border border-green-400 text-green-700"
-              : "bg-red-100 border border-red-400 text-red-700"
-          }`}
-        >
-          {notification.message}
-        </div>
-      )}
+      </h2>
 
       <form onSubmit={formik.handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative" ref={brandDropdownRef}>
-            <label
-              htmlFor="brandSearch"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Marca
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Marca <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
-                id="brandSearch"
                 type="text"
+                placeholder="Buscar marca"
                 value={brandSearch}
-                onChange={(e) => {
-                  setBrandSearch(e.target.value);
-                  setShowBrandDropdown(true);
-                }}
-                onFocus={() => setShowBrandDropdown(true)}
-                placeholder="Buscar marca..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+                onChange={(e) => setBrandSearch(e.target.value)}
+                onClick={() => setShowBrandDropdown(true)}
+                className={`w-full px-3 py-2 border ${
+                  formik.touched.brandId && formik.errors.brandId
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue pr-10`}
+                readOnly={formik.values.brandId !== ""}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              {formik.values.brandId && (
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => {
+                    formik.setFieldValue("brandId", "");
+                    formik.setFieldValue("modelId", "");
+                    formik.setFieldValue("versionId", "");
+                    setBrandSearch("");
+                  }}
+                >
+                  <X className="h-4 w-4 text-gray-400" />
+                </button>
+              )}
+              {!formik.values.brandId && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+              )}
             </div>
-            {showBrandDropdown && (
+            {showBrandDropdown && !formik.values.brandId && (
               <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
-                {filteredBrands.length > 0 ? (
-                  filteredBrands.map((brand) => (
-                    <div
-                      key={brand.id}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleBrandSelect(brand.id, brand.name)}
-                    >
-                      {brand.name}
+                <div className="py-1">
+                  {filteredBrands.length === 0 ? (
+                    <div className="px-4 py-2 text-sm text-gray-500">
+                      No se encontraron marcas
                     </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-gray-500">
-                    No se encontraron marcas
-                  </div>
-                )}
+                  ) : (
+                    filteredBrands.map((brand) => (
+                      <div
+                        key={brand.id}
+                        className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleBrandSelect(brand.id, brand.name)}
+                      >
+                        {brand.name}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
             {formik.touched.brandId && formik.errors.brandId ? (
@@ -276,55 +324,76 @@ const VehicleForm: React.FC = () => {
           </div>
 
           <div className="relative" ref={modelDropdownRef}>
-            <label
-              htmlFor="modelSearch"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Modelo
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Modelo <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
-                id="modelSearch"
                 type="text"
-                value={modelSearch}
-                onChange={(e) => {
-                  setModelSearch(e.target.value);
-                  setShowModelDropdown(true);
-                }}
-                onFocus={() => {
-                  if (selectedBrand) {
-                    setShowModelDropdown(true);
-                  }
-                }}
                 placeholder={
-                  selectedBrand
-                    ? "Buscar modelo..."
+                  formik.values.brandId
+                    ? "Buscar modelo"
                     : "Selecciona una marca primero"
                 }
-                disabled={!selectedBrand}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue disabled:bg-gray-100"
+                value={modelSearch}
+                onChange={(e) => setModelSearch(e.target.value)}
+                onClick={() => {
+                  if (formik.values.brandId) setShowModelDropdown(true);
+                }}
+                className={`w-full px-3 py-2 border ${
+                  formik.touched.modelId && formik.errors.modelId
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue pr-10 ${
+                  !formik.values.brandId ? "bg-gray-100 text-gray-500" : ""
+                }`}
+                disabled={!formik.values.brandId}
+                readOnly={formik.values.modelId !== ""}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              {formik.values.modelId && (
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => {
+                    formik.setFieldValue("modelId", "");
+                    formik.setFieldValue("versionId", "");
+                    setModelSearch("");
+                  }}
+                >
+                  <X className="h-4 w-4 text-gray-400" />
+                </button>
+              )}
+              {!formik.values.modelId && formik.values.brandId && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+              )}
             </div>
-            {showModelDropdown && selectedBrand && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
-                {filteredModels.length > 0 ? (
-                  filteredModels.map((model) => (
-                    <div
-                      key={model.id}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleModelSelect(model.id, model.name)}
-                    >
-                      {model.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-gray-500">
-                    No se encontraron modelos
+            {showModelDropdown &&
+              formik.values.brandId &&
+              !formik.values.modelId && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+                  <div className="py-1">
+                    {filteredModels.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No se encontraron modelos
+                      </div>
+                    ) : (
+                      filteredModels.map((model) => (
+                        <div
+                          key={model.id}
+                          className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                          onClick={() =>
+                            handleModelSelect(model.id, model.name)
+                          }
+                        >
+                          {model.name}
+                        </div>
+                      ))
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
             {formik.touched.modelId && formik.errors.modelId ? (
               <div className="text-red-500 text-xs mt-1">
                 {formik.errors.modelId}
@@ -333,72 +402,87 @@ const VehicleForm: React.FC = () => {
           </div>
 
           <div className="relative" ref={versionDropdownRef}>
-            <label
-              htmlFor="versionSearch"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Versión
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Versión <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
-                id="versionSearch"
                 type="text"
-                value={versionSearch}
-                onChange={(e) => {
-                  setVersionSearch(e.target.value);
-                  setShowVersionDropdown(true);
-                }}
-                onFocus={() => {
-                  if (selectedModel) {
-                    setShowVersionDropdown(true);
-                  }
-                }}
                 placeholder={
-                  selectedModel
-                    ? "Buscar versión..."
+                  formik.values.modelId
+                    ? "Buscar versión"
                     : "Selecciona un modelo primero"
                 }
-                disabled={!selectedModel}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue disabled:bg-gray-100"
+                value={versionSearch}
+                onChange={(e) => setVersionSearch(e.target.value)}
+                onClick={() => {
+                  if (formik.values.modelId) setShowVersionDropdown(true);
+                }}
+                className={`w-full px-3 py-2 border ${
+                  formik.touched.versionId && formik.errors.versionId
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue pr-10 ${
+                  !formik.values.modelId ? "bg-gray-100 text-gray-500" : ""
+                }`}
+                disabled={!formik.values.modelId}
+                readOnly={formik.values.versionId !== ""}
               />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              {formik.values.versionId && (
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => {
+                    formik.setFieldValue("versionId", "");
+                    setVersionSearch("");
+                  }}
+                >
+                  <X className="h-4 w-4 text-gray-400" />
+                </button>
+              )}
+              {!formik.values.versionId && formik.values.modelId && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+              )}
             </div>
-            {showVersionDropdown && selectedModel && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
-                {filteredVersions.length > 0 ? (
-                  filteredVersions.map((version) => (
-                    <div
-                      key={version.id}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => {
-                        handleVersionSelect(version.id, version.name);
-                        setShowVersionDropdown(false);
-                        setVersionSearch(version.name);
-                      }}
-                    >
-                      {version.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-gray-500">
-                    No se encontraron versiones
+            {showVersionDropdown &&
+              formik.values.modelId &&
+              !formik.values.versionId && (
+                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+                  <div className="py-1">
+                    {filteredVersions.length === 0 ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        No se encontraron versiones
+                      </div>
+                    ) : (
+                      filteredVersions.map((version) => (
+                        <div
+                          key={version.id}
+                          className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                          onClick={() =>
+                            handleVersionSelect(version.id, version.name)
+                          }
+                        >
+                          {version.name}
+                        </div>
+                      ))
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
             {formik.touched.versionId && formik.errors.versionId ? (
               <div className="text-red-500 text-xs mt-1">
                 {formik.errors.versionId}
               </div>
             ) : null}
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label
-              htmlFor="typeOfVehicle"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Tipo de Vehículo
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tipo de Vehículo <span className="text-red-500">*</span>
             </label>
             <select
               id="typeOfVehicle"
@@ -406,18 +490,31 @@ const VehicleForm: React.FC = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.typeOfVehicle}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+              className={`w-full px-3 py-2 border ${
+                formik.touched.typeOfVehicle && formik.errors.typeOfVehicle
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
             >
+              <option value="">Seleccionar</option>
               <option value="SUV">SUV</option>
-              <option value="SEDAN">Sedan</option>
+              <option value="PICKUP">Pickup</option>
+              <option value="MINIVAN">Minivan</option>
+              <option value="LIGHT_TRUCK">Camión Ligero</option>
+              <option value="COUPE">Coupé</option>
               <option value="HATCHBACK">Hatchback</option>
-              <option value="PICKUP_TRUCK">Pickup</option>
-              <option value="COUPE">Coupe</option>
-              <option value="CONVERTIBLE">Convertible</option>
-              <option value="WAGON">Wagon</option>
+              <option value="FURGON">Furgón</option>
+              <option value="SEDAN">Sedán</option>
               <option value="VAN">Van</option>
+              <option value="RURAL">Rural</option>
+              <option value="CABRIOLET">Cabriolet</option>
+              <option value="SPORTSCAR">Deportivo</option>
+              <option value="ROADSTER">Roadster</option>
+              <option value="ELECTRIC">Eléctrico</option>
+              <option value="HYBRID">Híbrido</option>
               <option value="LUXURY">Lujo</option>
               <option value="OFF_ROAD">Todo Terreno</option>
+              <option value="PICKUP_TRUCK">Camioneta Pickup</option>
               <option value="CROSSOVER">Crossover</option>
               <option value="COMPACT">Compacto</option>
             </select>
@@ -429,11 +526,8 @@ const VehicleForm: React.FC = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="year"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Año
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Año <span className="text-red-500">*</span>
             </label>
             <input
               id="year"
@@ -442,7 +536,13 @@ const VehicleForm: React.FC = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.year}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+              min={1900}
+              max={new Date().getFullYear() + 1}
+              className={`w-full px-3 py-2 border ${
+                formik.touched.year && formik.errors.year
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
             />
             {formik.touched.year && formik.errors.year ? (
               <div className="text-red-500 text-xs mt-1">
@@ -452,11 +552,8 @@ const VehicleForm: React.FC = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="condition"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Condición
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Condición <span className="text-red-500">*</span>
             </label>
             <select
               id="condition"
@@ -464,10 +561,15 @@ const VehicleForm: React.FC = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.condition}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+              className={`w-full px-3 py-2 border ${
+                formik.touched.condition && formik.errors.condition
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
             >
-              <option value="new">Nuevo</option>
-              <option value="used">Usado</option>
+              <option value="">Seleccionar</option>
+              <option value="Nuevo">Nuevo</option>
+              <option value="Usado">Usado</option>
             </select>
             {formik.touched.condition && formik.errors.condition ? (
               <div className="text-red-500 text-xs mt-1">
@@ -475,8 +577,10 @@ const VehicleForm: React.FC = () => {
               </div>
             ) : null}
           </div>
+        </div>
 
-          <div className="mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Moneda <span className="text-red-500">*</span>
             </label>
@@ -486,7 +590,11 @@ const VehicleForm: React.FC = () => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               value={formik.values.currency}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+              className={`w-full px-3 py-2 border ${
+                formik.touched.currency && formik.errors.currency
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
             >
               <option value="">Seleccione una moneda</option>
               <option value="U$D">Dólares (U$D)</option>
@@ -499,65 +607,65 @@ const VehicleForm: React.FC = () => {
             ) : null}
           </div>
 
-          <div className="flex space-x-4">
-            <div className="w-1/3">
-              <label
-                htmlFor="price"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Precio
-              </label>
-              <input
-                id="price"
-                name="price"
-                type="number"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.price}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
-              />
-              {formik.touched.price && formik.errors.price ? (
-                <div className="text-red-500 text-xs mt-1">
-                  {formik.errors.price}
-                </div>
-              ) : null}
-            </div>
-            <div className="w-2/3">
-              <label
-                htmlFor="mileage"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kilometraje
-              </label>
-              <input
-                id="mileage"
-                name="mileage"
-                type="number"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                disabled={formik.values.condition === "new"}
-                value={formik.values.mileage}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 ${
-                  formik.values.condition === "new"
-                    ? "bg-gray-100 border-gray-200 text-gray-400"
-                    : "border-gray-300 focus:ring-secondary-blue"
-                }`}
-              />
-              {formik.touched.mileage && formik.errors.mileage ? (
-                <div className="text-red-500 text-xs mt-1">
-                  {formik.errors.mileage}
-                </div>
-              ) : null}
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Precio <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="price"
+              name="price"
+              type="number"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.price}
+              min={0}
+              className={`w-full px-3 py-2 border ${
+                formik.touched.price && formik.errors.price
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
+            />
+            {formik.touched.price && formik.errors.price ? (
+              <div className="text-red-500 text-xs mt-1">
+                {formik.errors.price}
+              </div>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Kilometraje <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="mileage"
+              name="mileage"
+              type="number"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.mileage}
+              min={0}
+              className={`w-full px-3 py-2 border ${
+                formik.touched.mileage && formik.errors.mileage
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue ${
+                formik.values.condition === "Nuevo"
+                  ? "bg-gray-100 text-gray-500"
+                  : ""
+              }`}
+              disabled={formik.values.condition === "Nuevo"}
+            />
+            {formik.touched.mileage && formik.errors.mileage ? (
+              <div className="text-red-500 text-xs mt-1">
+                {formik.errors.mileage}
+              </div>
+            ) : null}
           </div>
         </div>
 
         <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Descripción
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Descripción <span className="text-red-500">*</span>
           </label>
           <textarea
             id="description"
@@ -566,7 +674,11 @@ const VehicleForm: React.FC = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.description}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue"
+            className={`w-full px-3 py-2 border ${
+              formik.touched.description && formik.errors.description
+                ? "border-red-500"
+                : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
           />
           {formik.touched.description && formik.errors.description ? (
             <div className="text-red-500 text-xs mt-1">
