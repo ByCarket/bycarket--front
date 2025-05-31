@@ -13,12 +13,18 @@ import { useSession } from "next-auth/react";
 import { showSuccess, showError, showWarning } from "@/app/utils/Notifications";
 import { useSpinner } from "@/context/SpinnerContext";
 
+type FormValuePrimitive = string | number | boolean | undefined;
+
 interface FormValues {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
-  phone: number | undefined;
+  phone: {
+    countryCode: string;
+    areaCode: string;
+    number: string;
+  };
   country: string;
   city: string;
   address: string;
@@ -31,40 +37,100 @@ const InputField = ({
   formik,
   ...props
 }: {
-  id: keyof FormValues;
+  id: string;
   label: string;
   type?: string;
   formik: FormikProps<FormValues>;
   [key: string]: unknown;
-}) => (
-  <div className="mb-4">
-    <label
-      htmlFor={id}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      {label}
-    </label>
-    <input
-      id={id}
-      name={id}
-      type={type}
-      onChange={formik.handleChange}
-      onBlur={formik.handleBlur}
-      value={formik.values[id] ?? ""}
-      className={`w-full px-3 py-2 border ${
-        formik.touched[id] && formik.errors[id]
-          ? "border-red-500"
-          : "border-gray-300"
-      } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
-      {...props}
-    />
-    {formik.touched[id] && formik.errors[id] ? (
-      <div className="text-red-500 text-xs mt-1">
-        {formik.errors[id]?.toString()}
-      </div>
-    ) : null}
-  </div>
-);
+}) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = e.target;
+
+    if (name === "phone.countryCode") {
+      let newValue = value;
+      if (!newValue.startsWith("+")) {
+        newValue = "+" + newValue.replace(/[^0-9]/g, "");
+      } else {
+        newValue = "+" + newValue.substring(1).replace(/[^0-9]/g, "");
+      }
+      formik.setFieldValue(name, newValue);
+    } else if (name === "phone.areaCode" || name === "phone.number") {
+      const newValue = value.replace(/[^0-9]/g, "");
+      formik.setFieldValue(name, newValue);
+    } else {
+      formik.handleChange(e);
+    }
+  };
+
+  return (
+    <div className="mb-4">
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        name={id}
+        type={type}
+        onChange={handleChange}
+        onBlur={formik.handleBlur}
+        value={
+          id.includes(".")
+            ? id
+                .split(".")
+                .reduce(
+                  (obj, key) => obj && obj[key as keyof typeof obj],
+                  formik.values as any
+                ) || ""
+            : formik.values[id as keyof FormValues] || ""
+        }
+        className={`w-full px-3 py-2 border ${
+          id.includes(".")
+            ? (() => {
+                const path = id.split(".");
+                const touched = path.reduce(
+                  (obj, key) => obj && obj[key as keyof typeof obj],
+                  formik.touched as any
+                );
+                const error = path.reduce(
+                  (obj, key) => obj && obj[key as keyof typeof obj],
+                  formik.errors as any
+                );
+                return touched && error ? "border-red-500" : "border-gray-300";
+              })()
+            : formik.touched[id as keyof FormValues] &&
+              formik.errors[id as keyof FormValues]
+            ? "border-red-500"
+            : "border-gray-300"
+        } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
+        {...props}
+      />
+      {id.includes(".") ? (
+        (() => {
+          const path = id.split(".");
+          const touched = path.reduce(
+            (obj, key) => obj && obj[key as keyof typeof obj],
+            formik.touched as any
+          );
+          const error = path.reduce(
+            (obj, key) => obj && obj[key as keyof typeof obj],
+            formik.errors as any
+          );
+          return touched && error ? (
+            <div className="text-red-500 text-xs mt-1">{error.toString()}</div>
+          ) : null;
+        })()
+      ) : formik.touched[id as keyof FormValues] &&
+        formik.errors[id as keyof FormValues] ? (
+        <div className="text-red-500 text-xs mt-1">
+          {formik.errors[id as keyof FormValues]?.toString()}
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const PasswordField = ({
   id,
@@ -75,7 +141,7 @@ const PasswordField = ({
   togglePasswordVisibility,
   toggleConfirmPasswordVisibility,
 }: {
-  id: "password" | "confirmPassword";
+  id: string;
   label: string;
   formik: FormikProps<FormValues>;
   showPassword: boolean;
@@ -88,6 +154,13 @@ const PasswordField = ({
   const toggleFn = isConfirm
     ? toggleConfirmPasswordVisibility
     : togglePasswordVisibility;
+
+  const getValue = (): string => {
+    const value = formik.values[id as keyof typeof formik.values];
+    if (value === undefined || value === null) return "";
+    if (typeof value === "string") return value;
+    return "";
+  };
 
   return (
     <div className="mb-4">
@@ -104,9 +177,10 @@ const PasswordField = ({
           type={showPwd ? "text" : "password"}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          value={formik.values[id]}
+          value={getValue()}
           className={`w-full px-3 py-2 border ${
-            formik.touched[id] && formik.errors[id]
+            formik.touched[id as keyof FormValues] &&
+            formik.errors[id as keyof FormValues]
               ? "border-red-500"
               : "border-gray-300"
           } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
@@ -123,9 +197,10 @@ const PasswordField = ({
           )}
         </button>
       </div>
-      {formik.touched[id] && formik.errors[id] ? (
+      {formik.touched[id as keyof FormValues] &&
+      formik.errors[id as keyof FormValues] ? (
         <div className="text-red-500 text-xs mt-1">
-          {formik.errors[id]?.toString()}
+          {formik.errors[id as keyof FormValues]?.toString()}
         </div>
       ) : null}
     </div>
@@ -137,7 +212,11 @@ interface RegistrationData {
   email: string;
   password: string;
   confirmPassword: string;
-  phone: number;
+  phone: {
+    countryCode: string;
+    areaCode: string;
+    number: string;
+  };
   country: string;
   city: string;
   address: string;
@@ -161,7 +240,11 @@ export default function RegisterForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      phone: undefined,
+      phone: {
+        countryCode: "+",
+        areaCode: "",
+        number: "",
+      },
       country: "",
       city: "",
       address: "",
@@ -182,9 +265,27 @@ export default function RegisterForm() {
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("password")], "Las contraseñas no coinciden")
         .required("Debes confirmar la contraseña"),
-      phone: Yup.number()
-        .required("El teléfono es obligatorio")
-        .typeError("El teléfono debe ser un número válido"),
+      phone: Yup.object()
+        .shape({
+          countryCode: Yup.string()
+            .required("El código de país es obligatorio")
+            .matches(
+              /^\+[0-9]+$/,
+              "El código de país debe comenzar con + y contener solo números"
+            )
+            .min(2, "El código de país debe tener al menos 2 caracteres"),
+          areaCode: Yup.string()
+            .required("El código de área es obligatorio")
+            .matches(
+              /^[0-9]+$/,
+              "El código de área debe contener solo números"
+            ),
+          number: Yup.string()
+            .required("El número de teléfono es obligatorio")
+            .matches(/^[0-9]+$/, "El número debe contener solo números")
+            .min(5, "El número debe tener al menos 5 dígitos"),
+        })
+        .required("La información de teléfono es obligatoria"),
       country: Yup.string().required("El país es obligatorio"),
       city: Yup.string().required("La ciudad es obligatoria"),
       address: Yup.string().required("La dirección es obligatoria"),
@@ -196,7 +297,11 @@ export default function RegisterForm() {
 
       if (Object.keys(errors).length > 0) {
         const firstError = Object.values(errors)[0];
-        showWarning(firstError);
+        showWarning(
+          typeof firstError === "string"
+            ? firstError
+            : "Por favor, verifica los campos del formulario"
+        );
         return;
       }
 
@@ -206,7 +311,7 @@ export default function RegisterForm() {
         email: values.email,
         password: values.password,
         confirmPassword: values.confirmPassword,
-        phone: values.phone as number,
+        phone: values.phone,
         country: values.country,
         city: values.city,
         address: values.address,
@@ -261,12 +366,26 @@ export default function RegisterForm() {
                 type="email"
                 formik={formik}
               />
-              <InputField
-                id="phone"
-                label="Teléfono"
-                type="number"
-                formik={formik}
-              />
+              <div className="grid grid-cols-3 gap-2">
+                <InputField
+                  id="phone.countryCode"
+                  label="Código País"
+                  formik={formik}
+                  placeholder="+1"
+                />
+                <InputField
+                  id="phone.areaCode"
+                  label="Código Área"
+                  formik={formik}
+                  placeholder="555"
+                />
+                <InputField
+                  id="phone.number"
+                  label="Número"
+                  formik={formik}
+                  placeholder="1234567"
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <InputField id="country" label="País" formik={formik} />

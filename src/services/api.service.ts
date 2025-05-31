@@ -5,11 +5,16 @@ export interface RegisterData {
   email: string;
   password: string;
   confirmPassword: string;
-  phone: number;
+  phone: {
+    countryCode: string;
+    areaCode: string;
+    number: string;
+  };
   country: string;
   city: string;
   address: string;
 }
+
 interface RegisterResponse {
   message: string;
 }
