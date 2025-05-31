@@ -5,6 +5,7 @@ import Image from "next/image";
 import { VehicleResponse } from "@/services/vehicle.service";
 import { showConfirm, showSuccess, showError } from "@/app/utils/Notifications";
 import { useVehiclesStore } from "@/context/VehiclesContext";
+import { useSpinner } from "@/context/SpinnerContext";
 
 interface MyVehicleCardProps {
   vehicle: VehicleResponse;
@@ -12,35 +13,44 @@ interface MyVehicleCardProps {
   onDelete?: (id: string) => Promise<boolean>;
 }
 
-export default function MyVehicleCard({ vehicle, onView, onDelete }: MyVehicleCardProps) {
+export default function MyVehicleCard({
+  vehicle,
+  onView,
+  onDelete,
+}: MyVehicleCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { setLoading } = useSpinner();
   const removeVehicle = useVehiclesStore((state) => state.removeVehicle);
-  const fetchUserVehicles = useVehiclesStore((state) => state.fetchUserVehicles);
+  const fetchUserVehicles = useVehiclesStore(
+    (state) => state.fetchUserVehicles
+  );
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    showConfirm(
-      "¿Estás seguro de eliminar este vehículo?",
-      async () => {
-        setIsDeleting(true);
-        try {
-          let success;
-          if (onDelete) {
-            success = await onDelete(vehicle.id);
-          } else {
-            success = await removeVehicle(vehicle.id);
-            if (success) await fetchUserVehicles();
-          }
+    showConfirm("¿Estás seguro de eliminar este vehículo?", async () => {
+      setIsDeleting(true);
+      setLoading(true);
+      try {
+        let success;
+        if (onDelete) {
+          success = await onDelete(vehicle.id);
+        } else {
+          success = await removeVehicle(vehicle.id);
           if (success) {
+            await fetchUserVehicles();
             showSuccess("Vehículo eliminado correctamente");
+          } else {
+            showError("No se pudo eliminar el vehículo");
           }
-        } catch (error) {
-          showError("Error al eliminar el vehículo");
-        } finally {
-          setIsDeleting(false);
         }
+      } catch (error) {
+        showError("Error al eliminar el vehículo");
+        console.error("Error deleting vehicle:", error);
+      } finally {
+        setIsDeleting(false);
+        setLoading(false);
       }
-    );
+    });
   };
 
   const handleView = (e: React.MouseEvent) => {

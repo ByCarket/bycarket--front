@@ -5,11 +5,16 @@ export interface RegisterData {
   email: string;
   password: string;
   confirmPassword: string;
-  phone: number;
+  phone: {
+    countryCode: string;
+    areaCode: string;
+    number: string;
+  };
   country: string;
   city: string;
   address: string;
 }
+
 interface RegisterResponse {
   message: string;
 }
@@ -34,6 +39,7 @@ export interface GoogleProcessLoginResponse {
     email: string;
     name: string;
     role: string;
+    isActive?: boolean;
   };
   message: string;
   token: string;
@@ -380,6 +386,48 @@ export const banUser = async (
 ): Promise<{ success: boolean; message: string }> => {
   const response = await http.delete<{ success: boolean; message: string }>(
     `/users/${userId}`
+  );
+  return response.data;
+};
+
+export interface ActivateAccountResponse {
+  message: string;
+  user?: {
+    id: string;
+    email: string;
+    isActive: boolean;
+  };
+}
+
+export interface ResendActivationResponse {
+  message: string;
+}
+
+export const activateAccount = async (
+  token: string
+): Promise<ActivateAccountResponse> => {
+  try {
+    const response = await http.get<ActivateAccountResponse>(
+      `/auth/activate/${token}`
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 400) {
+      return {
+        message: "La cuenta ya está activada",
+        user: error.response?.data?.user,
+      };
+    }
+    throw error;
+  }
+};
+
+export const resendActivationEmail = async (
+  email: string
+): Promise<ResendActivationResponse> => {
+  const response = await http.post<ResendActivationResponse>(
+    "/auth/resend-activation",
+    { email }
   );
   return response.data;
 };

@@ -6,6 +6,8 @@ import MyVehicleLists from "./myvehicles/MyVehicleLists";
 import MyVehicleDetails from "./myvehicles/MyVehicleDetails";
 import { useRouter } from "next/navigation";
 import { useVehicles } from "@/hooks/useVehicles";
+import { showSuccess, showError } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 export default function VehiclesContent() {
   const [selectedVehicle, setSelectedVehicle] =
@@ -13,6 +15,7 @@ export default function VehiclesContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { vehicles, loading, deleteVehicle, refetch } = useVehicles();
   const router = useRouter();
+  const { setLoading } = useSpinner();
 
   const handleViewDetails = (vehicle: VehicleResponse) => {
     setSelectedVehicle(vehicle);
@@ -21,18 +24,24 @@ export default function VehiclesContent() {
 
   const handleDeleteVehicle = async (id: string): Promise<boolean> => {
     try {
+      setLoading(true);
       const success = await deleteVehicle(id);
       if (success && selectedVehicle?.id === id) {
         setSelectedVehicle(null);
+        showSuccess("Vehículo eliminado correctamente");
       }
       return success;
     } catch (error) {
+      showError("Error al eliminar el vehículo. Inténtalo de nuevo.");
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateVehicle = (updatedVehicle: VehicleResponse) => {
     setSelectedVehicle(updatedVehicle);
+    showSuccess("Vehículo actualizado correctamente");
   };
 
   const handleAddVehicle = () => {

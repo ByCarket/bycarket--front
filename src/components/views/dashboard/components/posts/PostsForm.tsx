@@ -4,6 +4,8 @@ import { useState } from "react";
 import { VehicleResponse } from "@/services/vehicle.service";
 import { generateVehicleDescription } from "@/services/vehicle.service";
 import GenerateAIButton from "@/components/ui/GenerateAIButton";
+import { showError, showSuccess } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 interface PostsFormProps {
   vehicle: VehicleResponse;
@@ -22,24 +24,30 @@ export default function PostsForm({
     vehicle.description || ""
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  const { setLoading } = useSpinner();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await onSubmit(vehicle.id, description);
+      showSuccess("Publicación actualizada correctamente");
     } catch (error) {
-      console.error("Submission error:", error);
+      showError("Error al actualizar la publicación");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGenerateDescription = async () => {
-    try {
-      if (!vehicle?.brand?.name || !vehicle?.model?.name) {
-        console.error("Datos incompletos para generar descripción");
-        return;
-      }
+    if (!vehicle?.brand?.name || !vehicle?.model?.name) {
+      showError("Datos incompletos para generar la descripción");
+      return;
+    }
 
-      setIsGenerating(true);
+    setIsGenerating(true);
+    setLoading(true);
+    try {
       const generatedDesc = await generateVehicleDescription({
         brand: vehicle.brand.name,
         model: vehicle.model.name,
@@ -50,14 +58,13 @@ export default function PostsForm({
         condition: vehicle.condition,
         typeOfVehicle: vehicle.typeOfVehicle,
       });
-
-      if (generatedDesc) {
-        setDescription(generatedDesc);
-      }
+      setDescription(generatedDesc);
+      showSuccess("Descripción generada con éxito");
     } catch (error) {
-      console.error("Error en generación de descripción:", error);
+      showError("Error al generar la descripción");
     } finally {
       setIsGenerating(false);
+      setLoading(false);
     }
   };
 

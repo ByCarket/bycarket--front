@@ -14,7 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { signIn, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
-import { showSuccess, showError } from "@/app/utils/Notifications";
+import { showSuccess, showError, showWarning } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,6 +23,7 @@ export default function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
   const { status, update } = useSession();
+  const { setLoading } = useSpinner();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -42,8 +44,22 @@ export default function LoginForm() {
         .required("El correo electrónico es obligatorio"),
       password: Yup.string().required("La contraseña es obligatoria"),
     }),
-    onSubmit: async (values, { setSubmitting, setFieldError }) => {
+    validateOnChange: false,
+    validateOnBlur: true,
+    onSubmit: async (
+      values,
+      { setSubmitting, setFieldError, validateForm }
+    ) => {
+      const errors = await validateForm();
+
+      if (Object.keys(errors).length > 0) {
+        const firstError = Object.values(errors)[0];
+        showWarning(firstError);
+        return;
+      }
+
       try {
+        setLoading(true);
         const loginData = {
           email: values.email,
           password: values.password,
@@ -71,6 +87,7 @@ export default function LoginForm() {
           setFieldError(error.response.data.field, error.response.data.message);
         }
       } finally {
+        setLoading(false);
         setSubmitting(false);
       }
     },
@@ -123,7 +140,11 @@ export default function LoginForm() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.email}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue"
+                className={`w-full px-3 py-2 border ${
+                  formik.touched.email && formik.errors.email
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue`}
               />
               {formik.touched.email && formik.errors.email ? (
                 <div className="text-red-500 text-sm mt-1">
@@ -147,7 +168,11 @@ export default function LoginForm() {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   value={formik.values.password}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue"
+                  className={`w-full px-3 py-2 border ${
+                    formik.touched.password && formik.errors.password
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-blue`}
                 />
                 <button
                   type="button"
@@ -197,39 +222,47 @@ export default function LoginForm() {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300"
+              disabled={formik.isSubmitting}
+              className="w-full py-2 px-4 bg-principal-blue hover:bg-secondary-blue text-white font-semibold rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Iniciar Sesión
+              {formik.isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>
+          </form>
 
-            <div className="text-center mt-4">
-              <span className="text-sm text-gray-600">
-                prefieres iniciar sesion con:
-              </span>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">
+                  O continúa con
+                </span>
+              </div>
             </div>
 
-            <div className="text-center mt-2">
+            <div className="mt-6">
               <button
-                type="button"
-                onClick={() => signIn("google", { callbackUrl: "/" })}
-                className="w-12 h-12 flex items-center justify-center bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-300 mx-auto"
+                onClick={() => signIn("google", { callbackUrl: "/home" })}
+                className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
-                <FcGoogle className="h-6 w-6" />
+                <FcGoogle className="w-5 h-5 mr-2" />
+                Iniciar sesión con Google
               </button>
             </div>
+          </div>
 
-            <div className="text-center mt-4">
-              <span className="text-sm text-gray-600">
-                ¿No tienes una cuenta?{" "}
-              </span>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              ¿No tienes una cuenta?{" "}
               <a
                 href="/register"
-                className="text-sm font-medium text-secondary-blue hover:text-principal-blue"
+                className="font-medium text-secondary-blue hover:text-principal-blue"
               >
-                Regístrate aquí
+                Regístrate
               </a>
-            </div>
-          </form>
+            </p>
+          </div>
         </div>
       </div>
     </div>

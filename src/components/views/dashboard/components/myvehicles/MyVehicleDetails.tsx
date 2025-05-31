@@ -10,6 +10,7 @@ import {
 } from "@/services/vehicle.service";
 import { showConfirm, showSuccess, showError } from "@/app/utils/Notifications";
 import { useVehiclesStore } from "@/context/VehiclesContext";
+import { useSpinner } from "@/context/SpinnerContext";
 
 export default function MyVehicleDetails({
   vehicle: initialVehicle,
@@ -25,6 +26,7 @@ export default function MyVehicleDetails({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [newImages, setNewImages] = useState<File[]>([]);
+  const { setLoading } = useSpinner();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -45,6 +47,7 @@ export default function MyVehicleDetails({
   };
 
   const handleSave = async () => {
+    setLoading(true);
     try {
       const updatedVehicle = await updateVehicle(vehicle.id, {
         brandId: vehicle.brand.id,
@@ -70,33 +73,33 @@ export default function MyVehicleDetails({
       showSuccess("Los cambios fueron guardados correctamente");
     } catch (error) {
       showError("Error al guardar los cambios");
+    } finally {
+      setLoading(false);
     }
   };
 
   const removeVehicle = useVehiclesStore((state) => state.removeVehicle);
 
-  const handleDelete = async () => {
-    showConfirm(
-      "¿Estás seguro de eliminar este vehículo?",
-      async () => {
-        setIsDeleting(true);
-        try {
-          const success = await removeVehicle(vehicle.id);
-          if (success) {
-            showSuccess("Vehículo eliminado correctamente");
-            onClose();
-          }
-        } catch (error) {
-          showError("Error al eliminar el vehículo");
-          setIsDeleting(false);
+  const handleDelete = () => {
+    showConfirm("¿Estás seguro de eliminar este vehículo?", async () => {
+      setLoading(true);
+      try {
+        const success = await removeVehicle(vehicle.id);
+        if (success) {
+          showSuccess("Vehículo eliminado correctamente");
+          onClose();
         }
-      },
-      () => {}
-    );
+      } catch (error) {
+        showError("Error al eliminar el vehículo");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
-  const handleImageDelete = async (publicId: string) => {
+  const handleImageDelete = (publicId: string) => {
     showConfirm("¿Estás seguro de eliminar esta imagen?", async () => {
+      setLoading(true);
       try {
         await deleteVehicleImage(vehicle.id, publicId);
         setVehicle((prev) => ({
@@ -107,6 +110,8 @@ export default function MyVehicleDetails({
         showSuccess("La imagen fue eliminada correctamente");
       } catch (error) {
         showError("Error al eliminar la imagen");
+      } finally {
+        setLoading(false);
       }
     });
   };
@@ -281,8 +286,8 @@ export default function MyVehicleDetails({
                     onChange={handleSelectChange}
                     className="w-full p-2 border rounded"
                   >
-                    <option value="USD">USD</option>
-                    <option value="ARS">ARS</option>
+                    <option value="U$D">USD</option>
+                    <option value="AR$">ARS</option>
                   </select>
                 </div>
                 <div>
@@ -339,8 +344,8 @@ export default function MyVehicleDetails({
                     onChange={handleSelectChange}
                     className="w-full p-2 border rounded"
                   >
-                    <option value="nuevo">Nuevo</option>
-                    <option value="usado">Usado</option>
+                    <option value="new">Nuevo</option>
+                    <option value="used">Usado</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">
