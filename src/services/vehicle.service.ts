@@ -275,37 +275,26 @@ export const getMyPosts = async (): Promise<GetPostsResponse> => {
   return response.data.data;
 };
 
-export const getPendingPosts = async (): Promise<GetPostsResponse> => {
-  const response = await http.get<ApiResponse<GetPostsResponse>>("/posts", {
-    params: {
-      status: "Pending",
-      limit: 100,
-      page: 1,
-    },
-  });
-
-  if (response.data && response.data.data) {
-    const allPosts = response.data.data;
-    const pendingPosts = (
-      Array.isArray(allPosts) ? allPosts : allPosts.data || []
-    ).filter((post: PostResponse) => post.status === "Pending");
-
-    return {
-      data: pendingPosts,
-      total: pendingPosts.length,
-      page: 1,
-      limit: 1000,
-      totalPages: 1,
-    };
+export const getPendingPosts = async ({
+  page = 1,
+  limit = 10,
+}: {
+  page?: number;
+  limit?: number;
+} = {}): Promise<GetPostsResponse> => {
+  try {
+    const response = await http.get<GetPostsResponse>(
+      `/posts/pending?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching pending posts:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al obtener las publicaciones pendientes"
+    );
   }
-
-  return {
-    data: [],
-    total: 0,
-    page: 1,
-    limit: 1000,
-    totalPages: 1,
-  };
 };
 
 export const acceptPost = async (postId: string): Promise<void> => {
