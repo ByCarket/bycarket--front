@@ -110,20 +110,29 @@ export const getVersionsByModel = async (
 export const createVehicle = async (
   vehicleData: VehicleData
 ): Promise<VehicleResponse> => {
-  const payload = {
-    brandId: vehicleData.brandId,
-    modelId: vehicleData.modelId,
-    versionId: vehicleData.versionId,
-    typeOfVehicle: vehicleData.typeOfVehicle,
-    year: vehicleData.year,
-    condition: vehicleData.condition,
-    currency: vehicleData.currency,
-    price: vehicleData.price,
-    mileage: vehicleData.mileage,
-    description: vehicleData.description,
-  };
+  const formData = new FormData();
 
-  const response = await http.post<any>("/vehicles", payload);
+  formData.append("brandId", vehicleData.brandId);
+  formData.append("modelId", vehicleData.modelId);
+  formData.append("versionId", vehicleData.versionId);
+  formData.append("typeOfVehicle", vehicleData.typeOfVehicle);
+  formData.append("year", vehicleData.year.toString());
+  formData.append("condition", vehicleData.condition);
+  formData.append("currency", vehicleData.currency);
+  formData.append("price", vehicleData.price.toString());
+  formData.append("mileage", vehicleData.mileage.toString());
+  formData.append("description", vehicleData.description);
+
+  vehicleData.images.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const response = await http.post<any>("/vehicles", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return response.data.data;
 };
 
@@ -266,37 +275,26 @@ export const getMyPosts = async (): Promise<GetPostsResponse> => {
   return response.data.data;
 };
 
-export const getPendingPosts = async (): Promise<GetPostsResponse> => {
-  const response = await http.get<ApiResponse<GetPostsResponse>>("/posts", {
-    params: {
-      status: "Pending",
-      limit: 100,
-      page: 1,
-    },
-  });
-
-  if (response.data && response.data.data) {
-    const allPosts = response.data.data;
-    const pendingPosts = (
-      Array.isArray(allPosts) ? allPosts : allPosts.data || []
-    ).filter((post: PostResponse) => post.status === "Pending");
-
-    return {
-      data: pendingPosts,
-      total: pendingPosts.length,
-      page: 1,
-      limit: 1000,
-      totalPages: 1,
-    };
+export const getPendingPosts = async ({
+  page = 1,
+  limit = 10,
+}: {
+  page?: number;
+  limit?: number;
+} = {}): Promise<GetPostsResponse> => {
+  try {
+    const response = await http.get<GetPostsResponse>(
+      `/posts/pending?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching pending posts:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al obtener las publicaciones pendientes"
+    );
   }
-
-  return {
-    data: [],
-    total: 0,
-    page: 1,
-    limit: 1000,
-    totalPages: 1,
-  };
 };
 
 export const acceptPost = async (postId: string): Promise<void> => {
@@ -373,8 +371,6 @@ export const generateVehicleDescription = async (vehicleData: {
       error instanceof Error ? error.message : "Error desconocido";
     const status = (error as any)?.response?.status;
     const data = (error as any)?.response?.data;
-
-
 
     throw new Error(errorMessage);
   }

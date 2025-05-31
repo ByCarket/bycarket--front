@@ -7,6 +7,8 @@ import { useFetchVehicles } from "@/hooks/useFetchVehicles";
 import PostsList from "./posts/PostsList";
 import PostsForm from "./posts/PostsForm";
 import PostsDetail from "./posts/PostsDetail";
+import { showSuccess, showError } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 export default function PostContent() {
   const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
@@ -16,6 +18,7 @@ export default function PostContent() {
   const [selectedVehicle, setSelectedVehicle] =
     useState<VehicleResponse | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const { setLoading } = useSpinner();
 
   const {
     posts,
@@ -33,8 +36,10 @@ export default function PostContent() {
 
   useEffect(() => {
     const loadInitialData = async () => {
+      setLoading(true);
       await refetchPosts();
       await refetchVehicles();
+      setLoading(false);
     };
 
     loadInitialData();
@@ -42,34 +47,42 @@ export default function PostContent() {
 
   const handleCreatePost = async (vehicleId: string, description?: string) => {
     setIsCreating(true);
+    setLoading(true);
     try {
       const result = await createPost({ vehicleId, description });
       if (result.success) {
+        showSuccess("Publicación creada exitosamente");
         setShowForm(false);
         setShowVehicleSelector(false);
         setSelectedVehicle(null);
         await refetchPosts();
       } else {
-        alert(result.error);
+        showError(result.error || "Error al crear la publicación");
       }
     } catch (error) {
-      alert("Error inesperado al crear la publicación");
+      showError("Error inesperado al crear la publicación");
     } finally {
       setIsCreating(false);
+      setLoading(false);
     }
   };
 
   const handleDeletePost = async (postId: string): Promise<boolean> => {
     try {
+      setLoading(true);
       await deletePost(postId);
       if (selectedPost?.id === postId) {
         setSelectedPost(null);
       }
       await refetchPosts();
       await refetchVehicles();
+      showSuccess("Publicación eliminada correctamente");
       return true;
     } catch (error) {
+      showError("Error al eliminar la publicación");
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,13 +146,13 @@ export default function PostContent() {
       {showVehicleSelector && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold text-principal-blue">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-medium">
                 Selecciona un vehículo para publicar
-              </h2>
+              </h3>
               <button
                 onClick={() => setShowVehicleSelector(false)}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+                className="text-gray-500 hover:text-gray-700"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

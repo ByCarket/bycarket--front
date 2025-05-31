@@ -6,6 +6,8 @@ import UserListHeader from "./admin/userlist/UserListHeader";
 import UserSearchbar from "./admin/userlist/UserSearchbar";
 import UserList from "./admin/userlist/UserList";
 import StatusFilterTabs from "./admin/userlist/StatusFilterTabs";
+import { showError } from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 
 const UserListContent = () => {
   const [allUsers, setAllUsers] = useState<UserData[]>([]);
@@ -17,9 +19,11 @@ const UserListContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const itemsPerPage = 9;
+  const { setLoading: setGlobalLoading } = useSpinner();
 
   const fetchUsers = async () => {
     setLoading(true);
+    setGlobalLoading(true);
     setError(null);
     try {
       const response = await getUsers(1, 100);
@@ -27,11 +31,14 @@ const UserListContent = () => {
       setFilteredUsers(response.data);
       setTotalPages(Math.ceil(response.data.length / itemsPerPage));
     } catch (err) {
-      setError("Error al cargar los usuarios");
+      const errorMessage = "Error al cargar los usuarios";
+      setError(errorMessage);
+      showError(errorMessage);
       setAllUsers([]);
       setFilteredUsers([]);
     } finally {
       setLoading(false);
+      setGlobalLoading(false);
     }
   };
 
