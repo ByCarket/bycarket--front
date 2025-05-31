@@ -299,6 +299,24 @@ export const getSubscription = async (
   }
 };
 
+export const getSubscriptionById = async (
+  subscriptionId: string
+): Promise<{ data: any }> => {
+  try {
+    const response = await http.get<{ data: any }>(
+      `/subscription/${subscriptionId}`
+    );
+    return response;
+  } catch (error: any) {
+    console.error("Error fetching subscription by id:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al obtener los detalles de la suscripción"
+    );
+  }
+};
+
 export const createSubscription = async (
   priceId: string,
   paymentMethodId?: string
