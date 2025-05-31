@@ -214,11 +214,9 @@ export default function RegisterForm() {
 
       try {
         setLoading(true);
-        await register(registrationData);
-        showSuccess(
-          "¡Registro exitoso! Por favor inicia sesión con tus credenciales."
-        );
-        router.push("/login");
+        const { email } = await register(registrationData);
+
+        router.push(`/activate-required?email=${encodeURIComponent(email)}`);
       } catch (err: any) {
         const errorMessage =
           err?.response?.data?.message ||

@@ -39,29 +39,26 @@ http.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (!error.response) {
-      const customError = new Error("Error de conexión con el servidor");
-      (customError as any).response = {
-        data: { message: "Error de conexión con el servidor" },
-      };
-      return Promise.reject(customError);
+    const { response } = error;
+
+    const isActivationError = response?.config?.url?.includes("/auth/activate");
+    if (isActivationError) {
+      return Promise.reject(error);
     }
 
-    const status = error.response.status;
-    const errorData = error.response.data || {};
-    const errorMessage = errorData.message || "Error desconocido";
+    let message = "Error de conexión con el servidor";
 
-    let message = errorMessage;
-
-    if (status === 401) {
-      message = "Credenciales inválidas";
-    } else if (status === 400) {
-      message = errorMessage || "Error de validación";
-    } else if (status === 404) {
-      message = errorMessage || "Recurso no encontrado";
-    } else if (status === 500) {
-      message = errorMessage || `Error del servidor (${status})`;
+    if (response?.data?.message) {
+      message = response.data.message;
+    } else if (response?.statusText) {
+      message = response.statusText;
     }
+
+    console.error("Error en la petición:", {
+      url: response?.config?.url,
+      status: response?.status,
+      message,
+    });
 
     const customError = new Error(message);
     (customError as any).response = error.response;
