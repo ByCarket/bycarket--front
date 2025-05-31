@@ -7,13 +7,14 @@ import OrderPostBy from "./OrderPostBy";
 import StatusFilterPost from "./StatusFilterPost";
 import PostDetail from "./PostDetail";
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10;
 
 const PostList = () => {
   const [posts, setPosts] = useState<PostResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [orderBy, setOrderBy] = useState<"asc" | "desc">("desc");
   const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("Pending");
@@ -21,13 +22,18 @@ const PostList = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const response = await getPendingPosts();
+      const response = await getPendingPosts({
+        limit: ITEMS_PER_PAGE,
+        page: currentPage,
+      });
       const postsData = Array.isArray(response.data) ? response.data : [];
       setPosts(postsData);
       setTotalPages(response.totalPages || 1);
+      setTotalItems(response.totalItems || response.total || postsData.length);
     } catch {
       setPosts([]);
       setTotalPages(1);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
@@ -128,7 +134,7 @@ const PostList = () => {
                   </svg>
                 </button>
 
-                {[...Array(totalPages)].map((_, index) => {
+                {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
                   const page = index + 1;
                   return (
                     <button

@@ -191,10 +191,12 @@ const VehicleForm: React.FC = () => {
       return;
     }
 
-    const oversizedFiles = newFiles.filter((file) => file.size > 1024 * 1024);
+    const oversizedFiles = newFiles.filter(
+      (file) => file.size > 15 * 1024 * 1024
+    );
     if (oversizedFiles.length > 0) {
-      setImageError("Algunas imágenes superan 1MB");
-      showWarning("Algunas imágenes superan el tamaño máximo de 1MB");
+      setImageError("Algunas imágenes superan 15MB");
+      showWarning("Algunas imágenes superan el tamaño máximo de 15MB");
       return;
     }
 
@@ -764,7 +766,7 @@ const VehicleForm: React.FC = () => {
 
           <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
             <p>Formatos: JPG, JPEG, PNG o WEBP</p>
-            <p>Máximo: 1MB por imagen</p>
+            <p>Máximo: 15MB por imagen</p>
           </div>
 
           {(imageError || (formik.touched.images && formik.errors.images)) && (
