@@ -8,7 +8,7 @@ import {
   type Price,
 } from "@/services/api.service";
 
-const PaymentElement = dynamic(() => import("./PaymentElement"), {
+const PaymentElement = dynamic(() => import("./EmbeddedCheckout"), {
   ssr: false,
 });
 
