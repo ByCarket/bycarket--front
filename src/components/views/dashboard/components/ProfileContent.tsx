@@ -3,10 +3,20 @@
 import { useState, useRef } from "react";
 import { useUserData } from "@/hooks/useUserData";
 import { UpdateUserData } from "@/services/api.service";
-import { FaTrash, FaEdit, FaPen } from "react-icons/fa";
+import {
+  FaTrash,
+  FaEdit,
+  FaCamera,
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaGlobe,
+  FaMapMarkerAlt,
+  FaHome,
+} from "react-icons/fa";
 import { Modal } from "@/components/ui/Modal";
 import Image from "next/image";
-import { RoleBadge } from "@/components/ui/RoleBadge"; // Import RoleBadge component
+import { RoleBadge } from "@/components/ui/RoleBadge";
 
 export default function ProfileContent() {
   const {
@@ -32,24 +42,40 @@ export default function ProfileContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-principal-blue"></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-[#103663] rounded-full animate-spin"></div>
+          <div
+            className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-[#4a77a8] rounded-full animate-spin"
+            style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
+          ></div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 my-4">
-        <p className="text-red-600">{error}</p>
+      <div className="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-xl p-6 my-6 shadow-lg">
+        <div className="flex items-center">
+          <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-3">
+            <span className="text-white text-sm font-bold">!</span>
+          </div>
+          <p className="text-red-700 font-medium">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (!userData) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 my-4">
-        <p className="text-yellow-600">No hay datos de usuario disponibles</p>
+      <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-500 rounded-xl p-6 my-6 shadow-lg">
+        <div className="flex items-center">
+          <FaUser className="text-yellow-600 mr-3" />
+          <p className="text-yellow-700 font-medium">
+            No hay datos de usuario disponibles
+          </p>
+        </div>
       </div>
     );
   }
@@ -184,291 +210,342 @@ export default function ProfileContent() {
   };
 
   return (
-    <div className="w-full">
-      <div className="w-full rounded-2xl mt-8">
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {updateMessage && (
           <div
-            className={`mb-6 p-4 ${
+            className={`mb-8 p-4 rounded-xl shadow-lg border-l-4 ${
               updateMessage.type === "success"
-                ? "bg-green-50 text-green-700 border-green-200"
-                : "bg-red-50 text-red-700 border-red-200"
-            } border rounded-md`}
+                ? "bg-gradient-to-r from-green-50 to-green-100 border-green-500 text-green-800"
+                : "bg-gradient-to-r from-red-50 to-red-100 border-red-500 text-red-800"
+            } transform transition-all duration-300 animate-pulse`}
           >
-            {updateMessage.text}
+            <div className="flex items-center">
+              <div
+                className={`w-2 h-2 rounded-full mr-3 ${
+                  updateMessage.type === "success"
+                    ? "bg-green-500"
+                    : "bg-red-500"
+                }`}
+              ></div>
+              <span className="font-medium">{updateMessage.text}</span>
+            </div>
           </div>
         )}
 
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-800">Perfil público</h1>
-        </div>
-
-        <div className="flex flex-col p-6">
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="md:w-1/3">
-              <h2 className="text-lg font-medium text-gray-700 mb-4 text-center">
-                Foto de perfil
-              </h2>
-              <div className="relative flex justify-center mb-6">
-                {userData?.image &&
-                typeof userData.image === "string" &&
-                userData.image.trim() !== "" ? (
-                  <div
-                    className="relative w-60 h-60 rounded-full overflow-hidden cursor-pointer border border-gray-200"
-                    onClick={handleImageClick}
-                  >
-                    {userData.image && (
-                      <Image
-                        src={userData.image}
-                        alt={userData.name || "Usuario"}
-                        fill
-                        className="object-cover"
-                        priority
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = "none";
-                        }}
-                      />
-                    )}
-                    {isUploading && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div
-                    className="relative w-60 h-60 rounded-full bg-secondary-blue flex items-center justify-center text-white text-5xl font-bold cursor-pointer border border-gray-200"
-                    onClick={handleImageClick}
-                  >
-                    {userData?.name ? getInitials(userData.name) : "U"}
-                    {isUploading && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <button
-                  onClick={handleImageClick}
-                  className="absolute bottom-2 right-2 bg-gray-800 text-white rounded-md p-2 hover:bg-gray-700 transition-colors"
-                >
-                  <FaEdit className="w-4 h-4" />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  onChange={handleImageChange}
-                />
-              </div>
-
-              <div className="flex flex-col gap-3 mb-6">
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    setFormData({
-                      phone: userData.phone,
-                      country: userData.country,
-                      city: userData.city,
-                      address: userData.address,
-                    });
-                  }}
-                  className="px-5 py-3 bg-principal-blue text-white rounded-md hover:bg-secondary-blue transition-colors font-medium flex items-center justify-center gap-2 shadow-sm text-base"
-                >
-                  <FaEdit className="w-5 h-5" />
-                  <span>Editar perfil</span>
-                </button>
-                <button
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="px-5 py-3 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-medium shadow-sm text-base"
-                >
-                  <FaTrash className="w-5 h-5" />
-                  <span>Eliminar cuenta</span>
-                </button>
-              </div>
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-[#103663] to-[#4a77a8] p-8 text-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-black opacity-10"></div>
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
+            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+            <div className="relative z-10">
+              <h1 className="text-4xl font-bold mb-2">Mi Perfil</h1>
+              <p className="text-blue-100 text-lg">
+                Gestiona tu información personal
+              </p>
             </div>
+          </div>
 
-            <div className="flex-1">
-              {isEditing ? (
-                <form onSubmit={handleSubmit}>
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        Nombre
-                      </h2>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name || userData.name || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                        disabled
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Tu nombre puede aparecer en tus publicaciones o
-                        anuncios.
-                      </p>
+          <div className="p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              <div className="lg:col-span-1">
+                <div className="text-center">
+                  <div className="relative inline-block mb-6">
+                    <div className="relative group">
+                      {userData?.image &&
+                      typeof userData.image === "string" &&
+                      userData.image.trim() !== "" ? (
+                        <div
+                          className="relative w-48 h-48 rounded-full overflow-hidden cursor-pointer border-4 border-white shadow-2xl transform transition-all duration-300 group-hover:scale-105"
+                          onClick={handleImageClick}
+                        >
+                          <Image
+                            src={userData.image}
+                            alt={userData.name || "Usuario"}
+                            fill
+                            className="object-cover"
+                            priority
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = "none";
+                            }}
+                          />
+                          {isUploading && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                              <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          className="relative w-48 h-48 rounded-full bg-gradient-to-br from-[#103663] to-[#4a77a8] flex items-center justify-center text-white text-6xl font-bold cursor-pointer border-4 border-white shadow-2xl transform transition-all duration-300 group-hover:scale-105"
+                          onClick={handleImageClick}
+                        >
+                          {userData?.name ? getInitials(userData.name) : "U"}
+                          {isUploading && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                              <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <button
+                        onClick={handleImageClick}
+                        className="absolute -bottom-2 -right-2 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white rounded-full p-3 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-110 group-hover:rotate-12"
+                      >
+                        <FaCamera className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        setFormData({
+                          phone: userData.phone,
+                          country: userData.country,
+                          city: userData.city,
+                          address: userData.address,
+                        });
+                      }}
+                      className="w-full px-6 py-4 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white rounded-xl hover:from-[#0f2f56] hover:to-[#3d6691] transition-all duration-300 font-semibold flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    >
+                      <FaEdit className="w-5 h-5" />
+                      <span>Editar Perfil</span>
+                    </button>
+                    <button
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="w-full px-6 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 flex items-center justify-center gap-3 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    >
+                      <FaTrash className="w-5 h-5" />
+                      <span>Eliminar Cuenta</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
+                {isEditing ? (
+                  <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="md:col-span-2">
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaUser className="text-[#103663]" />
+                          Nombre
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={formData.name || userData.name || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300 bg-gray-50"
+                          disabled
+                        />
+                        <p className="text-sm text-gray-500 mt-2 ml-1">
+                          Tu nombre puede aparecer en tus publicaciones o
+                          anuncios.
+                        </p>
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaEnvelope className="text-[#103663]" />
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email || userData.email || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300 bg-gray-50"
+                          disabled
+                        />
+                        <p className="text-sm text-gray-500 mt-2 ml-1">
+                          Tu email es privado.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaPhone className="text-[#103663]" />
+                          Teléfono
+                        </label>
+                        <input
+                          type="number"
+                          name="phone"
+                          value={formData.phone || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaGlobe className="text-[#103663]" />
+                          País
+                        </label>
+                        <input
+                          type="text"
+                          name="country"
+                          value={formData.country || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaMapMarkerAlt className="text-[#103663]" />
+                          Ciudad
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={formData.city || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
+                          <FaHome className="text-[#103663]" />
+                          Dirección
+                        </label>
+                        <input
+                          type="text"
+                          name="address"
+                          value={formData.address || ""}
+                          onChange={handleInputChange}
+                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        Email público
-                      </h2>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email || userData.email || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                        disabled
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Tu email es privado.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        Teléfono
-                      </h2>
-                      <input
-                        type="number"
-                        name="phone"
-                        value={formData.phone || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        País
-                      </h2>
-                      <input
-                        type="text"
-                        name="country"
-                        value={formData.country || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        Ciudad
-                      </h2>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <h2 className="text-lg font-medium text-gray-700 mb-2">
-                        Dirección
-                      </h2>
-                      <input
-                        type="text"
-                        name="address"
-                        value={formData.address || ""}
-                        onChange={handleInputChange}
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
+                    <div className="flex justify-end gap-4 pt-6">
                       <button
                         type="button"
                         onClick={handleCancel}
-                        className="px-5 py-3 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+                        className="px-8 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-all duration-300 hover:border-gray-400"
                       >
                         Cancelar
                       </button>
                       <button
                         type="submit"
                         disabled={updating}
-                        className="px-5 py-3 bg-principal-blue text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-70 font-medium flex items-center gap-2 text-base"
+                        className="px-8 py-3 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white rounded-xl hover:from-[#0f2f56] hover:to-[#3d6691] transition-all duration-300 disabled:opacity-70 font-medium flex items-center gap-2 shadow-lg"
                       >
-                        {updating ? "Actualizando..." : "Guardar Cambios"}
+                        {updating ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Actualizando...</span>
+                          </>
+                        ) : (
+                          <span>Guardar Cambios</span>
+                        )}
                       </button>
                     </div>
-                  </div>
-                </form>
-              ) : (
-                <div className="space-y-6">
-                  <div className="space-y-1">
-                    <h2 className="text-lg font-medium">
-                      Información de cuenta
-                    </h2>
-                  </div>
+                  </form>
+                ) : (
+                  <div className="space-y-8">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                        Información Personal
+                      </h2>
 
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      Nombre
-                    </h2>
-                    <div>
-                      <p className="text-lg">{userData.name}</p>
-                      <RoleBadge />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Tu nombre puede aparecer en tus publicaciones o
-                        anuncios.
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaUser className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              Nombre
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900 mb-2">
+                            {userData.name}
+                          </p>
+                          <RoleBadge />
+                          <p className="text-sm text-gray-500 mt-2">
+                            Tu nombre puede aparecer en tus publicaciones o
+                            anuncios.
+                          </p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaEnvelope className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              Email
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900 mb-2">
+                            {userData.email}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Tu email es privado.
+                          </p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaPhone className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              Teléfono
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900">
+                            {formatPhoneNumber(userData.phone)}
+                          </p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaGlobe className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              País
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900">
+                            {userData.country || "No especificado"}
+                          </p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaMapMarkerAlt className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              Ciudad
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900">
+                            {userData.city || "No especificado"}
+                          </p>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center gap-3 mb-3">
+                            <FaHome className="text-[#103663] text-xl" />
+                            <h3 className="text-lg font-semibold text-gray-700">
+                              Dirección
+                            </h3>
+                          </div>
+                          <p className="text-xl font-medium text-gray-900">
+                            {userData.address || "No especificado"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      Email público
-                    </h2>
-                    <div>
-                      <p className="text-lg">{userData.email}</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Tu email es privado.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      Teléfono
-                    </h2>
-                    <p className="text-lg">
-                      {formatPhoneNumber(userData.phone)}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      País
-                    </h2>
-                    <p className="text-lg">
-                      {userData.country || "No especificado"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      Ciudad
-                    </h2>
-                    <p className="text-lg">
-                      {userData.city || "No especificado"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h2 className="text-lg font-medium text-gray-700 mb-2">
-                      Dirección
-                    </h2>
-                    <p className="text-lg">
-                      {userData.address || "No especificado"}
-                    </p>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -479,32 +556,40 @@ export default function ProfileContent() {
         onClose={() => setIsDeleteModalOpen(false)}
         title="Eliminar cuenta"
       >
-        <div className="p-4">
-          <p className="mb-4 text-gray-700">
-            ¿Estás seguro que deseas eliminar tu cuenta? Esta acción no se puede
-            deshacer.
-          </p>
-          <div className="flex justify-end space-x-2">
+        <div className="p-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTrash className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              ¿Eliminar cuenta?
+            </h3>
+            <p className="text-gray-600">
+              Esta acción no se puede deshacer. Todos tus datos serán eliminados
+              permanentemente.
+            </p>
+          </div>
+          <div className="flex justify-center space-x-4">
             <button
               onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+              className="px-6 py-3 border-2 border-gray-300 rounded-xl hover:bg-gray-50 text-gray-700 font-medium transition-all duration-300"
             >
               Cancelar
             </button>
             <button
               onClick={handleDeleteAccount}
               disabled={deleting}
-              className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 flex items-center gap-2 disabled:opacity-50 font-medium shadow-lg"
             >
               {deleting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Eliminando...</span>
                 </>
               ) : (
                 <>
                   <FaTrash className="w-4 h-4" />
-                  <span>Eliminar</span>
+                  <span>Eliminar Cuenta</span>
                 </>
               )}
             </button>

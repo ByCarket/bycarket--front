@@ -1,6 +1,11 @@
-import { toast, ToastContainer, ToastOptions, TypeOptions } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './notifications.css';
+import {
+  toast,
+  ToastContainer,
+  ToastOptions,
+  TypeOptions,
+} from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./notifications.css";
 import { ReactNode } from "react";
 
 const toastBaseOptions: ToastOptions = {
@@ -10,20 +15,20 @@ const toastBaseOptions: ToastOptions = {
   closeOnClick: false,
   pauseOnHover: true,
   draggable: false,
-  className: 'custom-toast',
+  className: "custom-toast",
 };
 
 const toastIcons: Record<string, string> = {
-  success: '✓',
-  error: '✕',
-  warning: '⚠',
-  info: 'i',
-  default: '•',
+  success: "✓",
+  error: "✕",
+  warning: "⚠",
+  info: "i",
+  default: "•",
 };
 
 const ToastContent = ({
   message,
-  type = 'default',
+  type = "default",
   onClose,
 }: {
   message: string;
@@ -35,11 +40,7 @@ const ToastContent = ({
     <div className="toast-content">
       <p className="toast-message">{message}</p>
     </div>
-    <button 
-      className="toast-close"
-      onClick={onClose}
-      aria-label="Cerrar"
-    >
+    <button className="toast-close" onClick={onClose} aria-label="Cerrar">
       &times;
     </button>
   </div>
@@ -121,16 +122,10 @@ export const showConfirm = (
     <div className="confirm-dialog">
       <div className="confirm-message">{message}</div>
       <div className="confirm-buttons">
-        <button
-          onClick={handleNo}
-          className="confirm-button confirm-no"
-        >
+        <button onClick={handleNo} className="confirm-button confirm-no">
           No
         </button>
-        <button
-          onClick={handleYes}
-          className="confirm-button confirm-yes"
-        >
+        <button onClick={handleYes} className="confirm-button confirm-yes">
           Sí
         </button>
       </div>
@@ -162,8 +157,8 @@ export const NotificationsContainer = () => (
     className="!p-0"
     toastClassName="!m-0 !p-0 !bg-transparent !shadow-none !rounded-none !min-h-0"
     style={{
-      width: 'auto',
-      maxWidth: '100%',
+      width: "auto",
+      maxWidth: "100%",
       padding: 0,
       margin: 0,
     }}

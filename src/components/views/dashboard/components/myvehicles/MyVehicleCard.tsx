@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { FiEye, FiTrash2, FiTruck, FiCheckCircle, FiTag } from "react-icons/fi";
 import { VehicleResponse } from "@/services/vehicle.service";
-import { showConfirm, showSuccess, showError } from "@/app/utils/Notifications";
-import { useVehiclesStore } from "@/context/VehiclesContext";
 
 interface MyVehicleCardProps {
   vehicle: VehicleResponse;
@@ -12,35 +10,26 @@ interface MyVehicleCardProps {
   onDelete?: (id: string) => Promise<boolean>;
 }
 
-export default function MyVehicleCard({ vehicle, onView, onDelete }: MyVehicleCardProps) {
+export default function MyVehicleCard({
+  vehicle,
+  onView,
+  onDelete,
+}: MyVehicleCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const removeVehicle = useVehiclesStore((state) => state.removeVehicle);
-  const fetchUserVehicles = useVehiclesStore((state) => state.fetchUserVehicles);
+  const [imageError, setImageError] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    showConfirm(
-      "¿Estás seguro de eliminar este vehículo?",
-      async () => {
-        setIsDeleting(true);
-        try {
-          let success;
-          if (onDelete) {
-            success = await onDelete(vehicle.id);
-          } else {
-            success = await removeVehicle(vehicle.id);
-            if (success) await fetchUserVehicles();
-          }
-          if (success) {
-            showSuccess("Vehículo eliminado correctamente");
-          }
-        } catch (error) {
-          showError("Error al eliminar el vehículo");
-        } finally {
-          setIsDeleting(false);
-        }
+    setIsDeleting(true);
+    try {
+      if (onDelete) {
+        await onDelete(vehicle.id);
       }
-    );
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleView = (e: React.MouseEvent) => {
@@ -50,91 +39,137 @@ export default function MyVehicleCard({ vehicle, onView, onDelete }: MyVehicleCa
   };
 
   const mainImage =
-    vehicle.images && vehicle.images.length > 0
+    vehicle.images && vehicle.images.length > 0 && !imageError
       ? vehicle.images[0].secure_url
-      : "/placeholder-vehicle.jpg";
+      : "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400&h=300&fit=crop";
+
   const vehicleName = `${vehicle.brand.name} ${vehicle.model.name}`;
+
+  const getConditionConfig = (condition: string) => {
+    if (condition === "Nuevo") {
+      return {
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        icon: FiCheckCircle,
+      };
+    }
+    return {
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      border: "border-blue-200",
+      icon: FiTag,
+    };
+  };
+
+  const conditionConfig = getConditionConfig(vehicle.condition);
+  const ConditionIcon = conditionConfig.icon;
 
   return (
     <div
-      className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 cursor-pointer"
+      className="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:border-slate-200 transition-all duration-500 transform hover:-translate-y-1 cursor-pointer"
       onClick={handleView}
     >
-      <div className="relative w-full h-48">
-        <img
-          src={mainImage}
-          alt={vehicleName}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute top-2 right-2 flex items-center gap-1">
-          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+      <div className="relative">
+        <div className="relative w-full h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+          <img
+            src={mainImage}
+            alt={vehicleName}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImageError(true)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </div>
+
+        <div className="absolute top-4 left-4 flex gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/9 text-slate-700 border-slate-200">
+            <FiTruck className="w-3 h-3" />
             {vehicle.typeOfVehicle}
-          </span>
-          {vehicle.condition === "Nuevo" ? (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-              {vehicle.condition}
-            </span>
-          ) : (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-              {vehicle.condition}
-            </span>
-          )}
+          </div>
+          <div
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/90 ${conditionConfig.bg} ${conditionConfig.text} ${conditionConfig.border}`}
+          >
+            <ConditionIcon className="w-3 h-3" />
+            {vehicle.condition}
+          </div>
+        </div>
+
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+          <button
+            onClick={handleView}
+            className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:scale-110"
+            aria-label="Ver detalles"
+          >
+            <FiEye className="w-4 h-4 text-slate-600" />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className={`p-2.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
+              isDeleting
+                ? "bg-slate-200/90 cursor-not-allowed"
+                : "bg-white/90 backdrop-blur-sm hover:bg-white hover:shadow-xl"
+            }`}
+            aria-label={isDeleting ? "Eliminando..." : "Eliminar"}
+          >
+            {isDeleting ? (
+              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <FiTrash2 className="w-4 h-4 text-rose-500" />
+            )}
+          </button>
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-principal-blue line-clamp-1">
-          {vehicleName}
-        </h3>
+      <div className="p-6">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold text-slate-800 mb-2 line-clamp-1 group-hover:text-[#103663] transition-colors duration-300">
+            {vehicleName}
+          </h3>
 
-        <p className="text-gray-600 mt-1 text-sm">
-          {vehicle.year} | {vehicle.mileage.toLocaleString()} km |{" "}
-          {vehicle.condition}
-        </p>
+          <div className="flex items-center gap-3 text-sm text-slate-500 mb-3">
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.year}
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.mileage.toLocaleString()} km
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.condition}
+            </span>
+          </div>
 
-        <p className="text-principal-blue font-semibold mt-2">
-          {vehicle.currency} {vehicle.price.toLocaleString()}
-        </p>
+          <div className="text-2xl font-bold text-[#103663] mb-1">
+            {vehicle.currency} {vehicle.price.toLocaleString()}
+          </div>
+        </div>
 
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleView}
-            className="px-3 py-1 bg-secondary-blue text-white text-sm rounded hover:bg-principal-blue transition-colors"
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white text-sm font-medium rounded-xl hover:from-[#0d2a4f] hover:to-[#3d6291] transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md"
           >
-            Ver detalle
+            Ver detalles
           </button>
 
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="px-3 py-1 text-sm rounded transition-colors bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 flex items-center"
+            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-sm font-medium rounded-xl border border-rose-200 hover:border-rose-300 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
           >
             {isDeleting ? (
               <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Eliminando
+                <div className="w-3 h-3 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
+                Eliminando...
               </>
             ) : (
-              "Eliminar"
+              <>
+                <FiTrash2 className="w-3 h-3" />
+                Eliminar
+              </>
             )}
           </button>
         </div>

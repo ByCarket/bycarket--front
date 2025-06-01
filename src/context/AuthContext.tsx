@@ -19,15 +19,17 @@ interface User {
   name: string;
   email: string;
   role: "user" | "premium" | "admin";
+  isActive: boolean;
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isActive: boolean;
   loading: boolean;
   login: (data: LoginData) => Promise<any>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterData) => Promise<{ email: string }>;
   logout: () => void;
   initializeAuth: () => void;
   setGoogleUser: (response: GoogleProcessLoginResponse) => void;
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  isActive: false,
   loading: true,
 
   initializeAuth: () => {
@@ -56,7 +59,9 @@ export const useAuthStore = create<AuthState>((set) => ({
                   | "user"
                   | "premium"
                   | "admin",
+                isActive: response.data.isActive || false,
               },
+              isActive: response.data.isActive || false,
             });
           }
         })
@@ -72,19 +77,23 @@ export const useAuthStore = create<AuthState>((set) => ({
       const response: any = await loginUser(data);
       setAuthToken(response.token);
 
+      const userData = {
+        id: response.user?.id || "",
+        name: response.user?.name || "Usuario",
+        email: response.user?.email || "",
+        role: (response.user?.role as "user" | "premium" | "admin") || "user",
+        isActive: response.user?.isActive || false,
+      };
+
       set({
         token: response.token,
-        user: {
-          id: response.user?.id || "",
-          name: response.user?.name || "Usuario",
-          email: response.user?.email || "",
-          role: (response.user?.role as "user" | "premium" | "admin") || "user",
-        },
+        user: userData,
         isAuthenticated: true,
+        isActive: userData.isActive,
         loading: false,
       });
 
-      return response;
+      return { ...response, user: userData };
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -94,8 +103,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (data: RegisterData) => {
     set({ loading: true });
     try {
-      await registerUser(data);
+      const response = await registerUser(data);
       set({ loading: false });
+      return { email: data.email };
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -104,24 +114,31 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     removeAuthToken();
-    set({ user: null, token: null, isAuthenticated: false });
-    signOut();
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isActive: false,
+      loading: false,
+    });
+    signOut({ callbackUrl: "/login" });
   },
 
   setGoogleUser: (response: GoogleProcessLoginResponse) => {
-    if (response.token && response.user) {
-      setAuthToken(response.token);
-      set({
-        token: response.token,
-        user: {
-          id: response.user.id,
-          name: response.user.name,
-          email: response.user.email,
-          role: (response.user.role as "user" | "premium" | "admin") || "user",
-        },
-        isAuthenticated: true,
-        loading: false,
-      });
-    }
+    const userData = {
+      id: response.user?.id || "",
+      name: response.user?.name || "Usuario",
+      email: response.user?.email || "",
+      role: (response.user?.role as "user" | "premium" | "admin") || "user",
+      isActive: response.user?.isActive || true,
+    };
+
+    set({
+      user: userData,
+      token: response.token,
+      isAuthenticated: true,
+      isActive: userData.isActive,
+      loading: false,
+    });
   },
 }));
