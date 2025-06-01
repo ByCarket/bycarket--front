@@ -8,16 +8,21 @@ import {
   getAnnualPrice,
 } from "@/services/api.service";
 
-const PaymentElement = dynamic(() => import("./PaymentElement"), {
+const PaymentElement = dynamic(() => import("./EmbeddedCheckout"), {
   ssr: false,
 });
 
 interface SubscriptionCardsProps {
   className?: string;
+  onSelectPlan?: (planId: string | null) => void;
+  selectedPlanId?: string | null;
 }
 
-export function SubscriptionCards({ className = "" }: SubscriptionCardsProps) {
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+export function SubscriptionCards({
+  className = "",
+  onSelectPlan,
+  selectedPlanId,
+}: SubscriptionCardsProps) {
   const [prices, setPrices] = useState<Record<string, Price>>({});
   const [loading, setLoading] = useState(true);
 
@@ -87,11 +92,16 @@ export function SubscriptionCards({ className = "" }: SubscriptionCardsProps) {
     },
   ];
 
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = async (planId: string) => {
     const priceId = prices[planId]?.id;
-    if (priceId) {
-      setSelectedPlan(selectedPlan === priceId ? null : priceId);
+    if (!priceId) return;
+
+    if (selectedPlanId === priceId) {
+      onSelectPlan?.(null);
+      return;
     }
+
+    onSelectPlan?.(priceId);
   };
 
   if (loading) {
@@ -162,7 +172,7 @@ export function SubscriptionCards({ className = "" }: SubscriptionCardsProps) {
                     : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                 }`}
               >
-                {selectedPlan === prices[plan.id]?.id
+                {selectedPlanId === prices[plan.id]?.id
                   ? "Ocultar detalles"
                   : "Seleccionar plan"}
               </button>
@@ -170,16 +180,6 @@ export function SubscriptionCards({ className = "" }: SubscriptionCardsProps) {
           );
         })}
       </div>
-
-      {selectedPlan && (
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">
-            Completar pago -{" "}
-            {plans.find((p) => prices[p.id]?.id === selectedPlan)?.name}
-          </h3>
-          <PaymentElement selectedPlanId={selectedPlan} />
-        </div>
-      )}
     </div>
   );
 }

@@ -444,3 +444,25 @@ export const updateSubscription = async (
     );
   }
 };
+
+export const getClientSecret = async (priceId: string): Promise<string> => {
+  try {
+    const response = await http.post<{ client_secret: string }>(
+      `/subscription/${priceId}`,
+      {}
+    );
+
+    if (!response.data.client_secret) {
+      throw new Error("No se pudo obtener el client secret");
+    }
+
+    return response.data.client_secret;
+  } catch (error: any) {
+    console.error("Error en getClientSecret:", error.response?.data);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al obtener el client secret"
+    );
+  }
+};

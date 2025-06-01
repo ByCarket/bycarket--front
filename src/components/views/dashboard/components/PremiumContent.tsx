@@ -1,12 +1,20 @@
+"use client";
+import { useState } from "react";
 import { PaymentHeader } from "../payment/PaymentHeader";
 import { SubscriptionCards } from "../payment/Subs";
-import StripeWrapper from "@/components/providers/StripeWrapper";
+import Checkout from "../payment/EmbeddedCheckout";
 
 export default function PremiumContent() {
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+
   return (
-    <StripeWrapper>
+    <div id="checkout">
       <PaymentHeader />
-      <SubscriptionCards />
-    </StripeWrapper>
+      <SubscriptionCards
+        onSelectPlan={setSelectedPlan}
+        selectedPlanId={selectedPlan}
+      />
+      {selectedPlan && <Checkout priceId={selectedPlan} />}
+    </div>
   );
 }

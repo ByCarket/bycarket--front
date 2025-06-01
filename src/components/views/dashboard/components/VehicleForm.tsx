@@ -192,35 +192,25 @@ const VehicleForm: React.FC = () => {
     }
 
     const oversizedFiles = newFiles.filter(
-      (file) => file.size > 15 * 1024 * 1024
+      (file) => file.size > 5 * 1024 * 1024
     );
+
     if (oversizedFiles.length > 0) {
-      setImageError("Algunas imágenes superan 15MB");
-      showWarning("Algunas imágenes superan el tamaño máximo de 15MB");
+      setImageError("Algunas imágenes superan 5MB");
+      showWarning("Algunas imágenes superan el tamaño máximo de 5MB");
       return;
     }
 
-    const newImages: string[] = [];
-    const newImageFiles: File[] = [];
+    const newPreviewUrls = newFiles.map((file) => URL.createObjectURL(file));
 
-    newFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (result && typeof result === "string") {
-          newImages.push(result);
-          if (newImages.length === newFiles.length) {
-            setPreviewImages([...previewImages, ...newImages]);
-            formik.setFieldValue("images", [
-              ...formik.values.images,
-              ...newImageFiles,
-            ]);
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-      newImageFiles.push(file);
-    });
+    setPreviewImages((prev) => [...prev, ...newPreviewUrls]);
+
+    const currentFiles = formik.values.images || [];
+    formik.setFieldValue("images", [...currentFiles, ...newFiles]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const removeImage = (index: number) => {
