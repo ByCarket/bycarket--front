@@ -262,7 +262,7 @@ export function SubscriptionCards({ className = "" }: SubscriptionCardsProps) {
           <h3 className="text-xl font-bold text-gray-900 mb-4">
             Completar pago - {plans.find((p) => p.id === selectedPlan)?.name}
           </h3>
-          <PaymentElement selectedPlanId={selectedPlan} />
+          <PaymentElement priceId={selectedPlan} />
         </div>
       )}
     </div>
