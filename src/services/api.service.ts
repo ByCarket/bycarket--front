@@ -214,128 +214,6 @@ export const deleteUserAccount = async (): Promise<{ message: string }> => {
   return response.data;
 };
 
-export interface Price {
-  id: string;
-  object: string;
-  active: boolean;
-  billing_scheme: string;
-  created: number;
-  currency: string;
-  custom_unit_amount: null | any;
-  livemode: boolean;
-  lookup_key: null | string;
-  metadata: Record<string, any>;
-  nickname: null | string;
-  product: string;
-  recurring: {
-    interval: "monthly" | "quarterly" | "annual";
-    interval_count: number;
-    meter: null | any;
-    trial_period_days: null | number;
-    usage_type: string;
-  };
-  tax_behavior: string;
-  tiers_mode: null | any;
-  transform_quantity: null | any;
-  type: string;
-  unit_amount: number;
-  unit_amount_decimal: string;
-  [key: string]: any;
-}
-
-export interface Subscription {
-  id: string;
-  object: string;
-  status: string;
-  amount_subtotal: number;
-  amount_total: number;
-  subscription?: {
-    id: string;
-    items: {
-      data: Array<{
-        price: Price;
-      }>;
-    };
-  };
-  customer_details?: {
-    name?: string;
-    email?: string;
-  };
-  payment_status: string;
-  client_reference_id: string | null;
-  metadata: Record<string, any>;
-}
-
-export const getMonthlyPrice = async (): Promise<{ data: Price }> => {
-  const response = await http.get<Price>("/prices/monthly");
-  return { data: response.data };
-};
-
-export const getQuarterlyPrice = async (): Promise<{ data: Price }> => {
-  const response = await http.get<Price>("/prices/quarterly");
-  return { data: response.data };
-};
-
-export const getAnnualPrice = async (): Promise<{ data: Price }> => {
-  const response = await http.get<Price>("/prices/annual");
-  return { data: response.data };
-};
-
-export const getSubscription = async (
-  sessionId: string
-): Promise<{ data: any }> => {
-  try {
-    const response = await http.get<{ data: any }>(
-      `/subscription/session/${sessionId}`
-    );
-    return response;
-  } catch (error: any) {
-    console.error("Error fetching subscription:", error);
-    throw new Error(
-      error.response?.data?.message ||
-        error.message ||
-        "Error al obtener los detalles de la suscripción"
-    );
-  }
-};
-
-export const createSubscription = async (
-  priceId: string,
-  paymentMethodId?: string
-): Promise<{ url: string } | string> => {
-  try {
-    const response = await http.post<{ url: string } | string>(
-      `/subscription/${priceId}`,
-      {
-        paymentMethodId,
-        metadata: {
-          frontend_timestamp: new Date().toISOString(),
-          user_agent:
-            typeof window !== "undefined"
-              ? window.navigator.userAgent
-              : "server",
-        },
-      }
-    );
-
-    if (typeof response.data === "string") {
-      return response.data;
-    }
-
-    if (!response.data) {
-      throw new Error("La respuesta del servidor está vacía");
-    }
-
-    return response.data;
-  } catch (error: any) {
-    throw new Error(
-      error.response?.data?.message ||
-        error.message ||
-        "Error al crear la suscripción"
-    );
-  }
-};
-
 export interface ChatMessage {
   role: "user" | "bot" | "system";
   content: string;
@@ -430,4 +308,139 @@ export const resendActivationEmail = async (
     { email }
   );
   return response.data;
+};
+
+// PAYMENT METHODS
+export interface Price {
+  id: string;
+  object: string;
+  active: boolean;
+  billing_scheme: string;
+  created: number;
+  currency: string;
+  custom_unit_amount: null | any;
+  livemode: boolean;
+  lookup_key: null | string;
+  metadata: Record<string, any>;
+  nickname: null | string;
+  product: string;
+  recurring: {
+    interval: "monthly" | "quarterly" | "annual";
+    interval_count: number;
+    meter: null | any;
+    trial_period_days: null | number;
+    usage_type: string;
+  };
+  tax_behavior: string;
+  tiers_mode: null | any;
+  transform_quantity: null | any;
+  type: string;
+  unit_amount: number;
+  unit_amount_decimal: string;
+  [key: string]: any;
+}
+
+export interface Subscription {
+  id: string;
+  object: string;
+  status: string;
+  amount_subtotal: number;
+  amount_total: number;
+  subscription?: {
+    id: string;
+    items: {
+      data: Array<{
+        price: Price;
+      }>;
+    };
+  };
+  customer_details?: {
+    name?: string;
+    email?: string;
+  };
+  payment_status: string;
+  client_reference_id: string | null;
+  metadata: Record<string, any>;
+  client_secret?: string;
+  session_id?: string;
+  payment_intent?: {
+    client_secret: string;
+    id: string;
+    status: string;
+  };
+}
+
+export const getMonthlyPrice = async (): Promise<{ data: Price }> => {
+  const response = await http.get<Price>("/prices/monthly");
+  return { data: response.data };
+};
+
+export const getQuarterlyPrice = async (): Promise<{ data: Price }> => {
+  const response = await http.get<Price>("/prices/quarterly");
+  return { data: response.data };
+};
+
+export const getAnnualPrice = async (): Promise<{ data: Price }> => {
+  const response = await http.get<Price>("/prices/annual");
+  return { data: response.data };
+};
+
+export const getSubscriptionById = async (
+  subscriptionId: string
+): Promise<Subscription> => {
+  try {
+    const response = await http.get<Subscription>(
+      `/subscription/${subscriptionId}`
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error fetching subscription by id:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al obtener los detalles de la suscripción"
+    );
+  }
+};
+
+export const createSubscription = async (data: {
+  id: string;
+  customer_email?: string;
+  metadata?: Record<string, any>;
+}): Promise<Subscription> => {
+  try {
+    const { id, ...restData } = data;
+    const response = await http.post<Subscription>(
+      `/subscription/${id}`,
+      restData
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error creating subscription:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al crear la suscripción"
+    );
+  }
+};
+
+export const updateSubscription = async (
+  subscriptionId: string,
+  updateData: Record<string, any>
+): Promise<Subscription> => {
+  try {
+    const response = await http.post<Subscription>(
+      `/subscription/${subscriptionId}`,
+      updateData
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating subscription:", error);
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Error al actualizar la suscripción"
+    );
+  }
 };

@@ -29,41 +29,7 @@ http.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-http.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    const { response } = error;
-
-    const isActivationError = response?.config?.url?.includes("/auth/activate");
-    if (isActivationError) {
-      return Promise.reject(error);
-    }
-
-    let message = "Error de conexión con el servidor";
-
-    if (response?.data?.message) {
-      message = response.data.message;
-    } else if (response?.statusText) {
-      message = response.statusText;
-    }
-
-    console.error("Error en la petición:", {
-      url: response?.config?.url,
-      status: response?.status,
-      message,
-    });
-
-    const customError = new Error(message);
-    (customError as any).response = error.response;
-    return Promise.reject(customError);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default http;

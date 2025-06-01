@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import {
+  FiEye,
+  FiTrash2,
+  FiClock,
+  FiCheckCircle,
+  FiXCircle,
+  FiEdit3,
+} from "react-icons/fi";
 import { PostResponse } from "@/services/vehicle.service";
-import { useSpinner } from "@/context/SpinnerContext";
 
 type PostsCardProps = {
   post: PostResponse;
@@ -18,6 +24,8 @@ export default function PostsCard({
   onView,
   isDeleting = false,
 }: PostsCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onDelete) {
@@ -32,167 +40,170 @@ export default function PostsCard({
 
   const vehicle = post.vehicle;
   const vehicleImage =
-    vehicle.images?.length > 0
+    vehicle.images && vehicle.images.length > 0 && !imageError
       ? vehicle.images[0].secure_url
-      : "/images/default-car.png";
+      : "https://images.unsplash.com/photo-1494976688153-c14fd6dc2c32?w=400&h=300&fit=crop";
 
   const vehicleName = `${vehicle.brand.name} ${vehicle.model.name} ${
     vehicle.version?.name || ""
-  }`;
+  }`.trim();
 
-  const statusColors: Record<string, string> = {
-    published: "bg-green-100 text-green-800",
-    active: "bg-green-100 text-green-800",
-    draft: "bg-yellow-100 text-yellow-800",
-    sold: "bg-red-100 text-red-800",
-    inactive: "bg-gray-100 text-gray-800",
-    default: "bg-blue-100 text-blue-800",
+  const getStatusConfig = (status: string) => {
+    const configs = {
+      published: {
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        icon: FiCheckCircle,
+        label: "Publicado",
+      },
+      active: {
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
+        icon: FiCheckCircle,
+        label: "Activo",
+      },
+      draft: {
+        bg: "bg-amber-50",
+        text: "text-amber-700",
+        border: "border-amber-200",
+        icon: FiEdit3,
+        label: "Borrador",
+      },
+      sold: {
+        bg: "bg-rose-50",
+        text: "text-rose-700",
+        border: "border-rose-200",
+        icon: FiCheckCircle,
+        label: "Vendido",
+      },
+      inactive: {
+        bg: "bg-slate-50",
+        text: "text-slate-600",
+        border: "border-slate-200",
+        icon: FiXCircle,
+        label: "Inactivo",
+      },
+    };
+
+    return (
+      configs[status.toLowerCase() as keyof typeof configs] || {
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
+        icon: FiClock,
+        label: status,
+      }
+    );
   };
 
-  const statusText: Record<string, string> = {
-    active: "Activo",
-    sold: "Vendido",
-    inactive: "Inactivo",
-    default: post.status,
-  };
-
-  const statusClass =
-    statusColors[post.status.toLowerCase()] || statusColors.default;
-  const statusLabel =
-    statusText[post.status.toLowerCase()] || statusText.default;
+  const statusConfig = getStatusConfig(post.status);
+  const StatusIcon = statusConfig.icon;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
-      <div className="relative w-full h-48">
-        <Image
-          src={vehicleImage}
-          alt={vehicleName}
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover"
-        />
-        <div className={`absolute top-2 right-2 flex space-x-1`}>
+    <div className="group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl hover:border-slate-200 transition-all duration-500 transform hover:-translate-y-1">
+      <div className="relative">
+        <div className="relative w-full h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+          <img
+            src={vehicleImage}
+            alt={vehicleName}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImageError(true)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </div>
+
+        <div className="absolute top-4 left-4">
+          <div
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/90 ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
+          >
+            <StatusIcon className="w-3 h-3" />
+            {statusConfig.label}
+          </div>
+        </div>
+
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
           {onView && (
             <button
               onClick={handleView}
-              className="p-1.5 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+              className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 hover:scale-110"
               aria-label="Ver detalles"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
+              <FiEye className="w-4 h-4 text-slate-600" />
             </button>
           )}
           {onDelete && (
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className={`p-1.5 rounded-full shadow-md transition-colors ${
+              className={`p-2.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
                 isDeleting
-                  ? "bg-gray-200 cursor-not-allowed"
-                  : "bg-white hover:bg-red-50"
+                  ? "bg-slate-200/90 cursor-not-allowed"
+                  : "bg-white/90 backdrop-blur-sm hover:bg-white hover:shadow-xl"
               }`}
               aria-label={isDeleting ? "Eliminando..." : "Eliminar"}
             >
               {isDeleting ? (
-                <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-red-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
+                <FiTrash2 className="w-4 h-4 text-rose-500" />
               )}
             </button>
           )}
         </div>
-        <div
-          className={`absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded-full ${statusClass}`}
-        >
-          {statusLabel}
-        </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-principal-blue line-clamp-1">
-          {vehicleName}
-        </h3>
+      <div className="p-6">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold text-slate-800 mb-2 line-clamp-1 group-hover:text-[#103663] transition-colors duration-300">
+            {vehicleName}
+          </h3>
 
-        <p className="text-gray-600 mt-1 text-sm">
-          {vehicle.year} | {vehicle.mileage.toLocaleString()} km |{" "}
-          {vehicle.condition}
-        </p>
+          <div className="flex items-center gap-3 text-sm text-slate-500 mb-3">
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.year}
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.mileage.toLocaleString()} km
+            </span>
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              {vehicle.condition}
+            </span>
+          </div>
 
-        <p className="text-principal-blue font-semibold mt-2">
-          {vehicle.currency} {vehicle.price.toLocaleString()}
-        </p>
+          <div className="text-2xl font-bold text-[#103663] mb-1">
+            {vehicle.currency} {vehicle.price.toLocaleString()}
+          </div>
+        </div>
 
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleView}
-            className="px-3 py-1 bg-secondary-blue text-white text-sm rounded hover:bg-principal-blue transition-colors"
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white text-sm font-medium rounded-xl hover:from-[#0d2a4f] hover:to-[#3d6291] transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md"
           >
-            Ver detalle
+            Ver detalles
           </button>
 
           {onDelete && (
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className={`px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center`}
+              className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-sm font-medium rounded-xl border border-rose-200 hover:border-rose-300 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
             >
               {isDeleting ? (
                 <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-3 w-3 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <div className="w-3 h-3 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
                   Eliminando...
                 </>
               ) : (
-                "Eliminar"
+                <>
+                  <FiTrash2 className="w-3 h-3" />
+                  Eliminar
+                </>
               )}
             </button>
           )}
