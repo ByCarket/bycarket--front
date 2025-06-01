@@ -73,12 +73,7 @@ export const useVehicleForm = () => {
     setSuccess(false);
 
     try {
-      const createdVehicle = await createVehicle(vehicleData);
-
-      if (vehicleData.images && vehicleData.images.length > 0) {
-        await uploadVehicleImages(createdVehicle.id, vehicleData.images);
-      }
-
+      await createVehicle(vehicleData);
       setSuccess(true);
       router.push("/dashboard");
     } catch (error: any) {
