@@ -2,19 +2,7 @@
 
 import { useState } from "react";
 import { FiEye, FiTrash2, FiTruck, FiCheckCircle, FiTag } from "react-icons/fi";
-
-type VehicleResponse = {
-  id: string;
-  brand: { name: string };
-  model: { name: string };
-  year: number;
-  mileage: number;
-  condition: string;
-  currency: string;
-  price: number;
-  typeOfVehicle: string;
-  images?: { secure_url: string }[];
-};
+import { VehicleResponse } from "@/services/vehicle.service";
 
 interface MyVehicleCardProps {
   vehicle: VehicleResponse;

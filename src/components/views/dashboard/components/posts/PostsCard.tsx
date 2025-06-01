@@ -9,22 +9,7 @@ import {
   FiXCircle,
   FiEdit3,
 } from "react-icons/fi";
-
-type PostResponse = {
-  id: string;
-  status: string;
-  vehicle: {
-    brand: { name: string };
-    model: { name: string };
-    version?: { name: string };
-    year: number;
-    mileage: number;
-    condition: string;
-    currency: string;
-    price: number;
-    images?: { secure_url: string }[];
-  };
-};
+import { PostResponse } from "@/services/vehicle.service";
 
 type PostsCardProps = {
   post: PostResponse;
