@@ -48,22 +48,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ token: storedToken, isAuthenticated: true, loading: false });
 
       getUserData()
-        .then((response) => {
-          if (response && response.data) {
-            set({
-              user: {
-                id: response.data.id,
-                name: response.data.name,
-                email: response.data.email,
-                role: (response.data.role || "user") as
-                  | "user"
-                  | "premium"
-                  | "admin",
-                isActive: response.data.isActive || false,
-              },
-              isActive: response.data.isActive || false,
-            });
-          }
+        .then((userData) => {
+          set({ user: userData, loading: false });
         })
         .catch(() => {});
     } else {
