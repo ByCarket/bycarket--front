@@ -1,4 +1,4 @@
-import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
+import NextAuth, { DefaultSession, User as DefaultUser } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { processGoogleLogin } from "@/services/api.service";
 
@@ -29,7 +29,7 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
 
-  interface User extends DefaultUser {
+  interface User {
     id: string;
     role?: string;
     isActive?: boolean;
@@ -61,19 +61,20 @@ const handler = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ account, profile }): Promise<boolean> {
       if (account?.provider === "google" && profile) {
         try {
-          const backendResponse: BackendResponse = await processGoogleLogin(
-            profile
-          );
+          const backendResponse = await processGoogleLogin(profile);
           if (backendResponse?.token && backendResponse?.user) {
-            account.access_token = backendResponse.token;
-            account.user = backendResponse.user;
+            Object.assign(account, {
+              access_token: backendResponse.token,
+              user: backendResponse.user,
+            });
+            return true;
           }
-          return true;
+          return false;
         } catch (error) {
-          console.error("Error en signIn de NextAuth:", error);
+          console.error("Error en signIn:", error);
           return false;
         }
       }
