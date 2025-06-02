@@ -6,6 +6,7 @@ import Image from "next/image";
 import QuestionModal from "../components/QuestionModal";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 
 
@@ -15,6 +16,9 @@ const VehicleDetailView = () => {
   const { posts, loading, error } = useFetchPosts();
   const post = posts.find((p) => p.vehicle?.id === vehicleId);
   const vehicle = post?.vehicle;
+
+const { user } = useAuth();
+  const ownerId = post?.vehicle.userId;
 
   const fechaPublicacion = post?.postDate
     ? new Date(post.postDate).toLocaleDateString("es-ES", {
@@ -171,8 +175,9 @@ const VehicleDetailView = () => {
           </div>
 
           {/* Modal + contacto */}
-          <div className="flex flex-col gap-4 pt-3">
-            <QuestionModal />
+        <div className="flex flex-col gap-4 pt-3">
+
+            {user?.id !== ownerId && <QuestionModal />}
           </div>
           <div className="flex items-center justify-center gap-3 mt-6">
             <Image
