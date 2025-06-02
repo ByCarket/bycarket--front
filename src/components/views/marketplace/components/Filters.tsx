@@ -98,6 +98,19 @@ export function Filters() {
     { value: "AR$", label: "Pesos (AR$)" },
   ];
 
+  const clearFilters = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setBrandId(undefined);
+    setModelId(undefined);
+    setVersionId(undefined);
+    setTypeOfVehicle(undefined);
+    setCondition(undefined);
+    setCurrency(undefined);
+    setPriceRange(undefined, undefined);
+    setYearRange(undefined, undefined);
+    setMileageRange(undefined, undefined);
+  };
+
   useEffect(() => {
     const fetchBrands = async () => {
       setIsLoading(true);
@@ -167,6 +180,7 @@ export function Filters() {
     <div className="space-y-6">
       <div className="space-y-3">
         <button
+          type="button"
           onClick={() => toggleSection("brand")}
           className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
         >
@@ -183,6 +197,7 @@ export function Filters() {
             {brands.map((brand) => (
               <div key={brand.id} className="flex items-center">
                 <button
+                  type="button"
                   onClick={() => handleBrandChange(brand.id)}
                   className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
                     (params.brandId || []).includes(brand.id)
@@ -204,6 +219,7 @@ export function Filters() {
       {!!(params.brandId?.length && models.length) && (
         <div className="space-y-3">
           <button
+            type="button"
             onClick={() => toggleSection("model")}
             className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
@@ -220,6 +236,7 @@ export function Filters() {
               {models.map((model) => (
                 <div key={model.id} className="flex items-center">
                   <button
+                    type="button"
                     onClick={() => handleModelChange(model.id)}
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
                       (params.modelId || []).includes(model.id)
@@ -242,6 +259,7 @@ export function Filters() {
       {!!(params.modelId?.length && versions.length) && (
         <div className="space-y-3">
           <button
+            type="button"
             onClick={() => toggleSection("version")}
             className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
@@ -258,6 +276,7 @@ export function Filters() {
               {versions.map((version) => (
                 <div key={version.id} className="flex items-center">
                   <button
+                    type="button"
                     onClick={() => handleVersionChange(version.id)}
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
                       (params.versionId || []).includes(version.id)
@@ -544,7 +563,8 @@ export function Filters() {
       </div>
 
       <button
-        onClick={() => (window.location.href = window.location.pathname)}
+        type="button"
+        onClick={clearFilters}
         className="w-full py-3 px-4 bg-zinc-100 hover:bg-zinc-200 text-gray-700 rounded-lg text-sm font-medium transition-colors mt-6"
       >
         Limpiar filtros
