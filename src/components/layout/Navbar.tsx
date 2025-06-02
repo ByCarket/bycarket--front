@@ -17,6 +17,7 @@ export default function Navbar() {
   const { status } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,12 +33,28 @@ export default function Navbar() {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   const handleLogout = async () => {
-    logout();
-    await signOut({ redirect: false });
-    showSuccess("Sesión cerrada correctamente");
-    setTimeout(() => {
-      window.location.href = "/home";
-    }, 1000);
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      if (status === "authenticated") {
+        await signOut({ redirect: false });
+      }
+      logout();
+
+      showSuccess("Sesión cerrada correctamente");
+
+      setTimeout(() => {
+        window.location.href = "/home";
+      }, 1000);
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -92,10 +109,11 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md hover:translate-y-[-2px]"
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md hover:translate-y-[-2px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FiLogOut size={18} />
-                <span>Cerrar sesión</span>
+                <span>{isLoggingOut ? "Cerrando..." : "Cerrar sesión"}</span>
               </button>
             </>
           ) : (
@@ -187,10 +205,13 @@ export default function Navbar() {
                       handleLogout();
                       toggleMobileMenu();
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md"
+                    disabled={isLoggingOut}
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-secondary-blue px-4 py-2 text-principal-blue shadow-sm transition-all duration-300 ease-in-out hover:bg-secondary-blue hover:text-white hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <FiLogOut size={18} />
-                    <span>Cerrar sesión</span>
+                    <span>
+                      {isLoggingOut ? "Cerrando..." : "Cerrar sesión"}
+                    </span>
                   </button>
                 </>
               ) : (
