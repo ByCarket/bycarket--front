@@ -86,7 +86,6 @@ export function MarketContainer({
 
   const handlePageChange = (page: number) => {
     setPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

@@ -117,13 +117,19 @@ export const useSearchParams = () => {
     const urlSearchParams = new URLSearchParams();
 
     if (params.brandId) {
-      params.brandId.forEach((id) => urlSearchParams.append("brandId", String(id)));
+      params.brandId.forEach((id) =>
+        urlSearchParams.append("brandId", String(id))
+      );
     }
     if (params.modelId) {
-      params.modelId.forEach((id) => urlSearchParams.append("modelId", String(id)));
+      params.modelId.forEach((id) =>
+        urlSearchParams.append("modelId", String(id))
+      );
     }
     if (params.versionId) {
-      params.versionId.forEach((id) => urlSearchParams.append("versionId", String(id)));
+      params.versionId.forEach((id) =>
+        urlSearchParams.append("versionId", String(id))
+      );
     }
 
     Object.entries(params).forEach(([key, value]) => {
@@ -157,13 +163,13 @@ export const useSearchParams = () => {
       });
 
       const queryString = createQueryString(mergedParams);
-      router.push(`${pathname}?${queryString}`);
+      router.replace(`${pathname}?${queryString}`, { scroll: false });
     },
     [pathname, router, currentParams, createQueryString]
   );
 
   const resetParams = useCallback(() => {
-    router.push(pathname);
+    router.replace(pathname, { scroll: false });
   }, [pathname, router]);
 
   const setPage = useCallback(
