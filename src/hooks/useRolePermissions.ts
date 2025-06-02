@@ -1,40 +1,53 @@
-import { useAuthStore } from "@/context/AuthContext";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getPosts } from "@/services/vehicle.service";
+import { useUserData } from "@/hooks/useUserData";
 
 export const useRolePermissions = () => {
-  const { user, isAuthenticated } = useAuthStore();
+  const { userData, loading: userDataLoading } = useUserData();
   const [postCount, setPostCount] = useState(0);
+  const [loadingPosts, setLoadingPosts] = useState(true);
 
   useEffect(() => {
     const fetchPostCount = async () => {
+      if (!userData?.id) return;
+
+      setLoadingPosts(true);
       try {
-        const response = await getPosts(1, 1, { userId: user?.id });
+        const response = await getPosts(1, 1, { userId: userData.id });
         setPostCount(response.total || 0);
       } catch (error) {
         console.error("Error contando posts:", error);
         setPostCount(0);
+      } finally {
+        setLoadingPosts(false);
       }
     };
 
-    if (user?.id) {
-      fetchPostCount();
-    }
-  }, [user?.id]);
+    fetchPostCount();
+  }, [userData?.id]);
+
+  const role = userData?.role;
+  const isAdmin = role === "admin";
+  const isPremium = role === "premium" || isAdmin;
+
+  const maxFreePosts = 3;
+  const canCreatePost = isAdmin || isPremium || postCount < maxFreePosts;
+  const remainingPosts =
+    isAdmin || isPremium ? Infinity : Math.max(maxFreePosts - postCount, 0);
 
   return {
-    isAdmin: user?.role === "admin",
-    isPremium: user?.role === "premium" || user?.role === "admin",
-    isLoggedIn: isAuthenticated && !!user,
+    loading: userDataLoading || loadingPosts,
+    isAdmin,
+    isPremium,
+    isLoggedIn: !!userData,
 
-    canCreatePost:
-      postCount < 3 || user?.role === "premium" || user?.role === "admin",
-    remainingPosts: Math.max(3 - postCount, 0),
+    canCreatePost,
+    remainingPosts,
 
-    canAccessAdminPanel: user?.role === "admin",
-    canAccessAIGenerator: user?.role === "premium" || user?.role === "admin",
+    canAccessAdminPanel: isAdmin,
+    canAccessAIGenerator: isPremium,
 
-    canModerateUsers: user?.role === "admin",
-    canModeratePosts: user?.role === "admin",
+    canModerateUsers: isAdmin,
+    canModeratePosts: isAdmin,
   };
 };
