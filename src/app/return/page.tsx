@@ -20,7 +20,7 @@ export default async function Return({ searchParams }: { searchParams: any }) {
   const lineItems = session.line_items?.data || [];
 
   if (status === "open") {
-    return redirect("/");
+    return redirect("/home");
   }
 
   if (status === "complete") {
@@ -219,7 +219,7 @@ export default async function Return({ searchParams }: { searchParams: any }) {
                   Guarda esta información como comprobante de tu transacción
                 </p>
                 <a
-                  href="/"
+                  href="/home"
                   className="inline-flex items-center justify-center px-6 py-2.5 bg-[#103663] hover:bg-[#0d2b4f] text-white font-medium rounded-lg transition-colors duration-200"
                 >
                   Continuar
