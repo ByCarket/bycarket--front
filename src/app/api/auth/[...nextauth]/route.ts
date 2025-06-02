@@ -11,11 +11,14 @@ declare module "next-auth" {
       email?: string;
       image?: string;
       role?: string;
+      isActive?: boolean;
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
+    id: string;
     role?: string;
+    isActive?: boolean;
   }
 }
 
@@ -24,6 +27,15 @@ declare module "next-auth/jwt" {
     backendAccessToken?: string;
     userId?: string;
     role?: string;
+    isActive?: boolean;
+    user?: {
+      id: string;
+      name?: string;
+      email?: string;
+      image?: string;
+      role?: string;
+      isActive?: boolean;
+    };
   }
 }
 
@@ -44,6 +56,7 @@ const handler = NextAuth({
           const backendResponse = await processGoogleLogin(profile);
           if (backendResponse?.token) {
             account.access_token = backendResponse.token;
+            account.user = backendResponse.user;
           }
           return true;
         } catch (error) {
@@ -56,25 +69,11 @@ const handler = NextAuth({
     async jwt({ token, account, user, profile }) {
       if (account?.access_token) {
         token.backendAccessToken = account.access_token;
-      }
-      if (user?.id) {
-        token.userId = user.id;
-      }
-      if (user?.role) {
-        token.role = user.role;
-      } else if (profile && account?.provider === "google") {
-        token.role = (profile as any).role || "user";
-      } else if (token.backendAccessToken) {
-        try {
-          const payload = JSON.parse(
-            Buffer.from(
-              token.backendAccessToken.split(".")[1],
-              "base64"
-            ).toString()
-          );
-          token.role = payload.role || token.role || "user";
-        } catch (error) {
-          console.error("Error decodificando token del backend:", error);
+        if (account.user) {
+          token.user = account.user;
+          token.userId = account.user.id;
+          token.role = account.user.role;
+          token.isActive = account.user.isActive;
         }
       }
       return token;
@@ -83,11 +82,11 @@ const handler = NextAuth({
       if (token?.backendAccessToken) {
         session.backendAccessToken = token.backendAccessToken;
       }
-      if (token?.userId) {
-        session.user.id = token.userId;
-      }
-      if (token?.role) {
-        session.user.role = token.role;
+      if (token?.user) {
+        session.user = {
+          ...session.user,
+          ...token.user,
+        };
       }
       return session;
     },
