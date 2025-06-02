@@ -50,6 +50,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         ...baseMenuItems,
         { id: "users", label: "Lista de usuarios", icon: Users },
         { id: "user-posts", label: "Lista de publicaciones", icon: FileText },
+        { id: "database-scrapper", label: "Scrapper", icon: FileText },
       ]
     : baseMenuItems;
 

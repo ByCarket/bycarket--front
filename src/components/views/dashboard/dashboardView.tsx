@@ -13,6 +13,7 @@ import UserPostsContent from "./components/UserPostsContent";
 import { useUserData } from "@/hooks/useUserData";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { User, Car, FileText, Crown, PlusCircle, Users } from "lucide-react";
+import DatabaseScrapperContent from "./components/DatabaseScrapperContent";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -31,12 +32,13 @@ export default function Dashboard() {
         "register-vehicle",
         "publish-vehicle",
         "premium",
+        "database-scrapper",
       ];
-      
+
       if (isAdmin) {
         validTabs.push("users");
       }
-      
+
       if (validTabs.includes(tabParam)) {
         setActiveTab(tabParam);
       } else {
@@ -74,6 +76,8 @@ export default function Dashboard() {
         return isAdmin ? <UserListContent /> : <ProfileContent />;
       case "user-posts":
         return isAdmin ? <UserPostsContent /> : <ProfileContent />;
+      case "database-scrapper":
+        return isAdmin ? <DatabaseScrapperContent /> : <ProfileContent />;
       default:
         return <ProfileContent />;
     }
@@ -86,8 +90,8 @@ export default function Dashboard() {
     { id: "register-vehicle", label: "Registrar", icon: PlusCircle },
     { id: "vip", label: "VIP", icon: Crown },
   ];
-  
-  const menuItems = isAdmin 
+
+  const menuItems = isAdmin
     ? [...baseMenuItems, { id: "users", label: "Usuarios", icon: Users }]
     : baseMenuItems;
 
