@@ -284,7 +284,7 @@ export const getPendingPosts = async ({
 } = {}): Promise<GetPostsResponse> => {
   try {
     const response = await http.get<GetPostsResponse>(
-      `/posts/pending?page=${page}&limit=${limit}`
+      `/posts?status=Pending&page=${page}&limit=${limit}`
     );
     return response.data;
   } catch (error: any) {
