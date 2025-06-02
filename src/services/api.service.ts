@@ -121,8 +121,18 @@ export interface UserData {
 }
 
 export interface UserDataResponse {
-  data: UserData;
-  message: string;
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone?: number;
+  country?: string;
+  city?: string;
+  address?: string;
+  image?: string | { secure_url: string };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateUserData {
@@ -135,16 +145,16 @@ export interface UpdateUserData {
 }
 
 export const getUserData = async (): Promise<UserDataResponse> => {
-  const response = await http.get<UserDataResponse>("/users/me");
-  return response.data;
+  const response = await http.get<{ data: UserDataResponse }>("/users/me");
+  return response.data.data;
 };
 
 export const updateUserData = async (
   userData: UpdateUserData
 ): Promise<UserDataResponse> => {
   try {
-    const response = await http.patch<UserDataResponse>("/users/me", userData);
-    return response.data;
+    const response = await http.patch<{ data: UserDataResponse }>("/users/me", userData);
+    return response.data.data;
   } catch (error: any) {
     const errorMsg =
       error.response?.data?.message ||
@@ -155,9 +165,7 @@ export const updateUserData = async (
 };
 
 export interface UploadProfileImageResponse {
-  data: {
-    image: string;
-  };
+  image: string;
   message: string;
 }
 
@@ -168,7 +176,7 @@ export const uploadUserProfileImage = async (
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await http.patch<UploadProfileImageResponse>(
+    const response = await http.patch<{ data: UploadProfileImageResponse }>(
       "/files/user-profile",
       formData,
       {
@@ -177,7 +185,7 @@ export const uploadUserProfileImage = async (
         },
       }
     );
-    return response.data;
+    return response.data.data;
   } catch (error: any) {
     const errorMsg =
       error.response?.data?.message ||
