@@ -7,7 +7,9 @@ import {
 import { loadStripe } from "@stripe/stripe-js";
 import { fetchClientSecret } from "@/app/actions/stripe";
 
-const stripePromise = loadStripe(process.env.STRIPE_PUBLIC_KEY || "");
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
+);
 
 interface EmbeddedCheckoutProps {
   priceId: string;
