@@ -481,3 +481,9 @@ export const getClientSecret = async (priceId: string): Promise<string> => {
     );
   }
 };
+
+// Acara Scrapping
+export const getScrapperData = async (): Promise<any> => {
+  const response = await http.get<any>("/acara-scrapping");
+  return response.data;
+};
