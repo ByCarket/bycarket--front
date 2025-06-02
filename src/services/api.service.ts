@@ -124,7 +124,7 @@ export interface UserDataResponse {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "premium" | "admin";
   phone?: number;
   country?: string;
   city?: string;
