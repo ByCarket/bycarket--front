@@ -6,8 +6,14 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const authToken = request.cookies.get("authToken")?.value;
 
+  const isLandingPage = request.nextUrl.pathname === "/";
   const isDashboardPath = request.nextUrl.pathname.startsWith("/dashboard");
   const isAdminPath = request.nextUrl.pathname.startsWith("/dashboard/admin");
+
+  if (isLandingPage && (authToken || token)) {
+    const dashboardUrl = new URL("/home", request.url);
+    return NextResponse.redirect(dashboardUrl);
+  }
 
   if (isDashboardPath && !authToken && !token) {
     const loginUrl = new URL("/login", request.url);
@@ -40,5 +46,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/", "/dashboard/:path*"],
 };
