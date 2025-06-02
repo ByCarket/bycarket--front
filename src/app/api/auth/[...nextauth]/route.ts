@@ -2,6 +2,20 @@ import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { processGoogleLogin } from "@/services/api.service";
 
+interface BackendUser {
+  id: string;
+  name?: string;
+  email?: string;
+  image?: string;
+  role?: string;
+  isActive?: boolean;
+}
+
+interface BackendResponse {
+  token: string;
+  user: BackendUser;
+}
+
 declare module "next-auth" {
   interface Session {
     backendAccessToken?: string;
@@ -20,6 +34,10 @@ declare module "next-auth" {
     role?: string;
     isActive?: boolean;
   }
+
+  interface Account {
+    user?: BackendUser;
+  }
 }
 
 declare module "next-auth/jwt" {
@@ -28,14 +46,7 @@ declare module "next-auth/jwt" {
     userId?: string;
     role?: string;
     isActive?: boolean;
-    user?: {
-      id: string;
-      name?: string;
-      email?: string;
-      image?: string;
-      role?: string;
-      isActive?: boolean;
-    };
+    user?: BackendUser;
   }
 }
 
@@ -53,8 +64,10 @@ const handler = NextAuth({
     async signIn({ account, profile }) {
       if (account?.provider === "google" && profile) {
         try {
-          const backendResponse = await processGoogleLogin(profile);
-          if (backendResponse?.token) {
+          const backendResponse: BackendResponse = await processGoogleLogin(
+            profile
+          );
+          if (backendResponse?.token && backendResponse?.user) {
             account.access_token = backendResponse.token;
             account.user = backendResponse.user;
           }
@@ -69,25 +82,34 @@ const handler = NextAuth({
     async jwt({ token, account, user, profile }) {
       if (account?.access_token) {
         token.backendAccessToken = account.access_token;
-        if (account.user) {
+
+        if (account.user && account.user.id) {
           token.user = account.user;
           token.userId = account.user.id;
           token.role = account.user.role;
           token.isActive = account.user.isActive;
         }
       }
+
       return token;
     },
     async session({ session, token }) {
       if (token?.backendAccessToken) {
         session.backendAccessToken = token.backendAccessToken;
       }
+
       if (token?.user) {
         session.user = {
           ...session.user,
-          ...token.user,
+          id: token.user.id,
+          name: token.user.name || session.user.name,
+          email: token.user.email || session.user.email,
+          image: token.user.image || session.user.image,
+          role: token.user.role,
+          isActive: token.user.isActive,
         };
       }
+
       return session;
     },
     async redirect({ url, baseUrl }) {
