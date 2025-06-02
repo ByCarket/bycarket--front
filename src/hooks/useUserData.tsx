@@ -32,23 +32,27 @@ export const useUserData = () => {
       }
 
       const response = await getUserData();
-      if (!response || !response.data) {
+      if (!response) {
         throw new Error("Respuesta inválida del servidor");
       }
 
       const formattedData = {
-        ...response.data,
-        phone: response.data.phone || undefined,
-        country: response.data.country || undefined,
-        city: response.data.city || undefined,
-        address: response.data.address || undefined,
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        role: response.role || "user",
+        phone: response.phone || undefined,
+        country: response.country || undefined,
+        city: response.city || undefined,
+        address: response.address || undefined,
+        isActive: response.isActive || false,
         image:
-          response.data.image &&
-          typeof response.data.image === "object" &&
-          response.data.image.secure_url
-            ? response.data.image.secure_url
-            : typeof response.data.image === "string"
-            ? response.data.image
+          response.image &&
+          typeof response.image === "object" &&
+          response.image.secure_url
+            ? response.image.secure_url
+            : typeof response.image === "string"
+            ? response.image
             : undefined,
       };
       setUserData(formattedData);
@@ -78,23 +82,27 @@ export const useUserData = () => {
 
     try {
       const response = await updateUserData(data);
-      if (!response || !response.data) {
+      if (!response) {
         throw new Error("Respuesta inválida del servidor");
       }
 
       const formattedData = {
-        ...response.data,
-        phone: response.data.phone || undefined,
-        country: response.data.country || undefined,
-        city: response.data.city || undefined,
-        address: response.data.address || undefined,
+        id: response.id,
+        name: response.name,
+        email: response.email,
+        role: response.role || "user",
+        phone: response.phone || undefined,
+        country: response.country || undefined,
+        city: response.city || undefined,
+        address: response.address || undefined,
+        isActive: response.isActive || false,
         image:
-          response.data.image &&
-          typeof response.data.image === "object" &&
-          response.data.image.secure_url
-            ? response.data.image.secure_url
-            : typeof response.data.image === "string"
-            ? response.data.image
+          response.image &&
+          typeof response.image === "object" &&
+          response.image.secure_url
+            ? response.image.secure_url
+            : typeof response.image === "string"
+            ? response.image
             : undefined,
       };
       setUserData(formattedData);
@@ -122,13 +130,11 @@ export const useUserData = () => {
 
     try {
       const response = await uploadUserProfileImage(file);
-      if (!response || !response.data) {
+      if (!response) {
         throw new Error("Respuesta inválida del servidor");
       }
 
-      setUserData((prev) =>
-        prev ? { ...prev, image: response.data.image } : null
-      );
+      setUserData((prev) => (prev ? { ...prev, image: response.image } : null));
 
       await fetchUserData();
       return { success: true };
