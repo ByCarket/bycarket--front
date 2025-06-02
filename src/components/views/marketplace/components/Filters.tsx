@@ -39,7 +39,7 @@ export function Filters() {
   const handleBrandChange = (brandId: string) => {
     const currentBrands = params.brandId || [];
     const newBrands = currentBrands.includes(brandId)
-      ? currentBrands.filter(id => id !== brandId)
+      ? currentBrands.filter((id) => id !== brandId)
       : [...currentBrands, brandId];
     setBrandId(newBrands.length ? newBrands : undefined);
   };
@@ -47,7 +47,7 @@ export function Filters() {
   const handleModelChange = (modelId: string) => {
     const currentModels = params.modelId || [];
     const newModels = currentModels.includes(modelId)
-      ? currentModels.filter(id => id !== modelId)
+      ? currentModels.filter((id) => id !== modelId)
       : [...currentModels, modelId];
     setModelId(newModels.length ? newModels : undefined);
   };
@@ -55,7 +55,7 @@ export function Filters() {
   const handleVersionChange = (versionId: string) => {
     const currentVersions = params.versionId || [];
     const newVersions = currentVersions.includes(versionId)
-      ? currentVersions.filter(id => id !== versionId)
+      ? currentVersions.filter((id) => id !== versionId)
       : [...currentVersions, versionId];
     setVersionId(newVersions.length ? newVersions : undefined);
   };
@@ -125,7 +125,7 @@ export function Filters() {
       setIsLoading(true);
       try {
         const modelsData = await Promise.all(
-          params.brandId.map(brandId => getModelsByBrand(brandId))
+          params.brandId.map((brandId) => getModelsByBrand(brandId))
         );
         setModels(modelsData.flat());
         setVersions([]);
@@ -150,7 +150,7 @@ export function Filters() {
       setIsLoading(true);
       try {
         const versionsData = await Promise.all(
-          params.modelId.map(modelId => getVersionsByModel(modelId))
+          params.modelId.map((modelId) => getVersionsByModel(modelId))
         );
         setVersions(versionsData.flat());
       } catch (error) {
@@ -165,24 +165,34 @@ export function Filters() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <button 
-          onClick={() => toggleSection('brand')}
+      <div className="space-y-3">
+        <button
+          onClick={() => toggleSection("brand")}
           className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
         >
           <span>Marcas</span>
-          <FiChevronDown className={`transition-transform ${expandedSection === 'brand' ? 'rotate-180' : ''}`} />
+          <FiChevronDown
+            className={`transition-transform ${
+              expandedSection === "brand" ? "rotate-180" : ""
+            }`}
+          />
         </button>
-        
-        {expandedSection === 'brand' && (
-          <div className="space-y-2 pl-2">
-            {brands.map(brand => (
+
+        {expandedSection === "brand" && (
+          <div className="space-y-3 pl-2">
+            {brands.map((brand) => (
               <div key={brand.id} className="flex items-center">
                 <button
                   onClick={() => handleBrandChange(brand.id)}
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.brandId || []).includes(brand.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
+                    (params.brandId || []).includes(brand.id)
+                      ? "bg-principal-blue border-principal-blue"
+                      : "border-gray-300"
+                  }`}
                 >
-                  {(params.brandId || []).includes(brand.id) && <FiCheck className="text-white w-3 h-3" />}
+                  {(params.brandId || []).includes(brand.id) && (
+                    <FiCheck className="text-white w-3 h-3" />
+                  )}
                 </button>
                 <span>{brand.name}</span>
               </div>
@@ -192,24 +202,34 @@ export function Filters() {
       </div>
 
       {!!(params.brandId?.length && models.length) && (
-        <div className="space-y-2">
-          <button 
-            onClick={() => toggleSection('model')}
+        <div className="space-y-3">
+          <button
+            onClick={() => toggleSection("model")}
             className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
             <span>Modelos</span>
-            <FiChevronDown className={`transition-transform ${expandedSection === 'model' ? 'rotate-180' : ''}`} />
+            <FiChevronDown
+              className={`transition-transform ${
+                expandedSection === "model" ? "rotate-180" : ""
+              }`}
+            />
           </button>
-          
-          {expandedSection === 'model' && (
-            <div className="space-y-2 pl-2">
-              {models.map(model => (
+
+          {expandedSection === "model" && (
+            <div className="space-y-3 pl-2">
+              {models.map((model) => (
                 <div key={model.id} className="flex items-center">
                   <button
                     onClick={() => handleModelChange(model.id)}
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.modelId || []).includes(model.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
+                      (params.modelId || []).includes(model.id)
+                        ? "bg-principal-blue border-principal-blue"
+                        : "border-gray-300"
+                    }`}
                   >
-                    {(params.modelId || []).includes(model.id) && <FiCheck className="text-white w-3 h-3" />}
+                    {(params.modelId || []).includes(model.id) && (
+                      <FiCheck className="text-white w-3 h-3" />
+                    )}
                   </button>
                   <span>{model.name}</span>
                 </div>
@@ -220,24 +240,34 @@ export function Filters() {
       )}
 
       {!!(params.modelId?.length && versions.length) && (
-        <div className="space-y-2">
-          <button 
-            onClick={() => toggleSection('version')}
+        <div className="space-y-3">
+          <button
+            onClick={() => toggleSection("version")}
             className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
           >
             <span>Versiones</span>
-            <FiChevronDown className={`transition-transform ${expandedSection === 'version' ? 'rotate-180' : ''}`} />
+            <FiChevronDown
+              className={`transition-transform ${
+                expandedSection === "version" ? "rotate-180" : ""
+              }`}
+            />
           </button>
-          
-          {expandedSection === 'version' && (
-            <div className="space-y-2 pl-2">
-              {versions.map(version => (
+
+          {expandedSection === "version" && (
+            <div className="space-y-3 pl-2">
+              {versions.map((version) => (
                 <div key={version.id} className="flex items-center">
                   <button
                     onClick={() => handleVersionChange(version.id)}
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-2 ${(params.versionId || []).includes(version.id) ? 'bg-principal-blue border-principal-blue' : 'border-gray-300'}`}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
+                      (params.versionId || []).includes(version.id)
+                        ? "bg-principal-blue border-principal-blue"
+                        : "border-gray-300"
+                    }`}
                   >
-                    {(params.versionId || []).includes(version.id) && <FiCheck className="text-white w-3 h-3" />}
+                    {(params.versionId || []).includes(version.id) && (
+                      <FiCheck className="text-white w-3 h-3" />
+                    )}
                   </button>
                   <span>{version.name}</span>
                 </div>
@@ -247,10 +277,10 @@ export function Filters() {
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-1 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -267,7 +297,7 @@ export function Filters() {
         </label>
         <div className="relative">
           <select
-            className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-2.5 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
+            className="w-full appearance-none bg-white border-2 border-gray-200 rounded-lg py-3 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
             value={params.typeOfVehicle || ""}
             onChange={(e) =>
               setTypeOfVehicle((e.target.value as any) || undefined)
@@ -290,10 +320,10 @@ export function Filters() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -312,7 +342,7 @@ export function Filters() {
           {conditions.map((condition) => (
             <label
               key={condition.value}
-              className={`flex-1 text-center py-2.5 px-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+              className={`flex-1 text-center py-3 px-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                 params.condition === condition.value
                   ? "border-principal-blue bg-principal-blue/10 text-principal-blue font-medium"
                   : "border-gray-200 hover:border-secondary-blue/70 text-gray-600 hover:text-gray-800"
@@ -331,10 +361,10 @@ export function Filters() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -355,7 +385,7 @@ export function Filters() {
             return (
               <label
                 key={currency.value}
-                className={`flex-1 text-center py-2 px-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+                className={`flex-1 text-center py-3 px-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                   isSelected
                     ? "border-principal-blue bg-principal-blue/10 text-principal-blue font-medium"
                     : "border-gray-200 hover:border-secondary-blue/70 text-gray-600 hover:text-gray-800"
@@ -375,10 +405,10 @@ export function Filters() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -394,41 +424,39 @@ export function Filters() {
           Rango de precios
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <div className="relative">
-            <input
-              type="number"
-              placeholder="Mínimo"
-              value={params.minPrice || ""}
-              onChange={(e) =>
-                setPriceRange(
-                  Number(e.target.value) || undefined,
-                  params.maxPrice
-                )
-              }
-              className="w-full pl-8 pr-3 rounded-xl border-2 border-gray-200 py-2.5 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
-            />
-          </div>
-          <div className="relative">
-            <input
-              type="number"
-              placeholder="Máximo"
-              value={params.maxPrice || ""}
-              onChange={(e) =>
-                setPriceRange(
-                  params.minPrice,
-                  Number(e.target.value) || undefined
-                )
-              }
-              className="w-full pl-8 pr-3 rounded-xl border-2 border-gray-200 py-2.5 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
-            />
-          </div>
+          <input
+            type="number"
+            placeholder="Desde"
+            value={params.minPrice || ""}
+            onChange={(e) =>
+              setPriceRange(
+                Number(e.target.value) || undefined,
+                params.maxPrice
+              )
+            }
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
+          />
+          <input
+            type="number"
+            placeholder="Hasta"
+            value={params.maxPrice || ""}
+            onChange={(e) =>
+              setPriceRange(
+                params.minPrice,
+                Number(e.target.value) || undefined
+              )
+            }
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
+          />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -451,7 +479,8 @@ export function Filters() {
             onChange={(e) =>
               setYearRange(Number(e.target.value) || undefined, params.maxYear)
             }
-            className="w-full rounded-xl border-2 border-gray-200 py-2.5 px-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
           />
           <input
             type="number"
@@ -460,15 +489,16 @@ export function Filters() {
             onChange={(e) =>
               setYearRange(params.minYear, Number(e.target.value) || undefined)
             }
-            className="w-full rounded-xl border-2 border-gray-200 py-2.5 px-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
           />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-gray-700 flex items-center">
           <svg
-            className="w-4 h-4 mr-1.5 text-principal-blue"
+            className="w-4 h-4 mr-2 text-principal-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -484,46 +514,38 @@ export function Filters() {
           Kilometraje
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <div className="relative">
-            <input
-              type="number"
-              placeholder="Mínimo"
-              value={params.minMileage || ""}
-              onChange={(e) =>
-                setMileageRange(
-                  Number(e.target.value) || undefined,
-                  params.maxMileage
-                )
-              }
-              className="w-full rounded-xl border-2 border-gray-200 py-2.5 px-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-              km
-            </span>
-          </div>
-          <div className="relative">
-            <input
-              type="number"
-              placeholder="Máximo"
-              value={params.maxMileage || ""}
-              onChange={(e) =>
-                setMileageRange(
-                  params.minMileage,
-                  Number(e.target.value) || undefined
-                )
-              }
-              className="w-full rounded-xl border-2 border-gray-200 py-2.5 px-3 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-              km
-            </span>
-          </div>
+          <input
+            type="number"
+            placeholder="Desde"
+            value={params.minMileage || ""}
+            onChange={(e) =>
+              setMileageRange(
+                Number(e.target.value) || undefined,
+                params.maxMileage
+              )
+            }
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
+          />
+          <input
+            type="number"
+            placeholder="Hasta"
+            value={params.maxMileage || ""}
+            onChange={(e) =>
+              setMileageRange(
+                params.minMileage,
+                Number(e.target.value) || undefined
+              )
+            }
+            className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min="0"
+          />
         </div>
       </div>
 
       <button
         onClick={() => (window.location.href = window.location.pathname)}
-        className="w-full py-2 px-4 bg-zinc-100 hover:bg-zinc-200 text-gray-700 rounded-lg text-sm font-medium transition-colors mt-4"
+        className="w-full py-3 px-4 bg-zinc-100 hover:bg-zinc-200 text-gray-700 rounded-lg text-sm font-medium transition-colors mt-6"
       >
         Limpiar filtros
       </button>
