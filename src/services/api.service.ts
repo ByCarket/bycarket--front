@@ -138,7 +138,11 @@ export interface UserDataResponse {
 export interface UpdateUserData {
   name?: string;
   email?: string;
-  phone?: number;
+  phone: {
+    countryCode: string;
+    areaCode: string;
+    number: string;
+  };
   country?: string;
   city?: string;
   address?: string;
@@ -153,7 +157,10 @@ export const updateUserData = async (
   userData: UpdateUserData
 ): Promise<UserDataResponse> => {
   try {
-    const response = await http.patch<{ data: UserDataResponse }>("/users/me", userData);
+    const response = await http.patch<{ data: UserDataResponse }>(
+      "/users/me",
+      userData
+    );
     return response.data.data;
   } catch (error: any) {
     const errorMsg =
