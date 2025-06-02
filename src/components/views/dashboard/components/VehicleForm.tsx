@@ -264,6 +264,19 @@ const VehicleForm: React.FC = () => {
     setShowVersionDropdown(false);
   };
 
+  const allFieldsValid =
+    formik.values.brandId &&
+    formik.values.modelId &&
+    formik.values.versionId &&
+    formik.values.typeOfVehicle &&
+    formik.values.year &&
+    formik.values.condition &&
+    formik.values.currency &&
+    formik.values.price > 0 &&
+    formik.values.mileage >= 0 &&
+    formik.values.description.length >= 10 &&
+    formik.values.images.length > 0;
+
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm">
       <h2 className="text-2xl font-bold text-principal-blue mb-6">
@@ -785,7 +798,7 @@ const VehicleForm: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={loading}
+            disabled={!allFieldsValid || loading}
             className="px-6 py-2 bg-principal-blue hover:bg-secondary-blue text-white font-medium rounded-md transition duration-300 disabled:opacity-50"
           >
             {loading ? "Registrando..." : "Registrar Vehículo"}
