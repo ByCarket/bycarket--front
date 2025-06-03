@@ -7,7 +7,7 @@ import {
 } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
-type VehicleType =
+export type VehicleType =
   | "SUV"
   | "PICKUP"
   | "MINIVAN"
@@ -48,7 +48,7 @@ export interface VehicleSearchParams {
   brandId?: string[];
   modelId?: string[];
   versionId?: string[];
-  typeOfVehicle?: VehicleType;
+  typeOfVehicle?: VehicleType[];
   condition?: Condition;
   currency?: Currency;
   page?: number;
@@ -80,7 +80,7 @@ export const useSearchParams = () => {
       params.versionId = searchParams.getAll("versionId") || undefined;
     if (searchParams.has("typeOfVehicle"))
       params.typeOfVehicle =
-        (searchParams.get("typeOfVehicle") as VehicleType) || undefined;
+        (searchParams.getAll("typeOfVehicle") as VehicleType[]) || undefined;
     if (searchParams.has("condition"))
       params.condition =
         (searchParams.get("condition") as Condition) || undefined;
@@ -131,12 +131,18 @@ export const useSearchParams = () => {
         urlSearchParams.append("versionId", String(id))
       );
     }
+    if (params.typeOfVehicle) {
+      params.typeOfVehicle.forEach((type) =>
+        urlSearchParams.append("typeOfVehicle", String(type))
+      );
+    }
 
     Object.entries(params).forEach(([key, value]) => {
       if (
         key !== "brandId" &&
         key !== "modelId" &&
         key !== "versionId" &&
+        key !== "typeOfVehicle" &&
         value !== undefined &&
         value !== null &&
         value !== ""
@@ -201,7 +207,7 @@ export const useSearchParams = () => {
   );
 
   const setTypeOfVehicle = useCallback(
-    (typeOfVehicle: VehicleType | undefined) => {
+    (typeOfVehicle: VehicleType[] | undefined) => {
       setParams({ typeOfVehicle, page: 1 });
     },
     [setParams]
