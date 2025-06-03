@@ -50,6 +50,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         ...baseMenuItems,
         { id: "users", label: "Lista de usuarios", icon: Users },
         { id: "user-posts", label: "Lista de publicaciones", icon: FileText },
+        { id: "database-scrapper", label: "Scrapper", icon: FileText },
       ]
     : baseMenuItems;
 
@@ -75,7 +76,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     <>
       <button
         onClick={toggleMobileMenu}
-        className="md:hidden fixed top-4 left-4 z-50 p-3 bg-white shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300"
+        className="md:hidden fixed bottom-4 left-4 z-50 p-3 bg-white shadow-lg rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300"
       >
         {isMobileMenuOpen ? (
           <X className="w-6 h-6 text-gray-700" />

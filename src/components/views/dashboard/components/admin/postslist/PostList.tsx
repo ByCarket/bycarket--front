@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { getPendingPosts, PostResponse } from "@/services/vehicle.service";
 import PostCard from "./PostCard";
 import OrderPostBy from "./OrderPostBy";
-import StatusFilterPost from "./StatusFilterPost";
 import PostDetail from "./PostDetail";
 
 const ITEMS_PER_PAGE = 10;
@@ -17,7 +16,6 @@ const PostList = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [orderBy, setOrderBy] = useState<"asc" | "desc">("desc");
   const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("Pending");
 
   const fetchPosts = async () => {
     try {
@@ -79,10 +77,6 @@ const PostList = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <StatusFilterPost
-          currentStatus={statusFilter}
-          onStatusChange={setStatusFilter}
-        />
         <OrderPostBy onOrderChange={handleOrderChange} currentOrder={orderBy} />
       </div>
 

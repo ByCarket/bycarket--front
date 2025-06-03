@@ -66,14 +66,6 @@ export default function MyVehicleLists({
 
   const sortedVehicles = [...vehicles].sort((a, b) => {
     switch (sortBy) {
-      case "newest":
-        return (
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-      case "oldest":
-        return (
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
       case "price-high":
         return b.price - a.price;
       case "price-low":
@@ -99,8 +91,6 @@ export default function MyVehicleLists({
           onChange={(e) => setSortBy(e.target.value)}
           className="bg-white border border-gray-200 text-gray-700 py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-principal-blue focus:border-principal-blue"
         >
-          <option value="newest">Más recientes</option>
-          <option value="oldest">Más antiguos</option>
           <option value="price-high">Mayor precio</option>
           <option value="price-low">Menor precio</option>
           <option value="year-new">Año (más nuevo)</option>

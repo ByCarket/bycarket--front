@@ -83,7 +83,7 @@ const VehicleForm: React.FC = () => {
 
   const [imageError, setImageError] = useState<string>("");
 
-  const validationSchema = Yup.object({
+  const validationSchema = Yup.object().shape({
     brandId: Yup.string().required("La marca es obligatoria"),
     modelId: Yup.string().required("El modelo es obligatorio"),
     versionId: Yup.string().required("La versión es obligatoria"),
@@ -91,10 +91,7 @@ const VehicleForm: React.FC = () => {
     year: Yup.number()
       .required("El año es obligatorio")
       .min(1900, "El año debe ser mayor a 1900")
-      .max(
-        new Date().getFullYear() + 1,
-        `El año no puede ser mayor a ${new Date().getFullYear() + 1}`
-      ),
+      .max(new Date().getFullYear(), "No se permiten años futuros"),
     condition: Yup.string().required("La condición es obligatoria"),
     currency: Yup.string()
       .required("La moneda es obligatoria")
@@ -177,6 +174,22 @@ const VehicleForm: React.FC = () => {
     },
   });
 
+  useEffect(() => {
+    if (success) {
+      formik.resetForm();
+      setPreviewImages([]);
+      setBrandSearch("");
+      setModelSearch("");
+      setVersionSearch("");
+      setShowBrandDropdown(false);
+      setShowModelDropdown(false);
+      setShowVersionDropdown(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }, [success]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageError("");
     const files = e.target.files;
@@ -250,6 +263,19 @@ const VehicleForm: React.FC = () => {
     setVersionSearch(versionName);
     setShowVersionDropdown(false);
   };
+
+  const allFieldsValid =
+    formik.values.brandId &&
+    formik.values.modelId &&
+    formik.values.versionId &&
+    formik.values.typeOfVehicle &&
+    formik.values.year &&
+    formik.values.condition &&
+    formik.values.currency &&
+    formik.values.price > 0 &&
+    formik.values.mileage >= 0 &&
+    formik.values.description.length >= 10 &&
+    formik.values.images.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm">
@@ -539,7 +565,7 @@ const VehicleForm: React.FC = () => {
               onBlur={formik.handleBlur}
               value={formik.values.year}
               min={1900}
-              max={new Date().getFullYear() + 1}
+              max={new Date().getFullYear()}
               className={`w-full px-3 py-2 border ${
                 formik.touched.year && formik.errors.year
                   ? "border-red-500"
@@ -772,7 +798,7 @@ const VehicleForm: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={loading}
+            disabled={!allFieldsValid || loading}
             className="px-6 py-2 bg-principal-blue hover:bg-secondary-blue text-white font-medium rounded-md transition duration-300 disabled:opacity-50"
           >
             {loading ? "Registrando..." : "Registrar Vehículo"}

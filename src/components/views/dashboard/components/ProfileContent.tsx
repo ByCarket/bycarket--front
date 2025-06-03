@@ -31,7 +31,13 @@ export default function ProfileContent() {
     uploadProfileImage,
   } = useUserData();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<UpdateUserData>({});
+  const [formData, setFormData] = useState<UpdateUserData>({
+    phone: {
+      countryCode: "",
+      areaCode: "",
+      number: "",
+    },
+  });
   const [updateMessage, setUpdateMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -80,26 +86,44 @@ export default function ProfileContent() {
     );
   }
 
-  const formatPhoneNumber = (phone?: number) => {
+  const formatPhoneNumber = (phone?: any) => {
     if (!phone) return "No especificado";
-    const phoneStr = phone.toString();
-    if (phoneStr.length === 10) {
-      return `(${phoneStr.slice(0, 3)}) ${phoneStr.slice(
-        3,
-        6
-      )}-${phoneStr.slice(6)}`;
+    if (
+      typeof phone === "object" &&
+      phone.countryCode &&
+      phone.areaCode &&
+      phone.number
+    ) {
+      const cleanCountryCode = phone.countryCode.startsWith("+")
+        ? phone.countryCode
+        : `+${phone.countryCode}`;
+      return `${cleanCountryCode} (${phone.areaCode}) ${phone.number}`;
     }
-    return phoneStr;
+    if (typeof phone === "number") {
+      const phoneStr = phone.toString();
+      if (phoneStr.length === 10) {
+        return `(${phoneStr.slice(0, 3)}) ${phoneStr.slice(
+          3,
+          6
+        )}-${phoneStr.slice(6)}`;
+      }
+      return phoneStr;
+    }
+    return "No especificado";
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (name === "phone") {
+    if (name.startsWith("phone.")) {
+      const phoneField = name.split(".")[1];
       setFormData({
         ...formData,
-        [name]: value === "" ? undefined : Number(value),
-      } as UpdateUserData);
+        phone: {
+          ...formData.phone,
+          [phoneField]: value,
+        },
+      });
     } else {
       setFormData({
         ...formData,
@@ -111,7 +135,17 @@ export default function ProfileContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = await updateUser(formData);
+    const dataToSubmit = {
+      ...formData,
+      phone: {
+        ...formData.phone,
+        countryCode: formData.phone.countryCode.startsWith("+")
+          ? formData.phone.countryCode
+          : `+${formData.phone.countryCode}`,
+      },
+    };
+
+    const result = await updateUser(dataToSubmit);
 
     if (result?.success) {
       setUpdateMessage({
@@ -119,7 +153,13 @@ export default function ProfileContent() {
         text: "Datos actualizados correctamente",
       });
       setIsEditing(false);
-      setFormData({});
+      setFormData({
+        phone: {
+          countryCode: "",
+          areaCode: "",
+          number: "",
+        },
+      });
       refetch();
     } else {
       setUpdateMessage({
@@ -135,7 +175,13 @@ export default function ProfileContent() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setFormData({});
+    setFormData({
+      phone: {
+        countryCode: "",
+        areaCode: "",
+        number: "",
+      },
+    });
   };
 
   const handleDeleteAccount = async () => {
@@ -207,6 +253,17 @@ export default function ProfileContent() {
       .join("")
       .toUpperCase()
       .substring(0, 2);
+  };
+
+  const getCurrentPhoneData = () => {
+    if (userData?.phone && typeof userData.phone === "object") {
+      return userData.phone;
+    }
+    return {
+      countryCode: "",
+      areaCode: "",
+      number: "",
+    };
   };
 
   return (
@@ -308,9 +365,14 @@ export default function ProfileContent() {
                   <div className="space-y-4">
                     <button
                       onClick={() => {
+                        const currentPhone = getCurrentPhoneData();
                         setIsEditing(true);
                         setFormData({
-                          phone: userData.phone,
+                          phone: {
+                            countryCode: currentPhone.countryCode || "",
+                            areaCode: currentPhone.areaCode || "",
+                            number: currentPhone.number || "",
+                          },
                           country: userData.country,
                           city: userData.city,
                           address: userData.address,
@@ -373,18 +435,54 @@ export default function ProfileContent() {
                         </p>
                       </div>
 
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
                           <FaPhone className="text-[#103663]" />
                           Teléfono
                         </label>
-                        <input
-                          type="number"
-                          name="phone"
-                          value={formData.phone || ""}
-                          onChange={handleInputChange}
-                          className="w-full p-4 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
-                        />
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                              Código País
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                name="phone.countryCode"
+                                value={formData.phone.countryCode || ""}
+                                onChange={handleInputChange}
+                                placeholder="54"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                              Código Área
+                            </label>
+                            <input
+                              type="text"
+                              name="phone.areaCode"
+                              value={formData.phone.areaCode || ""}
+                              onChange={handleInputChange}
+                              placeholder="11"
+                              className="w-full p-3 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                              Número
+                            </label>
+                            <input
+                              type="text"
+                              name="phone.number"
+                              value={formData.phone.number || ""}
+                              onChange={handleInputChange}
+                              placeholder="12345678"
+                              className="w-full p-3 border-2 border-gray-200 rounded-xl text-base focus:border-[#103663] focus:ring-4 focus:ring-blue-100 transition-all duration-300"
+                            />
+                          </div>
+                        </div>
                       </div>
 
                       <div>
@@ -415,7 +513,7 @@ export default function ProfileContent() {
                         />
                       </div>
 
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="flex items-center gap-3 text-lg font-semibold text-gray-700 mb-3">
                           <FaHome className="text-[#103663]" />
                           Dirección
