@@ -48,7 +48,7 @@ export const useFetchPosts = (
       if (postId) {
         const post = await getPostById(postId);
         setSinglePost(post);
-        setPosts([post]);
+        setPosts(prevPosts => [post, ...prevPosts.filter(p => p.id !== post.id)]);
         setTotalItems(1);
         setTotalPages(1);
         return;
@@ -169,6 +169,7 @@ export const useFetchPosts = (
     totalItems,
     handlePageChange,
     removePost,
+    createPost: createNewPost,
     updateFilters,
     refreshPosts: fetchPostsData,
   };

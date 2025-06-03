@@ -23,9 +23,9 @@ export default function PostContent() {
   const {
     posts,
     loading: postsLoading,
-    deletePost,
+    removePost: deletePost,
     createPost,
-    refetch: refetchPosts,
+    refreshPosts: refetchPosts,
   } = useFetchPosts(1, 100, {}, true);
 
   const {
@@ -49,22 +49,42 @@ export default function PostContent() {
     setIsCreating(true);
     setLoading(true);
     try {
-      const result = await createPost({ vehicleId, description });
-      if (result.success) {
+      const descriptionToUse = description || "Publicación sin descripción";
+      const result = await createPost({
+        vehicleId,
+        description: descriptionToUse,
+      });
+      if (result.success && result.data) {
         showSuccess("Publicación creada exitosamente");
         setShowForm(false);
-        setShowVehicleSelector(false);
         setSelectedVehicle(null);
         await refetchPosts();
+        setSelectedPost(result.data);
       } else {
-        showError(result.error || "Error al crear la publicación");
+        throw new Error(result.error || "Error al crear la publicación");
       }
     } catch (error) {
       showError("Error inesperado al crear la publicación");
     } finally {
-      setIsCreating(false);
       setLoading(false);
     }
+  };
+
+  const handleEditPost = async (post: PostResponse) => {
+    setSelectedPost(post);
+    if (post.vehicle?.id) {
+      const vehicle = vehicles.find((v) => v.id === post.vehicle.id);
+      if (vehicle) {
+        setSelectedVehicle(vehicle);
+      }
+    }
+    setShowForm(true);
+  };
+
+  const handleNewPost = (vehicle: VehicleResponse) => {
+    setSelectedVehicle(vehicle);
+    setShowVehicleSelector(false);
+    setShowForm(true);
   };
 
   const handleDeletePost = async (postId: string): Promise<boolean> => {
@@ -88,12 +108,6 @@ export default function PostContent() {
 
   const handleViewPost = (post: PostResponse) => {
     setSelectedPost(post);
-  };
-
-  const handleNewPost = (vehicle: VehicleResponse) => {
-    setSelectedVehicle(vehicle);
-    setShowVehicleSelector(false);
-    setShowForm(true);
   };
 
   const availableVehicles = vehicles.filter(

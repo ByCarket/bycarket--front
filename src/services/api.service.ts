@@ -487,3 +487,9 @@ export const getScrapperData = async (): Promise<any> => {
   const response = await http.get<any>("/acara-scrapping");
   return response.data;
 };
+
+// User Featured Products
+export const getUserFeaturedProducts = async (userId: string): Promise<any> => {
+  const response = await http.get<any>(`/posts/user/${userId}`);
+  return response.data;
+};
