@@ -56,7 +56,7 @@ export default function MyVehicleCard({
     }
     return {
       bg: "bg-blue-50",
-      text: "text-blue-700",
+      text: "text-principal-blue",
       border: "border-blue-200",
       icon: FiTag,
     };
@@ -82,7 +82,7 @@ export default function MyVehicleCard({
         </div>
 
         <div className="absolute top-4 left-4 flex gap-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/9 text-slate-700 border-slate-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-gray-100 text-principal-blue border-slate-200">
             <FiTruck className="w-3 h-3" />
             {vehicle.typeOfVehicle}
           </div>

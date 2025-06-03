@@ -133,24 +133,7 @@ export default function PostsCard({
               <FiEye className="w-4 h-4 text-slate-600" />
             </button>
           )}
-          {onDelete && (
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className={`p-2.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
-                isDeleting
-                  ? "bg-slate-200/90 cursor-not-allowed"
-                  : "bg-white/90 backdrop-blur-sm hover:bg-white hover:shadow-xl"
-              }`}
-              aria-label={isDeleting ? "Eliminando..." : "Eliminar"}
-            >
-              {isDeleting ? (
-                <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <FiTrash2 className="w-4 h-4 text-rose-500" />
-              )}
-            </button>
-          )}
+        
         </div>
       </div>
 
@@ -180,34 +163,7 @@ export default function PostsCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleView}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white text-sm font-medium rounded-xl hover:from-[#0d2a4f] hover:to-[#3d6291] transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md"
-          >
-            Ver detalles
-          </button>
 
-          {onDelete && (
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-sm font-medium rounded-xl border border-rose-200 hover:border-rose-300 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
-            >
-              {isDeleting ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
-                  Eliminando...
-                </>
-              ) : (
-                <>
-                  <FiTrash2 className="w-3 h-3" />
-                  Eliminar
-                </>
-              )}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
