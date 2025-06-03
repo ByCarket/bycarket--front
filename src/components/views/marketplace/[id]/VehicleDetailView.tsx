@@ -1,31 +1,30 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useFetchPosts } from "@/hooks/useFetchPosts";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import QuestionModal from "../components/QuestionModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-
-
+import { useFetchPosts } from "@/hooks/useFetchPosts";
 
 const VehicleDetailView = () => {
+  const router = useRouter();
   const params = useParams();
-  const vehicleId = params.id as string;
-  const { posts, loading, error } = useFetchPosts();
-  const post = posts.find((p) => p.vehicle?.id === vehicleId);
+  const postId = params.id as string;
+
+  const { post, loading, error } = useFetchPosts(1, 10, {}, false, postId);
   const vehicle = post?.vehicle;
 
   const { user } = useAuth();
-  const ownerId = post?.vehicle.userId;
+  const ownerId = post?.vehicle?.userId;
 
   const fechaPublicacion = post?.postDate
     ? new Date(post.postDate).toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    })
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
     : "Fecha no disponible";
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -112,10 +111,11 @@ const VehicleDetailView = () => {
                 <button
                   key={idx}
                   onClick={() => setCurrentImageIndex(idx)}
-                  className={`relative w-24 aspect-[4/3] rounded-md overflow-hidden border-2 transition ${idx === currentImageIndex
-                    ? "border-principal-blue"
-                    : "border-transparent"
-                    }`}
+                  className={`relative w-24 aspect-[4/3] rounded-md overflow-hidden border-2 transition ${
+                    idx === currentImageIndex
+                      ? "border-principal-blue"
+                      : "border-transparent"
+                  }`}
                 >
                   <Image
                     src={img.secure_url}
@@ -160,8 +160,8 @@ const VehicleDetailView = () => {
                 {vehicle.condition === "used"
                   ? "Usado"
                   : vehicle.condition === "new"
-                    ? "Nuevo"
-                    : vehicle.condition}
+                  ? "Nuevo"
+                  : vehicle.condition}
               </li>
               <li>
                 <strong className="text-principal-blue">Kilometraje:</strong>{" "}
@@ -175,39 +175,39 @@ const VehicleDetailView = () => {
           </div>
 
           {/* Modal + contacto */}
-        <div className="flex flex-col gap-4 pt-3">
-
+          <div className="flex flex-col gap-4 pt-3">
             {user?.id !== ownerId && <QuestionModal />}
           </div>
           <div className="flex items-center justify-center gap-3 mt-6">
             <Image
-                        src="/assets/images/logo/Logoo.webp"
-                        alt="logoByCarket"
-                        width={40}
-                        height={40}
-                        className="h-20 w-20 opacity-4"
-                      />  <Image
-                        src="/assets/images/logo/Logoo.webp"
-                        alt="logoByCarket"
-                        width={40}
-                        height={40}
-                        className="h-20 w-20 opacity-6"
-                      />  <Image
-                        src="/assets/images/logo/Logoo.webp"
-                        alt="logoByCarket"
-                        width={40}
-                        height={40}
-                        className="h-20 w-20 opacity-10"
-                      />  <Image
-                        src="/assets/images/logo/Logoo.webp"
-                        alt="logoByCarket"
-                        width={40}
-                        height={40}
-                        className="h-20 w-20 opacity-14"
-                      />
-      
+              src="/assets/images/logo/Logoo.webp"
+              alt="logoByCarket"
+              width={40}
+              height={40}
+              className="h-20 w-20 opacity-4"
+            />{" "}
+            <Image
+              src="/assets/images/logo/Logoo.webp"
+              alt="logoByCarket"
+              width={40}
+              height={40}
+              className="h-20 w-20 opacity-6"
+            />{" "}
+            <Image
+              src="/assets/images/logo/Logoo.webp"
+              alt="logoByCarket"
+              width={40}
+              height={40}
+              className="h-20 w-20 opacity-10"
+            />{" "}
+            <Image
+              src="/assets/images/logo/Logoo.webp"
+              alt="logoByCarket"
+              width={40}
+              height={40}
+              className="h-20 w-20 opacity-14"
+            />
           </div>
-
         </div>
       </div>
 
