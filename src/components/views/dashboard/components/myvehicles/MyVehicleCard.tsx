@@ -7,30 +7,15 @@ import { VehicleResponse } from "@/services/vehicle.service";
 interface MyVehicleCardProps {
   vehicle: VehicleResponse;
   onView?: (vehicle: VehicleResponse) => void;
-  onDelete?: (id: string) => Promise<boolean>;
 }
 
 export default function MyVehicleCard({
   vehicle,
   onView,
-  onDelete,
 }: MyVehicleCardProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDeleting(true);
-    try {
-      if (onDelete) {
-        await onDelete(vehicle.id);
-      }
-    } catch (error) {
-      console.error("Error deleting vehicle:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  
 
   const handleView = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,7 +41,7 @@ export default function MyVehicleCard({
     }
     return {
       bg: "bg-blue-50",
-      text: "text-blue-700",
+      text: "text-principal-blue",
       border: "border-blue-200",
       icon: FiTag,
     };
@@ -82,7 +67,7 @@ export default function MyVehicleCard({
         </div>
 
         <div className="absolute top-4 left-4 flex gap-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/9 text-slate-700 border-slate-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-gray-100 text-principal-blue border-slate-200">
             <FiTruck className="w-3 h-3" />
             {vehicle.typeOfVehicle}
           </div>
@@ -102,22 +87,7 @@ export default function MyVehicleCard({
           >
             <FiEye className="w-4 h-4 text-slate-600" />
           </button>
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className={`p-2.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${
-              isDeleting
-                ? "bg-slate-200/90 cursor-not-allowed"
-                : "bg-white/90 backdrop-blur-sm hover:bg-white hover:shadow-xl"
-            }`}
-            aria-label={isDeleting ? "Eliminando..." : "Eliminar"}
-          >
-            {isDeleting ? (
-              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FiTrash2 className="w-4 h-4 text-rose-500" />
-            )}
-          </button>
+         
         </div>
       </div>
 
@@ -154,24 +124,7 @@ export default function MyVehicleCard({
           >
             Ver detalles
           </button>
-
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-sm font-medium rounded-xl border border-rose-200 hover:border-rose-300 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
-          >
-            {isDeleting ? (
-              <>
-                <div className="w-3 h-3 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
-                Eliminando...
-              </>
-            ) : (
-              <>
-                <FiTrash2 className="w-3 h-3" />
-                Eliminar
-              </>
-            )}
-          </button>
+        
         </div>
       </div>
     </div>
