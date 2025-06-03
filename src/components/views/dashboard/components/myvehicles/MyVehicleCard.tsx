@@ -7,15 +7,11 @@ import { VehicleResponse } from "@/services/vehicle.service";
 interface MyVehicleCardProps {
   vehicle: VehicleResponse;
   onView?: (vehicle: VehicleResponse) => void;
+  onDelete?: (id: string) => Promise<boolean>;
 }
 
-export default function MyVehicleCard({
-  vehicle,
-  onView,
-}: MyVehicleCardProps) {
+export default function MyVehicleCard({ vehicle, onView }: MyVehicleCardProps) {
   const [imageError, setImageError] = useState(false);
-
-  
 
   const handleView = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,7 +83,6 @@ export default function MyVehicleCard({
           >
             <FiEye className="w-4 h-4 text-slate-600" />
           </button>
-         
         </div>
       </div>
 
@@ -124,7 +119,6 @@ export default function MyVehicleCard({
           >
             Ver detalles
           </button>
-        
         </div>
       </div>
     </div>
