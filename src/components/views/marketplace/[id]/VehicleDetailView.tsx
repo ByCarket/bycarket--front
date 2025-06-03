@@ -247,11 +247,11 @@ const VehicleDetailView = () => {
           </div>
 
           {/* Contacto por email */}
-          <div className="rounded-2xl text-center p-4 border-l-2 border-r-2 border-secondary-blue shadow-md">
+          <div className="rounded-2xl text-center p-4 shadow-md">
             <p className="text-base font-semibold mb-1 text-gray-900">
               ¿Tenés dudas?
             </p>
-            <p className="text-gray-700 text-sm">
+            <p className="text-black text-sm">
               Contactanos a{" "}
               <a
                 href="mailto:bycarket@gmail.com"

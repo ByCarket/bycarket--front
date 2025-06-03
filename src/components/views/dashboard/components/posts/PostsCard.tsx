@@ -52,36 +52,36 @@ export default function PostsCard({
     const configs = {
       published: {
         bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        border: "border-emerald-200",
+        text: "text-emerald-800",
+        border: "border-emerald-500",
         icon: FiCheckCircle,
         label: "Publicado",
       },
       active: {
         bg: "bg-green-300",
-        text: "text-black",
-        border: "border-black",
+        text: "text-gray-800",
+        border: "border-gray-500",
         icon: FiCheckCircle,
         label: "Activo",
       },
       draft: {
         bg: "bg-amber-50",
-        text: "text-amber-700",
-        border: "border-black",
+        text: "text-amber-800",
+        border: "border-gray-500",
         icon: FiEdit3,
         label: "Borrador",
       },
       sold: {
         bg: "bg-rose-50",
-        text: "text-rose-700",
-        border: "border-black",
+        text: "text-rose-800",
+        border: "border-gray-500",
         icon: FiCheckCircle,
         label: "Vendido",
       },
       inactive: {
         bg: "bg-gray-300",
-        text: "text-black",
-        border: "border-black",
+        text: "text-gray-800",
+        border: "border-gray-500",
         icon: FiXCircle,
         label: "Inactivo",
       },
@@ -90,8 +90,8 @@ export default function PostsCard({
     return (
       configs[status.toLowerCase() as keyof typeof configs] || {
         bg: "bg-yellow-300",
-        text: "text-black",
-        border: "border-black",
+        text: "text-gray-800",
+        border: "border-gray-500",
         icon: FiClock,
         label: status,
       }
