@@ -51,12 +51,12 @@ export default function PostsDetail({
   });
 
   const statusColors: Record<string, string> = {
-    published: "bg-green-100 text-green-800",
-    active: "bg-green-100 text-green-800",
-    draft: "bg-yellow-100 text-yellow-800",
-    sold: "bg-red-100 text-red-800",
-    inactive: "bg-gray-100 text-gray-800",
-    default: "bg-blue-100 text-blue-800",
+    published: "bg-green-300 text-green-800",
+    active: "bg-green-300 text-green-800",
+    draft: "bg-yellow-300 text-yellow-800",
+    sold: "bg-red-300 text-red-800",
+    inactive: "bg-gray-300 text-gray-800",
+    default: "bg-yellow-300 text-blue-800",
   };
 
   const statusText: Record<string, string> = {

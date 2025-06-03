@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot, Mail, MailX } from "lucide-react";
 import { getChatCompletion } from "@/services/api.service";
 import { usePathname } from "next/navigation";
+import { getResponseFromDictionary } from "@/data/chatbot-responses";
 
 export default function AnimatedChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,13 +19,13 @@ export default function AnimatedChatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  
+
   const getPostIdFromUrl = (): string | undefined => {
     if (!pathname) return undefined;
-    
+
     const regex = /\/marketplace\/([\w-]+)$/;
     const match = pathname.match(regex);
-    
+
     return match ? match[1] : undefined;
   };
 
@@ -43,12 +44,13 @@ export default function AnimatedChatbot() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    const currentMessage = message;
     setMessage("");
 
     try {
       const postId = getPostIdFromUrl();
       const response = await getChatCompletion(
-        [{ role: "user", content: message }],
+        [{ role: "user", content: currentMessage }],
         postId
       );
 
@@ -59,12 +61,14 @@ export default function AnimatedChatbot() {
       };
       setMessages((prev) => [...prev, botResponse]);
     } catch (error) {
-      const errorResponse = {
+      const fallbackResponse = getResponseFromDictionary(currentMessage);
+
+      const botResponse = {
         id: Date.now() + 1,
-        text: "Lo siento, ocurrió un error al procesar tu mensaje",
+        text: fallbackResponse,
         sender: "bot" as const,
       };
-      setMessages((prev) => [...prev, errorResponse]);
+      setMessages((prev) => [...prev, botResponse]);
     }
   };
 
