@@ -64,6 +64,7 @@ export interface PostResponse {
   status: PostStatus;
   postDate: string;
   user: UserDataResponse;
+  sellerId: string;
 }
 
 export interface GetPostsResponse {
