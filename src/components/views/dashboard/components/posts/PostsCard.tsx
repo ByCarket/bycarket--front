@@ -58,30 +58,30 @@ export default function PostsCard({
         label: "Publicado",
       },
       active: {
-        bg: "bg-emerald-50",
-        text: "text-emerald-700",
-        border: "border-emerald-200",
+        bg: "bg-green-300",
+        text: "text-black",
+        border: "border-black",
         icon: FiCheckCircle,
         label: "Activo",
       },
       draft: {
         bg: "bg-amber-50",
         text: "text-amber-700",
-        border: "border-amber-200",
+        border: "border-black",
         icon: FiEdit3,
         label: "Borrador",
       },
       sold: {
         bg: "bg-rose-50",
         text: "text-rose-700",
-        border: "border-rose-200",
+        border: "border-black",
         icon: FiCheckCircle,
         label: "Vendido",
       },
       inactive: {
-        bg: "bg-slate-50",
-        text: "text-slate-600",
-        border: "border-slate-200",
+        bg: "bg-gray-300",
+        text: "text-black",
+        border: "border-black",
         icon: FiXCircle,
         label: "Inactivo",
       },
@@ -89,9 +89,9 @@ export default function PostsCard({
 
     return (
       configs[status.toLowerCase() as keyof typeof configs] || {
-        bg: "bg-blue-50",
-        text: "text-blue-700",
-        border: "border-blue-200",
+        bg: "bg-yellow-300",
+        text: "text-black",
+        border: "border-black",
         icon: FiClock,
         label: status,
       }
@@ -116,7 +116,7 @@ export default function PostsCard({
 
         <div className="absolute top-4 left-4">
           <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/90 ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
           >
             <StatusIcon className="w-3 h-3" />
             {statusConfig.label}

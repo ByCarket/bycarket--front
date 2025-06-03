@@ -134,8 +134,8 @@ export default function PostsList({
     {
       value: "pending",
       label: `Pendiente (${statusCounts["pending"] || 0})`,
-      color: "bg-yellow-100 text-yellow-800",
-      dot: "bg-yellow-500",
+      color: "bg-yellow-300 text-yellow-800",
+      dot: "bg-yellow-300",
     },
     {
       value: "rejected",
