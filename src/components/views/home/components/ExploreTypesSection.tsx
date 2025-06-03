@@ -49,7 +49,18 @@ const ExploreTypesSection = () => {
               />
             </div>
             <div className="p-4 text-center">
-              <Link href="/marketplace" passHref>
+              <Link
+                href={
+                  category.title === "Autos usados"
+                    ? "/marketplace?condition=used&page=1"
+                    : category.title === "Autos 0 KM"
+                    ? "/marketplace?condition=new&page=1"
+                    : category.title === "Camionetas o 4x4"
+                    ? "/marketplace?typeOfVehicle=PICKUP&typeOfVehicle=MINIVAN&typeOfVehicle=LIGHT_TRUCK&page=1"
+                    : "/marketplace"
+                }
+                passHref
+              >
                 <h3 className="text-lg font-semibold text-secondary-blue cursor-pointer hover:underline">
                   {category.title}
                 </h3>
