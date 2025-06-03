@@ -1,4 +1,5 @@
 import http from "./http.service";
+import { UserDataResponse } from "./api.service";
 
 export interface Brand {
   id: string;
@@ -62,6 +63,7 @@ export interface PostResponse {
   vehicle: VehicleResponse;
   status: PostStatus;
   postDate: string;
+  user: UserDataResponse;
 }
 
 export interface GetPostsResponse {
@@ -218,6 +220,17 @@ export const updateVehicle = async (
     vehicleData
   );
   return response.data;
+};
+
+export const getPostById = async (postId: string): Promise<PostResponse> => {
+  try {
+    const response = await http.get<ApiResponse<PostResponse>>(
+      `/posts/${postId}`
+    );
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deletePost = async (postId: string): Promise<void> => {

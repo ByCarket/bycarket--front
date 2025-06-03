@@ -5,6 +5,7 @@ import {
   getPosts,
   getMyPosts,
   deletePost,
+  getPostById,
   PostResponse,
   GetPostsResponse,
   createPost as createPostService,
