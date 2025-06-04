@@ -487,3 +487,25 @@ export const getScrapperData = async (): Promise<any> => {
   const response = await http.get<any>("/acara-scrapping");
   return response.data;
 };
+
+// User Featured Products
+export const getUserFeaturedProducts = async (userId: string): Promise<any> => {
+  const response = await http.get<any>(`/posts/user/${userId}`);
+  return response.data;
+};
+
+// Invoices
+export const getInvoiceById = async (id: string): Promise<any> => {
+  const response = await http.get<any>(`/invoices/${id}`);
+  return response.data;
+};
+
+export const getUserInvoices = async (): Promise<any> => {
+  const response = await http.get<any>("/subscription/me");
+  return response.data;
+};
+
+export const updateUserSubscription = async (): Promise<any> => {
+  const response = await http.patch<any>("/subscription/cancel");
+  return response.data;
+}

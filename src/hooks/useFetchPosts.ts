@@ -28,9 +28,11 @@ export const useFetchPosts = (
   initialPage = 1,
   initialLimit = 10,
   initialFilters: FilterState = {},
-  fetchUserPostsOnly = false
+  fetchUserPostsOnly = false,
+  postId?: string
 ) => {
   const [posts, setPosts] = useState<PostResponse[]>([]);
+  const [singlePost, setSinglePost] = useState<PostResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -42,6 +44,18 @@ export const useFetchPosts = (
     try {
       setLoading(true);
       setError(null);
+
+      if (postId) {
+        const post = await getPostById(postId);
+        setSinglePost(post);
+        setPosts((prevPosts) => [
+          post,
+          ...prevPosts.filter((p) => p.id !== post.id),
+        ]);
+        setTotalItems(1);
+        setTotalPages(1);
+        return;
+      }
 
       if (fetchUserPostsOnly) {
         const response = await getMyPosts();
@@ -62,13 +76,14 @@ export const useFetchPosts = (
       }
     } catch (err) {
       setPosts([]);
+      setSinglePost(null);
       setTotalItems(0);
       setTotalPages(1);
       setError("Error al cargar las publicaciones");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, initialLimit, filters, fetchUserPostsOnly]);
+  }, [currentPage, initialLimit, filters, fetchUserPostsOnly, postId]);
 
   useEffect(() => {
     fetchPostsData();
@@ -110,13 +125,12 @@ export const useFetchPosts = (
   const createNewPost = async (data: {
     vehicleId: string;
     description?: string;
+    price?: number;
+    isNegotiable: boolean;
   }) => {
     try {
       setLoading(true);
-      const response = await createPostService(
-        data.vehicleId,
-        data.description
-      );
+      const response = await createPostService(data);
       if (!response) {
         throw new Error("No se recibió respuesta del servidor");
       }
@@ -145,18 +159,20 @@ export const useFetchPosts = (
     }
   };
 
+  const post = postId ? singlePost : null;
+
   return {
     posts,
+    post,
     loading,
     error,
     currentPage,
     totalPages,
     totalItems,
     handlePageChange,
-    deletePost: removePost,
+    removePost,
     createPost: createNewPost,
-    setFilters: updateFilters,
-    currentFilters: filters,
-    refetch: fetchPostsData,
+    updateFilters,
+    refreshPosts: fetchPostsData,
   };
 };

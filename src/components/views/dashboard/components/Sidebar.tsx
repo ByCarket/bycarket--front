@@ -9,6 +9,7 @@ import {
   Users,
   Menu,
   X,
+  Gem,
 } from "lucide-react";
 import { useUserData } from "@/hooks/useUserData";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
@@ -22,7 +23,7 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const { userData } = useUserData();
-  const { isAdmin } = useRolePermissions();
+  const { isAdmin, isPremium } = useRolePermissions();
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const [imageKey, setImageKey] = useState<number>(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -45,7 +46,12 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: "premium", label: "Premium", icon: Crown },
   ];
 
-  const menuItems = isAdmin
+  const menuItems = isPremium
+    ? [
+        ...baseMenuItems,
+        { id: "premium-history", label: "Historial Premium", icon: Gem },
+      ]
+    : isAdmin
     ? [
         ...baseMenuItems,
         { id: "users", label: "Lista de usuarios", icon: Users },

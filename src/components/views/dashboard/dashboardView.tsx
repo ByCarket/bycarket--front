@@ -13,6 +13,7 @@ import UserPostsContent from "./components/UserPostsContent";
 import { useUserData } from "@/hooks/useUserData";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
 import DatabaseScrapperContent from "./components/DatabaseScrapperContent";
+import PremiumHistoryContent from "./components/PremiumHistoryContent";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -20,7 +21,7 @@ export default function Dashboard() {
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState("profile");
   const { loading, userData } = useUserData();
-  const { isAdmin } = useRolePermissions();
+  const { isAdmin, isPremium } = useRolePermissions();
 
   useEffect(() => {
     if (tabParam) {
@@ -31,10 +32,15 @@ export default function Dashboard() {
         "register-vehicle",
         "publish-vehicle",
         "premium",
+        "premium-history",
         "users",
         "user-posts",
         "database-scrapper",
       ];
+
+      if (isPremium) {
+        validTabs.push("premium");
+      }
 
       if (isAdmin) {
         validTabs.push("users");
@@ -73,6 +79,8 @@ export default function Dashboard() {
         return <VehicleForm />;
       case "premium":
         return <PremiumContent />;
+      case "premium-history":
+        return <PremiumHistoryContent />;
       case "users":
         return isAdmin ? <UserListContent /> : <ProfileContent />;
       case "user-posts":

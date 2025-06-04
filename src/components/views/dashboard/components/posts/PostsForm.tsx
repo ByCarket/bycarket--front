@@ -9,7 +9,12 @@ import { useSpinner } from "@/context/SpinnerContext";
 
 interface PostsFormProps {
   vehicle: VehicleResponse;
-  onSubmit: (vehicleId: string, description?: string) => Promise<void>;
+  onSubmit: (data: {
+    vehicleId: string;
+    description?: string;
+    price?: number;
+    isNegotiable: boolean;
+  }) => Promise<void>;
   onCancel: () => void;
   loading?: boolean;
 }
@@ -23,6 +28,8 @@ export default function PostsForm({
   const [description, setDescription] = useState<string>(
     vehicle.description || ""
   );
+  const [price, setPrice] = useState<number | null>(vehicle.price);
+  const [isNegotiable, setIsNegotiable] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { setLoading } = useSpinner();
 
@@ -30,7 +37,12 @@ export default function PostsForm({
     e.preventDefault();
     setLoading(true);
     try {
-      await onSubmit(vehicle.id, description);
+      await onSubmit({
+        vehicleId: vehicle.id,
+        description: description || undefined,
+        price: price || undefined,
+        isNegotiable,
+      });
       showSuccess("Publicación actualizada correctamente");
     } catch (error) {
       showError("Error al actualizar la publicación");
@@ -155,6 +167,43 @@ export default function PostsForm({
           </div>
 
           <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label
+                  htmlFor="price"
+                  className="block text-principal-blue font-medium mb-2"
+                >
+                  Precio
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  value={price ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setPrice(value === "" ? null : Number(value));
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-principal-blue focus:border-principal-blue"
+                  placeholder="Ingresa el precio"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center mt-8">
+                  <input
+                    type="checkbox"
+                    id="isNegotiable"
+                    checked={isNegotiable}
+                    onChange={(e) => setIsNegotiable(e.target.checked)}
+                    className="w-4 h-4 text-principal-blue border-gray-300 rounded focus:ring-principal-blue"
+                  />
+                  <label htmlFor="isNegotiable" className="ml-2 text-gray-700">
+                    El precio es negociable
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <label

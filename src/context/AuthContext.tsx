@@ -45,13 +45,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   initializeAuth: () => {
     const storedToken = getAuthToken();
     if (storedToken) {
-      set({ token: storedToken, isAuthenticated: true, loading: false });
+      set({ token: storedToken, isAuthenticated: true });
 
       getUserData()
         .then((userData) => {
           set({ user: userData, loading: false });
         })
-        .catch(() => {});
+        .catch(() => {
+          set({ loading: false }); // ⚠️ en caso de fallo
+        });
     } else {
       set({ loading: false });
     }

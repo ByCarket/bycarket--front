@@ -17,6 +17,7 @@ import {
 import { Modal } from "@/components/ui/Modal";
 import Image from "next/image";
 import { RoleBadge } from "@/components/ui/RoleBadge";
+import { useAuthStore } from "@/context/AuthContext";
 
 export default function ProfileContent() {
   const {
@@ -45,6 +46,7 @@ export default function ProfileContent() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuthStore();
 
   if (loading) {
     return (
@@ -266,6 +268,13 @@ export default function ProfileContent() {
     };
   };
 
+  const borderColorClass =
+    user?.role === "admin"
+      ? "border-purple-200"
+      : user?.role === "premium"
+      ? "border-yellow-200"
+      : "border-white";
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -313,39 +322,68 @@ export default function ProfileContent() {
                       typeof userData.image === "string" &&
                       userData.image.trim() !== "" ? (
                         <div
-                          className="relative w-48 h-48 rounded-full overflow-hidden cursor-pointer border-4 border-white shadow-2xl transform transition-all duration-300 group-hover:scale-105"
+                          className="relative w-48 h-48 rounded-full cursor-pointer transform transition-all duration-300 group-hover:scale-105"
                           onClick={handleImageClick}
                         >
-                          <Image
-                            src={userData.image}
-                            alt={userData.name || "Usuario"}
-                            fill
-                            className="object-cover"
-                            priority
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = "none";
-                            }}
-                          />
-                          {isUploading && (
-                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                              <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                          )}
+                          <div
+                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${
+                              user?.role === "admin"
+                                ? "bg-gradient-to-br from-purple-300 to-purple-600"
+                                : user?.role === "premium"
+                                ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                                : "bg-gradient-to-br from-gray-300 to-gray-500"
+                            }`}
+                          ></div>
+
+                          <div
+                            className={`relative w-full h-full rounded-full overflow-hidden border-4 shadow-2xl z-10 ${borderColorClass}`}
+                          >
+                            <Image
+                              src={userData.image}
+                              alt={userData.name || "Usuario"}
+                              fill
+                              className="object-cover"
+                              priority
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = "none";
+                              }}
+                            />
+                            {isUploading && (
+                              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
                         <div
-                          className="relative w-48 h-48 rounded-full bg-gradient-to-br from-[#103663] to-[#4a77a8] flex items-center justify-center text-white text-6xl font-bold cursor-pointer border-4 border-white shadow-2xl transform transition-all duration-300 group-hover:scale-105"
+                          className="relative w-48 h-48 rounded-full cursor-pointer transform transition-all duration-300 group-hover:scale-105"
                           onClick={handleImageClick}
                         >
-                          {userData?.name ? getInitials(userData.name) : "U"}
-                          {isUploading && (
-                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
-                              <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                            </div>
-                          )}
+                          <div
+                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${
+                              user?.role === "admin"
+                                ? "bg-gradient-to-br from-purple-300 to-purple-600"
+                                : user?.role === "premium"
+                                ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                                : "bg-gradient-to-br from-gray-300 to-gray-500"
+                            }`}
+                          ></div>
+
+                          <div
+                            className={`relative w-full h-full rounded-full bg-gradient-to-br from-[#103663] to-[#4a77a8] flex items-center justify-center text-white text-6xl font-bold border-4 shadow-2xl z-10 ${borderColorClass}`}
+                          >
+                            {userData?.name ? getInitials(userData.name) : "U"}
+                            {isUploading && (
+                              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full">
+                                <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
+
                       <button
                         onClick={handleImageClick}
                         className="absolute -bottom-2 -right-2 bg-gradient-to-r from-[#103663] to-[#4a77a8] text-white rounded-full p-3 shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-110 group-hover:rotate-12"

@@ -33,7 +33,7 @@ const slides: Slide[] = [
     title: "Beneficios exclusivos para miembros VIP",
     subtitle: "Automatizá tus publicaciones con tecnología inteligente",
     ctaText: "Hacete VIP",
-    ctaLink: "/dashboard/vip",
+    ctaLink: "/dashboard?tab=premium",
   },
 ];
 

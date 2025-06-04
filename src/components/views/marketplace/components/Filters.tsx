@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "@/hooks/useSearchParams";
+import { useSearchParams, type VehicleType } from "@/hooks/useSearchParams";
 import {
   Brand,
   Model,
@@ -24,6 +24,7 @@ export function Filters() {
     setPriceRange,
     setYearRange,
     setMileageRange,
+    resetParams,
   } = useSearchParams();
 
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -31,6 +32,10 @@ export function Filters() {
   const [versions, setVersions] = useState<Version[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [visibleBrands, setVisibleBrands] = useState(5);
+  const [visibleModels, setVisibleModels] = useState(5);
+  const [visibleVersions, setVisibleVersions] = useState(5);
+  const [visibleVehicleTypes, setVisibleVehicleTypes] = useState(5);
 
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
@@ -60,7 +65,20 @@ export function Filters() {
     setVersionId(newVersions.length ? newVersions : undefined);
   };
 
-  const vehicleTypes = [
+  const handleVehicleTypeChange = (typeValue: VehicleType) => {
+    const currentTypes = params.typeOfVehicle || [];
+    const newTypes = currentTypes.includes(typeValue)
+      ? currentTypes.filter((type) => type !== typeValue)
+      : [...currentTypes, typeValue];
+    setTypeOfVehicle(newTypes.length ? newTypes : undefined);
+  };
+
+  interface VehicleTypeOption {
+    value: VehicleType;
+    label: string;
+  }
+
+  const vehicleTypes: VehicleTypeOption[] = [
     { value: "SUV", label: "SUV" },
     { value: "PICKUP", label: "Pickup" },
     { value: "MINIVAN", label: "Minivan" },
@@ -100,15 +118,9 @@ export function Filters() {
 
   const clearFilters = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setBrandId(undefined);
-    setModelId(undefined);
-    setVersionId(undefined);
-    setTypeOfVehicle(undefined);
-    setCondition(undefined);
-    setCurrency(undefined);
-    setPriceRange(undefined, undefined);
-    setYearRange(undefined, undefined);
-    setMileageRange(undefined, undefined);
+    resetParams();
+    setModels([]);
+    setVersions([]);
   };
 
   useEffect(() => {
@@ -194,7 +206,7 @@ export function Filters() {
 
         {expandedSection === "brand" && (
           <div className="space-y-3 pl-2">
-            {brands.map((brand) => (
+            {brands.slice(0, visibleBrands).map((brand) => (
               <div key={brand.id} className="flex items-center">
                 <button
                   type="button"
@@ -212,6 +224,28 @@ export function Filters() {
                 <span>{brand.name}</span>
               </div>
             ))}
+            {brands.length > 5 && (
+              <div className="flex justify-center">
+                {visibleBrands < brands.length && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleBrands(visibleBrands + 5)}
+                    className="text-principal-blue text-sm hover:underline"
+                  >
+                    Mostrar más
+                  </button>
+                )}
+                {visibleBrands > 5 && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleBrands(visibleBrands - 5)}
+                    className="text-principal-blue text-sm hover:underline ml-4"
+                  >
+                    Mostrar menos
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -233,7 +267,7 @@ export function Filters() {
 
           {expandedSection === "model" && (
             <div className="space-y-3 pl-2">
-              {models.map((model) => (
+              {models.slice(0, visibleModels).map((model) => (
                 <div key={model.id} className="flex items-center">
                   <button
                     type="button"
@@ -251,6 +285,28 @@ export function Filters() {
                   <span>{model.name}</span>
                 </div>
               ))}
+              {models.length > 5 && (
+                <div className="flex justify-center">
+                  {visibleModels < models.length && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleModels(visibleModels + 5)}
+                      className="text-principal-blue text-sm hover:underline"
+                    >
+                      Mostrar más
+                    </button>
+                  )}
+                  {visibleModels > 5 && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleModels(visibleModels - 5)}
+                      className="text-principal-blue text-sm hover:underline ml-4"
+                    >
+                      Mostrar menos
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -273,7 +329,7 @@ export function Filters() {
 
           {expandedSection === "version" && (
             <div className="space-y-3 pl-2">
-              {versions.map((version) => (
+              {versions.slice(0, visibleVersions).map((version) => (
                 <div key={version.id} className="flex items-center">
                   <button
                     type="button"
@@ -291,52 +347,111 @@ export function Filters() {
                   <span>{version.name}</span>
                 </div>
               ))}
+              {versions.length > 5 && (
+                <div className="flex justify-center">
+                  {visibleVersions < versions.length && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleVersions(visibleVersions + 5)}
+                      className="text-principal-blue text-sm hover:underline"
+                    >
+                      Mostrar más
+                    </button>
+                  )}
+                  {visibleVersions > 5 && (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleVersions(visibleVersions - 5)}
+                      className="text-principal-blue text-sm hover:underline ml-4"
+                    >
+                      Mostrar menos
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
 
       <div className="space-y-3">
-        <label className="text-sm font-semibold text-gray-700 flex items-center">
-          <svg
-            className="w-4 h-4 mr-2 text-principal-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-            />
-          </svg>
-          Tipo de vehículo
-        </label>
-        <div className="relative">
-          <select
-            className="w-full appearance-none bg-white border-2 border-gray-200 rounded-lg py-3 px-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-principal-blue/20 focus:border-principal-blue transition-all duration-200 cursor-pointer"
-            value={params.typeOfVehicle || ""}
-            onChange={(e) =>
-              setTypeOfVehicle((e.target.value as any) || undefined)
-            }
-          >
-            <option value="">Todos los tipos</option>
-            {vehicleTypes.map((type) => (
-              <option
-                key={type.value}
-                value={type.value}
-                className="text-gray-700"
-              >
-                {type.label}
-              </option>
+        <button
+          type="button"
+          onClick={() => toggleSection("vehicleType")}
+          className="flex justify-between items-center w-full text-sm font-semibold text-gray-700"
+        >
+          <span className="flex items-center">
+            <svg
+              className="w-4 h-4 mr-2 text-principal-blue"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              />
+            </svg>
+            Tipo de vehículo
+          </span>
+          <FiChevronDown
+            className={`transition-transform ${
+              expandedSection === "vehicleType" ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {expandedSection === "vehicleType" && (
+          <div className="space-y-3 pl-2">
+            {vehicleTypes.slice(0, visibleVehicleTypes).map((type) => (
+              <div key={type.value} className="flex items-center">
+                <button
+                  type="button"
+                  onClick={() => handleVehicleTypeChange(type.value)}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 ${
+                    (params.typeOfVehicle || []).includes(type.value)
+                      ? "bg-principal-blue border-principal-blue"
+                      : "border-gray-300"
+                  }`}
+                >
+                  {(params.typeOfVehicle || []).includes(type.value) && (
+                    <FiCheck className="text-white w-3 h-3" />
+                  )}
+                </button>
+                <span>{type.label}</span>
+              </div>
             ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-            <FiChevronDown className="w-4 h-4" />
+            {vehicleTypes.length > 5 && (
+              <div className="flex justify-center">
+                {visibleVehicleTypes < vehicleTypes.length && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisibleVehicleTypes(visibleVehicleTypes + 5)
+                    }
+                    className="text-principal-blue text-sm hover:underline"
+                  >
+                    Mostrar más
+                  </button>
+                )}
+                {visibleVehicleTypes > 5 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisibleVehicleTypes(visibleVehicleTypes - 5)
+                    }
+                    className="text-principal-blue text-sm hover:underline ml-4"
+                  >
+                    Mostrar menos
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       <div className="space-y-3">
