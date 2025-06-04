@@ -37,12 +37,16 @@ export default function MyVehicleDetails({
   onClose: () => void;
   onUpdate: (updatedVehicle: VehicleResponse) => void;
 }) {
-  const [vehicle, setVehicle] = useState(initialVehicle);
+  const [vehicleState, setVehicleState] =
+    useState<VehicleResponse>(initialVehicle);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [newImages, setNewImages] = useState<File[]>([]);
   const { setLoading } = useSpinner();
+  const updateVehicleInState = useVehiclesStore(
+    (state) => state.updateVehicleInState
+  );
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -51,11 +55,15 @@ export default function MyVehicleDetails({
     };
   }, []);
 
+  useEffect(() => {
+    setVehicleState(initialVehicle);
+  }, [initialVehicle]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setVehicle((prev) => ({
+    setVehicleState((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -63,7 +71,7 @@ export default function MyVehicleDetails({
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setVehicle((prev) => ({
+    setVehicleState((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -71,43 +79,43 @@ export default function MyVehicleDetails({
 
   const handleSave = async () => {
     setLoading(true);
+    onClose();
     try {
-      const updatedVehicle = await updateVehicle(vehicle.id, {
-        brandId: vehicle.brand.id,
-        modelId: vehicle.model.id,
-        versionId: vehicle.version?.id,
-        year: vehicle.year,
-        price: vehicle.price,
-        currency: vehicle.currency,
-        mileage: vehicle.mileage,
-        typeOfVehicle: vehicle.typeOfVehicle,
-        condition: vehicle.condition,
-        description: vehicle.description,
-      });
-
+      const updatedData = {
+        brandId: vehicleState.brand.id,
+        modelId: vehicleState.model.id,
+        versionId: vehicleState.version?.id,
+        year: vehicleState.year,
+        price: vehicleState.price,
+        currency: vehicleState.currency,
+        mileage: vehicleState.mileage,
+        typeOfVehicle: vehicleState.typeOfVehicle,
+        condition: vehicleState.condition,
+        description: vehicleState.description,
+      };
+      const updatedVehicle = await updateVehicle(vehicleState.id, updatedData);
+      let finalVehicle = updatedVehicle;
       if (newImages.length > 0) {
         setIsUploading(true);
-        await uploadVehicleImages(vehicle.id, newImages);
-
-        const refreshedVehicle = await getVehicleById(vehicle.id);
-
-        setVehicle(refreshedVehicle);
+        await uploadVehicleImages(vehicleState.id, newImages);
+        finalVehicle = await getVehicleById(vehicleState.id);
         setNewImages([]);
-        setIsUploading(false);
-        onUpdate(refreshedVehicle);
-      } else {
-        onUpdate(updatedVehicle);
       }
-
-      setIsEditing(false);
-      showSuccess("Los cambios fueron guardados correctamente");
-      onClose();
+      updateVehicleInState(finalVehicle);
+      onUpdate(finalVehicle);
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
-      showError("Error al guardar los cambios. Por favor, inténtalo de nuevo.");
+      showError(
+        "Error al guardar los cambios. Los cambios no se guardaron correctamente."
+      );
     } finally {
       setLoading(false);
+      setIsUploading(false);
     }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setVehicleState(initialVehicle);
   };
 
   const removeVehicle = useVehiclesStore((state) => state.removeVehicle);
@@ -116,7 +124,7 @@ export default function MyVehicleDetails({
     showConfirm("¿Estás seguro de eliminar este vehículo?", async () => {
       setLoading(true);
       try {
-        const success = await removeVehicle(vehicle.id);
+        const success = await removeVehicle(vehicleState.id);
         if (success) {
           showSuccess("Vehículo eliminado correctamente");
           onClose();
@@ -133,8 +141,8 @@ export default function MyVehicleDetails({
     showConfirm("¿Estás seguro de eliminar esta imagen?", async () => {
       setLoading(true);
       try {
-        await deleteVehicleImage(vehicle.id, publicId);
-        setVehicle((prev) => ({
+        await deleteVehicleImage(vehicleState.id, publicId);
+        setVehicleState((prev) => ({
           ...prev,
           images:
             prev.images?.filter((img) => img.public_id !== publicId) || [],
@@ -155,13 +163,13 @@ export default function MyVehicleDetails({
   };
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = vehicle.images || [];
+  const images = vehicleState.images || [];
   const currentImage =
     images.length > 0
       ? images[currentImageIndex].secure_url
       : "/placeholder-vehicle.jpg";
-  const vehicleName = `${vehicle.brand.name} ${vehicle.model.name}${
-    vehicle.version?.name ? ` ${vehicle.version.name}` : ""
+  const vehicleName = `${vehicleState.brand.name} ${vehicleState.model.name}${
+    vehicleState.version?.name ? ` ${vehicleState.version.name}` : ""
   }`;
 
   const nextImage = () => {
@@ -180,7 +188,7 @@ export default function MyVehicleDetails({
             <div className="flex justify-between items-center">
               <div className="truncate pr-2">
                 <h2 className="text-xl md:text-2xl font-bold truncate">
-                  {vehicle.brand.name} {vehicle.model.name}
+                  {vehicleState.brand.name} {vehicleState.model.name}
                 </h2>
                 <p className="text-blue-100 opacity-90 text-sm">
                   Detalles del vehículo
@@ -200,7 +208,7 @@ export default function MyVehicleDetails({
               <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-lg md:rounded-xl overflow-hidden bg-white shadow-lg">
                 <Image
                   src={currentImage}
-                  alt={`${vehicle.brand.name} ${vehicle.model.name}`}
+                  alt={`${vehicleState.brand.name} ${vehicleState.model.name}`}
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -244,24 +252,58 @@ export default function MyVehicleDetails({
                   {images.map((image, index) => (
                     <div
                       key={image.public_id}
-                      className={`relative aspect-square w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 cursor-pointer rounded-md overflow-hidden ${
+                      className={`group relative aspect-square w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 cursor-pointer rounded-md overflow-hidden ${
                         index === currentImageIndex
                           ? "ring-2 ring-[#103663]"
                           : "opacity-70 hover:opacity-100"
                       }`}
-                      onClick={() => setCurrentImageIndex(index)}
                     >
                       <Image
                         src={image.secure_url}
-                        alt={`${vehicle.brand.name} ${
-                          vehicle.model.name
+                        alt={`${vehicleState.brand.name} ${
+                          vehicleState.model.name
                         } - Imagen ${index + 1}`}
                         fill
                         className="object-cover"
                         sizes="80px"
+                        onClick={() => setCurrentImageIndex(index)}
                       />
+                      {isEditing && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageDelete(image.public_id);
+                          }}
+                          className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                        >
+                          <FiTrash2 className="h-6 w-6 text-white" />
+                        </button>
+                      )}
                     </div>
                   ))}
+                </div>
+              )}
+              {isEditing && (
+                <div className="mt-4">
+                  <label
+                    htmlFor="image-upload"
+                    className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-[#103663] transition-colors"
+                  >
+                    <FiUpload className="h-5 w-5 text-gray-500" />
+                    <span className="text-gray-700">
+                      {newImages.length > 0
+                        ? `${newImages.length} imágenes seleccionadas`
+                        : "Agregar imágenes"}
+                    </span>
+                  </label>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
               )}
             </div>
@@ -273,9 +315,31 @@ export default function MyVehicleDetails({
                     <FiDollarSign className="h-6 w-6 md:h-8 md:w-8" />
                     <div>
                       <p className="text-blue-100 text-sm">Precio</p>
-                      <p className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                        {vehicle.currency} {vehicle.price.toLocaleString()}
-                      </p>
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            name="currency"
+                            value={vehicleState.currency}
+                            onChange={handleSelectChange}
+                            className="text-lg font-bold px-2 py-1 border rounded"
+                          >
+                            <option value="U$D">U$D</option>
+                            <option value="AR$">AR$</option>
+                          </select>
+                          <input
+                            type="number"
+                            name="price"
+                            value={vehicleState.price}
+                            onChange={handleInputChange}
+                            className="text-2xl sm:text-3xl md:text-4xl font-bold w-full px-2 py-1 border rounded"
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-2xl sm:text-3xl md:text-4xl font-bold">
+                          {vehicleState.currency}{" "}
+                          {vehicleState.price.toLocaleString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -292,7 +356,7 @@ export default function MyVehicleDetails({
                         Marca
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.brand.name}
+                        {vehicleState.brand.name}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -301,17 +365,17 @@ export default function MyVehicleDetails({
                         Modelo
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.model.name}
+                        {vehicleState.model.name}
                       </p>
                     </div>
-                    {vehicle.version && (
+                    {vehicleState.version && (
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500 flex items-center gap-2">
                           <FiInfo className="h-4 w-4" />
                           Versión
                         </p>
                         <p className="font-semibold text-[#103663]">
-                          {vehicle.version.name}
+                          {vehicleState.version.name}
                         </p>
                       </div>
                     )}
@@ -320,51 +384,121 @@ export default function MyVehicleDetails({
                         <FiCalendar className="h-4 w-4" />
                         Año
                       </p>
-                      <p className="font-semibold text-[#103663]">
-                        {vehicle.year}
-                      </p>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          name="year"
+                          value={vehicleState.year}
+                          onChange={handleInputChange}
+                          className="font-semibold text-[#103663] px-2 py-1 border rounded w-full"
+                        />
+                      ) : (
+                        <p className="font-semibold text-[#103663]">
+                          {vehicleState.year}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500 flex items-center gap-2">
                         <FiActivity className="h-4 w-4" />
                         Kilometraje
                       </p>
-                      <p className="font-semibold text-[#103663]">
-                        {vehicle.mileage.toLocaleString()} km
-                      </p>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          name="mileage"
+                          value={vehicleState.mileage}
+                          onChange={handleInputChange}
+                          className="font-semibold text-[#103663] px-2 py-1 border rounded w-full"
+                        />
+                      ) : (
+                        <p className="font-semibold text-[#103663]">
+                          {vehicleState.mileage.toLocaleString()} km
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500 flex items-center gap-2">
                         <FiInfo className="h-4 w-4" />
                         Condición
                       </p>
-                      <p className="font-semibold text-[#103663] capitalize">
-                        {vehicle.condition}
-                      </p>
+                      {isEditing ? (
+                        <select
+                          name="condition"
+                          value={vehicleState.condition}
+                          onChange={handleSelectChange}
+                          className="font-semibold text-[#103663] capitalize px-2 py-1 border rounded w-full"
+                        >
+                          <option value="new">Nuevo</option>
+                          <option value="used">Usado</option>
+                        </select>
+                      ) : (
+                        <p className="font-semibold text-[#103663] capitalize">
+                          {vehicleState.condition}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-1 sm:col-span-2">
                       <p className="text-sm text-gray-500 flex items-center gap-2">
                         <FiTag className="h-4 w-4" />
                         Tipo de vehículo
                       </p>
-                      <p className="font-semibold text-[#103663]">
-                        {vehicle.typeOfVehicle}
-                      </p>
+                      {isEditing ? (
+                        <select
+                          name="typeOfVehicle"
+                          value={vehicleState.typeOfVehicle}
+                          onChange={handleSelectChange}
+                          className="font-semibold text-[#103663] px-2 py-1 border rounded w-full"
+                        >
+                          <option value="SUV">SUV</option>
+                          <option value="PICKUP">Pickup</option>
+                          <option value="MINIVAN">Minivan</option>
+                          <option value="LIGHT_TRUCK">Camión Ligero</option>
+                          <option value="COUPE">Coupé</option>
+                          <option value="HATCHBACK">Hatchback</option>
+                          <option value="FURGON">Furgón</option>
+                          <option value="SEDAN">Sedán</option>
+                          <option value="VAN">Van</option>
+                          <option value="RURAL">Rural</option>
+                          <option value="CABRIOLET">Cabriolet</option>
+                          <option value="SPORTSCAR">Deportivo</option>
+                          <option value="ROADSTER">Roadster</option>
+                          <option value="ELECTRIC">Eléctrico</option>
+                          <option value="HYBRID">Híbrido</option>
+                          <option value="LUXURY">Lujo</option>
+                          <option value="OFF_ROAD">Todo Terreno</option>
+                          <option value="PICKUP_TRUCK">Camioneta Pickup</option>
+                          <option value="CROSSOVER">Crossover</option>
+                          <option value="COMPACT">Compacto</option>
+                        </select>
+                      ) : (
+                        <p className="font-semibold text-[#103663]">
+                          {vehicleState.typeOfVehicle}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                {vehicle.description && (
-                  <div className="bg-gray-50 p-4 rounded-xl">
-                    <h3 className="font-bold text-[#103663] mb-3 flex items-center gap-2">
-                      <FiInfo className="h-5 w-5" />
-                      Descripción
-                    </h3>
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h3 className="font-bold text-[#103663] mb-3 flex items-center gap-2">
+                    <FiInfo className="h-5 w-5" />
+                    Descripción
+                  </h3>
+                  {isEditing ? (
+                    <textarea
+                      name="description"
+                      value={vehicleState.description || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-gray-700 leading-relaxed border rounded"
+                      rows={4}
+                    />
+                  ) : (
                     <p className="text-gray-700 leading-relaxed">
-                      {vehicle.description}
+                      {vehicleState.description}
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -383,7 +517,7 @@ export default function MyVehicleDetails({
                       Guardar cambios
                     </button>
                     <button
-                      onClick={() => setIsEditing(false)}
+                      onClick={handleCancel}
                       className="flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
                     >
                       <FiX className="h-4 w-4" />
