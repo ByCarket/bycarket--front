@@ -21,7 +21,7 @@ export default function Footer() {
           </span>
         </Link>
 
-        <p className="text-center max-w-xl text-base text-gray-600">
+        <p className="text-center max-w-lg text-base text-gray-600">
           Conectamos compradores y vendedores de autos de forma simple, rápida y
           segura.
         </p>
@@ -37,23 +37,26 @@ export default function Footer() {
 
           <div className="flex flex-col sm:flex-row gap-5">
             <Link
-              href="#"
-              className="text-gray-600 hover:text-principal-blue transition"
-              aria-label="Instagram"
-            >
-              <Instagram size={22} />
-            </Link>
-            <Link
-              href="#"
-              className="text-gray-600 hover:text-principal-blue transition"
+              href="https://www.facebook.com/share/16QjEuYh3H/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-gray-600 hover:text-principal-blue transition"
               aria-label="Facebook"
             >
               <Facebook size={22} />
+              <span>/ByCarket</span>
+            </Link>
+            <Link
+              href="#"
+              className="flex items-center gap-1 text-gray-600 hover:text-principal-blue transition"
+              aria-label="Instagram"
+            >
+              <Instagram size={22} />
+              <span>/ByCarket</span>
             </Link>
           </div>
         </div>
       </div>
-      
 
       <div className="border-t border-principal-blue/20 w-full"></div>
 
