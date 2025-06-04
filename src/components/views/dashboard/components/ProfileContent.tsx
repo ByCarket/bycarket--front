@@ -272,27 +272,25 @@ export default function ProfileContent() {
     user?.role === "admin"
       ? "border-purple-200"
       : user?.role === "premium"
-      ? "border-yellow-200"
-      : "border-white";
+        ? "border-yellow-200"
+        : "border-white";
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {updateMessage && (
           <div
-            className={`mb-8 p-4 rounded-xl shadow-lg border-l-4 ${
-              updateMessage.type === "success"
+            className={`mb-8 p-4 rounded-xl shadow-lg border-l-4 ${updateMessage.type === "success"
                 ? "bg-gradient-to-r from-green-50 to-green-100 border-green-500 text-green-800"
                 : "bg-gradient-to-r from-red-50 to-red-100 border-red-500 text-red-800"
-            } transform transition-all duration-300 animate-pulse`}
+              } transform transition-all duration-300 animate-pulse`}
           >
             <div className="flex items-center">
               <div
-                className={`w-2 h-2 rounded-full mr-3 ${
-                  updateMessage.type === "success"
+                className={`w-2 h-2 rounded-full mr-3 ${updateMessage.type === "success"
                     ? "bg-green-500"
                     : "bg-red-500"
-                }`}
+                  }`}
               ></div>
               <span className="font-medium">{updateMessage.text}</span>
             </div>
@@ -319,20 +317,19 @@ export default function ProfileContent() {
                   <div className="relative inline-block mb-6">
                     <div className="relative group">
                       {userData?.image &&
-                      typeof userData.image === "string" &&
-                      userData.image.trim() !== "" ? (
+                        typeof userData.image === "string" &&
+                        userData.image.trim() !== "" ? (
                         <div
                           className="relative w-48 h-48 rounded-full cursor-pointer transform transition-all duration-300 group-hover:scale-105"
                           onClick={handleImageClick}
                         >
                           <div
-                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${
-                              user?.role === "admin"
+                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${user?.role === "admin"
                                 ? "bg-gradient-to-br from-purple-300 to-purple-600"
                                 : user?.role === "premium"
-                                ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
-                                : "bg-gradient-to-br from-gray-300 to-gray-500"
-                            }`}
+                                  ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                                  : "bg-gradient-to-br from-gray-300 to-gray-500"
+                              }`}
                           ></div>
 
                           <div
@@ -362,13 +359,12 @@ export default function ProfileContent() {
                           onClick={handleImageClick}
                         >
                           <div
-                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${
-                              user?.role === "admin"
+                            className={`absolute inset-0 rounded-full z-0 blur-md opacity-70 animate-pulse ${user?.role === "admin"
                                 ? "bg-gradient-to-br from-purple-300 to-purple-600"
                                 : user?.role === "premium"
-                                ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
-                                : "bg-gradient-to-br from-gray-300 to-gray-500"
-                            }`}
+                                  ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                                  : "bg-gradient-to-br from-gray-300 to-gray-500"
+                              }`}
                           ></div>
 
                           <div
@@ -599,13 +595,12 @@ export default function ProfileContent() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div
-                          className={`relative p-1 rounded-2xl transition-all duration-300 shadow-xl ${
-                            user?.role === "admin"
+                          className={`relative p-1 rounded-2xl transition-all duration-300 shadow-xl ${user?.role === "admin"
                               ? "bg-gradient-to-br from-purple-300 to-purple-500"
                               : user?.role === "premium"
-                              ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
-                              : "bg-gradient-to-br from-gray-300 to-gray-400"
-                          }`}
+                                ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                                : "bg-gradient-to-br from-gray-300 to-gray-400"
+                            }`}
                         >
                           <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
                             <div className="flex items-center gap-3 mb-3">
@@ -625,14 +620,14 @@ export default function ProfileContent() {
                           </div>
                         </div>
 
-                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 max-w-full">
                           <div className="flex items-center gap-3 mb-3">
                             <FaEnvelope className="text-[#103663] text-xl" />
                             <h3 className="text-lg font-semibold text-gray-700">
                               Email
                             </h3>
                           </div>
-                          <p className="text-xl font-medium text-gray-900 mb-2">
+                          <p className="text-xl font-medium text-gray-900 mb-2 break-words max-w-full">
                             {userData.email}
                           </p>
                           <p className="text-sm text-gray-500">
