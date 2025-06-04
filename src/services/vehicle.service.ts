@@ -65,6 +65,7 @@ export interface PostResponse {
   postDate: string;
   user: UserDataResponse;
   sellerId: string;
+  isNegotiable: boolean;
 }
 
 export interface GetPostsResponse {
@@ -273,14 +274,13 @@ export const deleteVehicleImage = async (
   }
 };
 
-export const createPost = async (
-  vehicleId: string,
-  description?: string
-): Promise<PostResponse> => {
-  const response = await http.post<ApiResponse<PostResponse>>("/posts", {
-    vehicleId,
-    description,
-  });
+export const createPost = async (data: {
+  vehicleId: string;
+  description?: string;
+  price?: number;
+  isNegotiable: boolean;
+}): Promise<PostResponse> => {
+  const response = await http.post<ApiResponse<PostResponse>>("/posts", data);
   return response.data.data;
 };
 

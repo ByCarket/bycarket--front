@@ -45,21 +45,29 @@ export default function PostContent() {
     loadInitialData();
   }, []);
 
-  const handleCreatePost = async (vehicleId: string, description?: string) => {
+  const handleCreatePost = async (data: {
+    vehicleId: string;
+    description?: string;
+    price?: number;
+    isNegotiable: boolean;
+  }) => {
     setIsCreating(true);
     setLoading(true);
     try {
-      const descriptionToUse = description || "Publicación sin descripción";
+      const descriptionToUse =
+        data.description || "Publicación sin descripción";
       const result = await createPost({
-        vehicleId,
+        vehicleId: data.vehicleId,
         description: descriptionToUse,
+        price: data.price,
+        isNegotiable: data.isNegotiable,
       });
       if (result.success && result.data) {
         showSuccess("Publicación creada exitosamente");
         setShowForm(false);
         setSelectedVehicle(null);
+        setSelectedPost(null);
         await refetchPosts();
-        setSelectedPost(result.data);
       } else {
         throw new Error(result.error || "Error al crear la publicación");
       }

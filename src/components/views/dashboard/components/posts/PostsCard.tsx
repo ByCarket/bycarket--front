@@ -42,7 +42,7 @@ export default function PostsCard({
   const vehicleImage =
     vehicle.images && vehicle.images.length > 0 && !imageError
       ? vehicle.images[0].secure_url
-      : "https://images.unsplash.com/photo-1494976688153-c14fd6dc2c32?w=400&h=300&fit=crop";
+      : "/assets/images/default-car.png";
 
   const vehicleName = `${vehicle.brand.name} ${vehicle.model.name} ${
     vehicle.version?.name || ""
@@ -175,8 +175,13 @@ export default function PostsCard({
             </span>
           </div>
 
-          <div className="text-2xl font-bold text-[#103663] mb-1">
+          <div className="text-2xl font-bold text-[#103663] mb-1 flex items-center gap-2">
             {vehicle.currency} {vehicle.price.toLocaleString()}
+            {post.isNegotiable && (
+              <span className="text-sm font-normal bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                Negociable
+              </span>
+            )}
           </div>
         </div>
 
