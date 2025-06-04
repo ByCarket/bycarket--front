@@ -57,6 +57,11 @@ export function ProductCard({ post }: ProductCardProps) {
           <span className="inline-block px-2 py-1 ml-2 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
             {post.vehicle.typeOfVehicle}
           </span>
+          {post.isNegotiable && (
+            <span className="inline-block px-2 py-1 ml-2 text-xs font-medium rounded-full bg-green-100 text-green-700">
+              Negociable
+            </span>
+          )}
         </div>
 
         <h3 className="text-lg font-semibold mb-1 text-gray-800">
