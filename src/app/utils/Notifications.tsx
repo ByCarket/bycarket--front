@@ -64,6 +64,20 @@ export const showInfo = (message: string, options: ToastOptions = {}) => {
   });
 };
 
+export const showPremiumRequired = (options: ToastOptions = {}) => {
+  toast(
+    <ToastContent
+      message="Debes actualizar a Premium para publicar más de 3 vehículos"
+      type="info"
+    />,
+    {
+      ...toastBaseOptions,
+      className: "toast toast-info",
+      ...options,
+    }
+  );
+};
+
 export const showConfirm = (
   message: ReactNode,
   onYes: () => void,

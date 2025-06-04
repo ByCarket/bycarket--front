@@ -30,6 +30,11 @@ interface LoginResponse {
     id: string;
     name: string;
     email: string;
+    role: string;
+    isActive?: boolean;
+    canPost?: boolean;
+    postsRemaining?: number;
+    lastPostDate?: string | null;
   };
 }
 
@@ -40,6 +45,9 @@ export interface GoogleProcessLoginResponse {
     name: string;
     role: string;
     isActive?: boolean;
+    canPost?: boolean;
+    postsRemaining?: number;
+    lastPostDate?: string | null;
   };
   message: string;
   token: string;
@@ -209,17 +217,29 @@ export interface CreatePostResponse {
     status: string;
     postDate: string;
     description?: string;
+    price: number;
+    isNegotiable: boolean;
   };
+  user: UserDataResponse;
   message: string;
 }
 
-export const createPost = async (
-  vehicleId: string,
-  description?: string
-): Promise<CreatePostResponse> => {
+export const createPost = async ({
+  vehicleId,
+  description,
+  price,
+  isNegotiable,
+}: {
+  vehicleId: string;
+  description?: string;
+  price?: number;
+  isNegotiable: boolean;
+}): Promise<CreatePostResponse> => {
   const response = await http.post<CreatePostResponse>("/posts", {
     vehicleId,
     description,
+    price,
+    isNegotiable,
   });
   return response.data;
 };
@@ -508,4 +528,4 @@ export const getUserInvoices = async (): Promise<any> => {
 export const updateUserSubscription = async (): Promise<any> => {
   const response = await http.patch<any>("/subscription/cancel");
   return response.data;
-}
+};

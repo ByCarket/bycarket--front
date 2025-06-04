@@ -1,14 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useUserData } from "@/hooks/useUserData";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { getUserData } from "@/services/api.service";
+import {
+  showError,
+  showSuccess,
+  showPremiumRequired,
+} from "@/app/utils/Notifications";
+import { useSpinner } from "@/context/SpinnerContext";
 import { PostResponse, VehicleResponse } from "@/services/vehicle.service";
 import { useFetchPosts } from "@/hooks/useFetchPosts";
 import { useFetchVehicles } from "@/hooks/useFetchVehicles";
 import PostsList from "./posts/PostsList";
 import PostsForm from "./posts/PostsForm";
 import PostsDetail from "./posts/PostsDetail";
-import { showSuccess, showError } from "@/app/utils/Notifications";
-import { useSpinner } from "@/context/SpinnerContext";
 
 export default function PostContent() {
   const [selectedPost, setSelectedPost] = useState<PostResponse | null>(null);
@@ -19,12 +26,13 @@ export default function PostContent() {
     useState<VehicleResponse | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const { setLoading } = useSpinner();
+  const { refetch: refetchUser } = useUserData();
 
   const {
     posts,
     loading: postsLoading,
     removePost: deletePost,
-    createPost,
+    createPost: createPostMutation,
     refreshPosts: refetchPosts,
   } = useFetchPosts(1, 100, {}, true);
 
@@ -33,6 +41,8 @@ export default function PostContent() {
     loading: vehiclesLoading,
     refetch: refetchVehicles,
   } = useFetchVehicles();
+
+  const { checkCanCreatePost, remainingPosts, isUser } = useRolePermissions();
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -54,27 +64,35 @@ export default function PostContent() {
     setIsCreating(true);
     setLoading(true);
     try {
-      const descriptionToUse =
-        data.description || "Publicación sin descripción";
-      const result = await createPost({
+      await createPostMutation({
         vehicleId: data.vehicleId,
-        description: descriptionToUse,
+        description: data.description || "Publicación sin descripción",
         price: data.price,
         isNegotiable: data.isNegotiable,
       });
-      if (result.success && result.data) {
-        showSuccess("Publicación creada exitosamente");
+
+      await refetchUser();
+
+      showSuccess("Publicación creada exitosamente");
+      setShowForm(false);
+      setSelectedVehicle(null);
+      setSelectedPost(null);
+      await refetchPosts();
+    } catch (error: any) {
+      if (
+        error?.response?.status === 403 ||
+        (error?.response?.data?.message &&
+          error.response.data.message.includes("upgrade to a premium"))
+      ) {
+        showPremiumRequired();
         setShowForm(false);
         setSelectedVehicle(null);
-        setSelectedPost(null);
-        await refetchPosts();
       } else {
-        throw new Error(result.error || "Error al crear la publicación");
+        showError("Error inesperado al crear la publicación");
       }
-    } catch (error) {
-      showError("Error inesperado al crear la publicación");
     } finally {
       setLoading(false);
+      setIsCreating(false);
     }
   };
 
@@ -89,10 +107,18 @@ export default function PostContent() {
     setShowForm(true);
   };
 
-  const handleNewPost = (vehicle: VehicleResponse) => {
-    setSelectedVehicle(vehicle);
-    setShowVehicleSelector(false);
-    setShowForm(true);
+  const handleNewPost = async (vehicle: VehicleResponse) => {
+    try {
+      setLoading(true);
+
+      setSelectedVehicle(vehicle);
+      setShowVehicleSelector(false);
+      setShowForm(true);
+    } catch (error) {
+      showError("Error al verificar los permisos de publicación");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeletePost = async (postId: string): Promise<boolean> => {
@@ -131,24 +157,35 @@ export default function PostContent() {
           </h2>
 
           {availableVehicles.length > 0 && (
-            <button
-              onClick={() => setShowVehicleSelector(true)}
-              className="bg-principal-blue text-white px-4 py-2 rounded-lg hover:bg-principal-blue/90 transition-colors flex items-center gap-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+            <div className="flex flex-col items-end gap-2">
+              {isUser && remainingPosts > 0 && (
+                <p className="text-sm text-gray-600">
+                  Te quedan {remainingPosts} publicaciones gratuitas
+                </p>
+              )}
+              <button
+                onClick={() => setShowVehicleSelector(true)}
+                disabled={remainingPosts === 0}
+                className={`bg-principal-blue text-white px-4 py-2 rounded-lg hover:bg-principal-blue/90 transition-colors flex items-center gap-2 
+                  ${
+                    remainingPosts === 0 ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Nueva Publicación
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Nueva Publicación
+              </button>
+            </div>
           )}
         </div>
 
