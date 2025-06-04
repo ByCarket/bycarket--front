@@ -86,26 +86,17 @@ export default function PostsForm({
   };
 
   const handleGenerateDescription = async () => {
-    if (!vehicle?.brand?.name || !vehicle?.model?.name) {
-      showError("Datos incompletos para generar la descripción");
+    if (!description.trim()) {
+      showError("La descripción está vacía");
       return;
     }
 
     setIsGenerating(true);
     setLoading(true);
     try {
-      const generatedDesc = await generateVehicleDescription({
-        brand: vehicle.brand.name,
-        model: vehicle.model.name,
-        version: vehicle.version?.name,
-        year: vehicle.year,
-        price: vehicle.price,
-        mileage: vehicle.mileage,
-        condition: vehicle.condition,
-        typeOfVehicle: vehicle.typeOfVehicle,
-      });
+      const generatedDesc = await generateVehicleDescription(description);
       setDescription(generatedDesc);
-      showSuccess("Descripción generada con éxito");
+      showSuccess("Descripción mejorada con éxito");
     } catch (error) {
       showError("Error al generar la descripción");
     } finally {
@@ -160,8 +151,8 @@ export default function PostsForm({
                     />
                   </div>
                 ) : (
-                  <div className="bg-gray-200 h-48 rounded-xl grid place-items-center">
-                    <p className="text-gray-500">Sin imagen</p>
+                  <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Sin imagen</span>
                   </div>
                 )}
               </div>
@@ -172,18 +163,20 @@ export default function PostsForm({
                 </h4>
 
                 {vehicle.version && (
-                  <p className="text-secondary-blue mb-2">
-                    {vehicle.version.name}
-                  </p>
+                  <p className="text-gray-600 mb-2">{vehicle.version.name}</p>
                 )}
 
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className="bg-principal-blue/10 text-principal-blue px-2 py-1 rounded-full text-xs">
-                    {vehicle.year}
-                  </span>
-                  <span className="bg-secondary-blue/10 text-secondary-blue px-2 py-1 rounded-full text-xs">
-                    {vehicle.typeOfVehicle}
-                  </span>
+                  {vehicle.year && (
+                    <span className="bg-principal-blue/10 text-principal-blue px-2 py-1 rounded text-sm">
+                      {vehicle.year}
+                    </span>
+                  )}
+                  {vehicle.condition && (
+                    <span className="bg-principal-blue/10 text-principal-blue px-2 py-1 rounded text-sm">
+                      {vehicle.condition}
+                    </span>
+                  )}
                 </div>
 
                 <p className="font-bold text-xl mb-2 text-principal-blue">
@@ -204,7 +197,7 @@ export default function PostsForm({
                   htmlFor="price"
                   className="block text-principal-blue font-medium mb-2"
                 >
-                  Precio <span className="text-red-500">*</span>
+                  Precio
                 </label>
                 <input
                   type="number"
@@ -221,11 +214,6 @@ export default function PostsForm({
                   }`}
                   placeholder="Ingresa el precio"
                 />
-                {!price && (
-                  <p className="text-red-500 text-sm mt-1">
-                    El precio es requerido
-                  </p>
-                )}
               </div>
 
               <div>
@@ -238,7 +226,7 @@ export default function PostsForm({
                     className="w-4 h-4 text-principal-blue border-gray-300 rounded focus:ring-principal-blue"
                   />
                   <label htmlFor="isNegotiable" className="ml-2 text-gray-700">
-                    El precio es negociable
+                    Precio negociable
                   </label>
                 </div>
               </div>
@@ -284,11 +272,9 @@ export default function PostsForm({
                     remainingPosts > 0 ? "text-green-800" : "text-yellow-800"
                   }`}
                 >
-                  {remainingPosts === Infinity
-                    ? "Tienes acceso ilimitado para publicar"
-                    : remainingPosts > 0
-                    ? `Te quedan ${remainingPosts} publicaciones gratuitas`
-                    : "Has alcanzado el límite de publicaciones gratuitas"}
+                  {remainingPosts > 0
+                    ? `Tienes ${remainingPosts} publicaciones disponibles`
+                    : "No tienes publicaciones disponibles"}
                 </p>
               </div>
 
