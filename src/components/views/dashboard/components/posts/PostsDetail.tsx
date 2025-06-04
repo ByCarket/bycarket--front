@@ -34,21 +34,26 @@ export default function PostsDetail({
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const vehicle = post.vehicle;
-  const images = vehicle.images || [];
+  const vehicle = post?.vehicle;
+  const images = vehicle?.images || [];
   const currentImage =
     images.length > 0
-      ? images[currentImageIndex].secure_url
-      : "/images/default-car.png";
+      ? images[currentImageIndex]?.secure_url
+      : "/assets/images/default-car.png";
 
-  const vehicleName = `${vehicle.brand.name} ${vehicle.model.name} ${
-    vehicle.version?.name || ""
-  }`;
-  const formattedDate = new Date(post.postDate).toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const vehicleName =
+    [vehicle?.brand?.name, vehicle?.model?.name, vehicle?.version?.name]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || "Vehículo sin nombre";
+
+  const formattedDate = post?.postDate
+    ? new Date(post.postDate).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "Fecha no disponible";
 
   const statusColors: Record<string, string> = {
     published: "bg-green-300 text-green-800",
@@ -65,16 +70,17 @@ export default function PostsDetail({
     draft: "Borrador",
     sold: "Vendido",
     inactive: "Inactivo",
-    default: post.status,
+    default: post?.status || "Estado desconocido",
   };
 
   const statusClass =
-    statusColors[post.status.toLowerCase()] || statusColors.default;
+    statusColors[post?.status?.toLowerCase() || "default"] ||
+    statusColors.default;
   const statusLabel =
-    statusText[post.status.toLowerCase()] || statusText.default;
+    statusText[post?.status?.toLowerCase() || "default"] || statusText.default;
 
   const handleDelete = async () => {
-    if (!onDelete) return;
+    if (!onDelete || !post?.id) return;
 
     if (confirm("¿Estás seguro de eliminar esta publicación?")) {
       setIsDeleting(true);
@@ -88,11 +94,17 @@ export default function PostsDetail({
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    if (images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    if (images.length > 0) {
+      setCurrentImageIndex(
+        (prev) => (prev - 1 + images.length) % images.length
+      );
+    }
   };
 
   return (
@@ -200,8 +212,14 @@ export default function PostsDetail({
                     <div>
                       <p className="text-blue-100 text-sm">Precio</p>
                       <p className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                        {vehicle.currency} {vehicle.price.toLocaleString()}
+                        {vehicle?.currency}{" "}
+                        {vehicle?.price?.toLocaleString() ?? "N/A"}
                       </p>
+                      {post?.isNegotiable && (
+                        <span className="mt-2 inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                          Negociable
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -218,7 +236,7 @@ export default function PostsDetail({
                         Marca
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.brand.name}
+                        {vehicle?.brand?.name ?? "N/A"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -227,10 +245,10 @@ export default function PostsDetail({
                         Modelo
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.model.name}
+                        {vehicle?.model?.name ?? "N/A"}
                       </p>
                     </div>
-                    {vehicle.version && (
+                    {vehicle?.version?.name && (
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500 flex items-center gap-2">
                           <FiInfo className="h-4 w-4" />
@@ -247,7 +265,7 @@ export default function PostsDetail({
                         Año
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.year}
+                        {vehicle?.year ?? "N/A"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -256,7 +274,9 @@ export default function PostsDetail({
                         Kilometraje
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.mileage.toLocaleString()} km
+                        {vehicle?.mileage
+                          ? `${vehicle.mileage.toLocaleString()} km`
+                          : "N/A"}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -265,7 +285,7 @@ export default function PostsDetail({
                         Condición
                       </p>
                       <p className="font-semibold text-[#103663] capitalize">
-                        {vehicle.condition}
+                        {vehicle?.condition ?? "N/A"}
                       </p>
                     </div>
                     <div className="space-y-1 sm:col-span-2">
@@ -274,13 +294,13 @@ export default function PostsDetail({
                         Tipo de vehículo
                       </p>
                       <p className="font-semibold text-[#103663]">
-                        {vehicle.typeOfVehicle}
+                        {vehicle?.typeOfVehicle ?? "N/A"}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {vehicle.description && (
+                {vehicle?.description && (
                   <div className="bg-gray-50 p-4 rounded-xl">
                     <h3 className="font-bold text-[#103663] mb-3 flex items-center gap-2">
                       <FiInfo className="h-5 w-5" />

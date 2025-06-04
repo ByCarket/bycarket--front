@@ -48,7 +48,10 @@ export const useFetchPosts = (
       if (postId) {
         const post = await getPostById(postId);
         setSinglePost(post);
-        setPosts(prevPosts => [post, ...prevPosts.filter(p => p.id !== post.id)]);
+        setPosts((prevPosts) => [
+          post,
+          ...prevPosts.filter((p) => p.id !== post.id),
+        ]);
         setTotalItems(1);
         setTotalPages(1);
         return;
@@ -122,13 +125,12 @@ export const useFetchPosts = (
   const createNewPost = async (data: {
     vehicleId: string;
     description?: string;
+    price?: number;
+    isNegotiable: boolean;
   }) => {
     try {
       setLoading(true);
-      const response = await createPostService(
-        data.vehicleId,
-        data.description
-      );
+      const response = await createPostService(data);
       if (!response) {
         throw new Error("No se recibió respuesta del servidor");
       }
