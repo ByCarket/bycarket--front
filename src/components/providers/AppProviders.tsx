@@ -6,7 +6,7 @@ import React from "react";
 import ChatBot from "@/components/ui/ChatBot";
 import { NotificationsContainer } from "@/app/utils/Notifications";
 import { SpinnerProvider } from "@/context/SpinnerContext";
-import AuthInitializer from "./AuthInitializer"; // 👈 IMPORTANTE
+import AuthInitializer from "./AuthInitializer";
 
 interface AppProvidersProps {
   children: React.ReactNode;

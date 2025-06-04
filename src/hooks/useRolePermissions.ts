@@ -1,48 +1,64 @@
-import { useEffect, useState } from "react";
-import { getPosts } from "@/services/vehicle.service";
 import { useUserData } from "@/hooks/useUserData";
+import { useEffect, useState } from "react";
+import { getMyPosts } from "@/services/vehicle.service";
 
 export const useRolePermissions = () => {
   const { userData, loading: userDataLoading } = useUserData();
   const [postCount, setPostCount] = useState(0);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
+  const role = userData?.role;
+  const isAdmin = role === "admin";
+  const isPremium = role === "premium" || isAdmin;
+  const isUser = role === "user";
+
+  const maxFreePosts = 3;
+
   useEffect(() => {
     const fetchPostCount = async () => {
-      if (!userData?.id) return;
-
-      setLoadingPosts(true);
       try {
-        const response = await getPosts(1, 1, { userId: userData.id });
-        setPostCount(response.total || 0);
+        const posts = await getMyPosts();
+        setPostCount(Array.isArray(posts) ? posts.length : 0);
       } catch (error) {
-        console.error("Error contando posts:", error);
         setPostCount(0);
       } finally {
         setLoadingPosts(false);
       }
     };
 
-    fetchPostCount();
-  }, [userData?.id]);
+    if (!isAdmin && !isPremium) {
+      fetchPostCount();
+    } else {
+      setLoadingPosts(false);
+    }
+  }, [isAdmin, isPremium]);
 
-  const role = userData?.role;
-  const isAdmin = role === "admin";
-  const isPremium = role === "premium" || isAdmin;
+  const checkCanCreatePost = async () => {
+    if (isAdmin || isPremium) return true;
+    if (!isUser) return false;
+    return postCount < maxFreePosts;
+  };
 
-  const maxFreePosts = 3;
-  const canCreatePost = isAdmin || isPremium || postCount < maxFreePosts;
+  const canCreatePost =
+    isAdmin || isPremium || (isUser && postCount < maxFreePosts);
   const remainingPosts =
-    isAdmin || isPremium ? Infinity : Math.max(maxFreePosts - postCount, 0);
+    isAdmin || isPremium
+      ? Infinity
+      : isUser
+      ? Math.max(maxFreePosts - postCount, 0)
+      : 0;
 
   return {
     loading: userDataLoading || loadingPosts,
     isAdmin,
     isPremium,
+    isUser,
     isLoggedIn: !!userData,
 
     canCreatePost,
     remainingPosts,
+    checkCanCreatePost,
+    postCount,
 
     canAccessAdminPanel: isAdmin,
     canAccessAIGenerator: isPremium,

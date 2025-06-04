@@ -4,8 +4,13 @@ import { useState } from "react";
 import { VehicleResponse } from "@/services/vehicle.service";
 import { generateVehicleDescription } from "@/services/vehicle.service";
 import GenerateAIButton from "@/components/ui/GenerateAIButton";
-import { showError, showSuccess } from "@/app/utils/Notifications";
+import {
+  showError,
+  showSuccess,
+  showPremiumRequired,
+} from "@/app/utils/Notifications";
 import { useSpinner } from "@/context/SpinnerContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface PostsFormProps {
   vehicle: VehicleResponse;
@@ -14,7 +19,7 @@ interface PostsFormProps {
     description?: string;
     price?: number;
     isNegotiable: boolean;
-  }) => Promise<void>;
+  }) => Promise<"PREMIUM_REQUIRED" | void>;
   onCancel: () => void;
   loading?: boolean;
 }
@@ -32,20 +37,49 @@ export default function PostsForm({
   const [isNegotiable, setIsNegotiable] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { setLoading } = useSpinner();
+  const { checkCanCreatePost, canCreatePost, remainingPosts } =
+    useRolePermissions();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!price || price <= 0) {
+      showError("El precio es requerido y debe ser mayor a 0");
+      return;
+    }
+
     setLoading(true);
+
     try {
-      await onSubmit({
+      const canCreate = await checkCanCreatePost();
+      if (!canCreate) {
+        showPremiumRequired();
+        return;
+      }
+
+      const result = await onSubmit({
         vehicleId: vehicle.id,
         description: description || undefined,
         price: price || undefined,
         isNegotiable,
       });
-      showSuccess("Publicación actualizada correctamente");
-    } catch (error) {
-      showError("Error al actualizar la publicación");
+
+      if (result === "PREMIUM_REQUIRED") {
+        showPremiumRequired();
+      } else {
+        showSuccess("Publicación creada correctamente");
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        showPremiumRequired();
+      } else if (error?.response?.data?.message) {
+        showError(error.response.data.message);
+      } else {
+        showError(
+          "Error al publicar el vehículo. Por favor, intente nuevamente."
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -145,22 +179,19 @@ export default function PostsForm({
 
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <span className="bg-principal-blue/10 text-principal-blue px-2 py-1 rounded-full text-xs">
-                    {vehicle.typeOfVehicle}
+                    {vehicle.year}
                   </span>
                   <span className="bg-secondary-blue/10 text-secondary-blue px-2 py-1 rounded-full text-xs">
-                    {vehicle.condition}
-                  </span>
-                  <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                    {vehicle.year}
+                    {vehicle.typeOfVehicle}
                   </span>
                 </div>
 
                 <p className="font-bold text-xl mb-2 text-principal-blue">
-                  {vehicle.currency} {vehicle.price.toLocaleString()}
+                  ${vehicle.price?.toLocaleString()}
                 </p>
 
                 <p className="text-gray-600 text-sm">
-                  {vehicle.mileage.toLocaleString()} km
+                  {vehicle.mileage?.toLocaleString()} km
                 </p>
               </div>
             </div>
@@ -173,7 +204,7 @@ export default function PostsForm({
                   htmlFor="price"
                   className="block text-principal-blue font-medium mb-2"
                 >
-                  Precio
+                  Precio <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -181,11 +212,20 @@ export default function PostsForm({
                   value={price ?? ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setPrice(value === "" ? null : Number(value));
+                    setPrice(value ? Number(value) : null);
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-principal-blue focus:border-principal-blue"
+                  required
+                  min="1"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-principal-blue focus:border-principal-blue ${
+                    !price ? "border-red-300" : "border-gray-300"
+                  }`}
                   placeholder="Ingresa el precio"
                 />
+                {!price && (
+                  <p className="text-red-500 text-sm mt-1">
+                    El precio es requerido
+                  </p>
+                )}
               </div>
 
               <div>
@@ -231,49 +271,48 @@ export default function PostsForm({
               </p>
             </div>
 
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={loading}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            <div className="flex flex-col gap-4">
+              <div
+                className={`rounded-lg p-4 text-sm ${
+                  remainingPosts > 0
+                    ? "bg-green-50 border border-green-200 text-green-800"
+                    : "bg-yellow-50 border border-yellow-200 text-yellow-800"
+                }`}
               >
-                Cancelar
-              </button>
+                <p
+                  className={`text-sm ${
+                    remainingPosts > 0 ? "text-green-800" : "text-yellow-800"
+                  }`}
+                >
+                  {remainingPosts === Infinity
+                    ? "Tienes acceso ilimitado para publicar"
+                    : remainingPosts > 0
+                    ? `Te quedan ${remainingPosts} publicaciones gratuitas`
+                    : "Has alcanzado el límite de publicaciones gratuitas"}
+                </p>
+              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-principal-blue text-white rounded-lg hover:bg-principal-blue/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Publicando...
-                  </>
-                ) : (
-                  "Publicar vehículo"
-                )}
-              </button>
+              <div className="flex justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  disabled={loading}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !canCreatePost}
+                  className={`px-4 py-2 text-white rounded-lg transition-colors ${
+                    loading || !canCreatePost
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-principal-blue hover:bg-principal-blue/90"
+                  }`}
+                >
+                  {loading ? "Publicando..." : "Publicar"}
+                </button>
+              </div>
             </div>
           </form>
         </div>
