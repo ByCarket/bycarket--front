@@ -95,7 +95,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-white">
       <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
-      <main className="flex-1 p-6 md:p-8">{renderContent()}</main>
+      <main className="flex-1 p-2">{renderContent()}</main>
     </div>
   );
 }

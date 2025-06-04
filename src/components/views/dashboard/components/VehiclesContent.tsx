@@ -49,8 +49,8 @@ export default function VehiclesContent() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center border-b pb-4">
+    <div className="container mx-auto py-6 px-4">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-principal-blue">
           Mis vehículos
         </h1>
