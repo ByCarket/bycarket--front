@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           set({ user: userData, loading: false });
         })
         .catch(() => {
-          set({ loading: false }); // ⚠️ en caso de fallo
+          set({ loading: false });
         });
     } else {
       set({ loading: false });
