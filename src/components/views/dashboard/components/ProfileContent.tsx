@@ -598,21 +598,31 @@ export default function ProfileContent() {
                       </h2>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center gap-3 mb-3">
-                            <FaUser className="text-[#103663] text-xl" />
-                            <h3 className="text-lg font-semibold text-gray-700">
-                              Nombre
-                            </h3>
+                        <div
+                          className={`relative p-1 rounded-2xl transition-all duration-300 shadow-xl ${
+                            user?.role === "admin"
+                              ? "bg-gradient-to-br from-purple-300 to-purple-500"
+                              : user?.role === "premium"
+                              ? "bg-gradient-to-br from-yellow-300 to-yellow-500"
+                              : "bg-gradient-to-br from-gray-300 to-gray-400"
+                          }`}
+                        >
+                          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
+                            <div className="flex items-center gap-3 mb-3">
+                              <FaUser className="text-[#103663] text-xl" />
+                              <h3 className="text-lg font-semibold text-gray-700">
+                                Nombre
+                              </h3>
+                            </div>
+                            <p className="text-xl font-medium text-gray-900 mb-2">
+                              {userData.name}
+                            </p>
+                            <RoleBadge />
+                            <p className="text-sm text-gray-500 mt-2">
+                              Tu nombre puede aparecer en tus publicaciones o
+                              anuncios.
+                            </p>
                           </div>
-                          <p className="text-xl font-medium text-gray-900 mb-2">
-                            {userData.name}
-                          </p>
-                          <RoleBadge />
-                          <p className="text-sm text-gray-500 mt-2">
-                            Tu nombre puede aparecer en tus publicaciones o
-                            anuncios.
-                          </p>
                         </div>
 
                         <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300">
