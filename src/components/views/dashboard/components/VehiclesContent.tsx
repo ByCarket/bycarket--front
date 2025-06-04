@@ -28,6 +28,7 @@ export default function VehiclesContent() {
       const success = await deleteVehicle(id);
       if (success && selectedVehicle?.id === id) {
         setSelectedVehicle(null);
+        setIsModalOpen(false);
         showSuccess("Vehículo eliminado correctamente");
       }
       return success;
@@ -40,8 +41,16 @@ export default function VehiclesContent() {
   };
 
   const handleUpdateVehicle = (updatedVehicle: VehicleResponse) => {
-    setSelectedVehicle(updatedVehicle);
     showSuccess("Vehículo actualizado correctamente");
+    setSelectedVehicle(updatedVehicle);
+    setIsModalOpen(false);
+    refetch();
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedVehicle(null), 300);
+    refetch();
   };
 
   const handleAddVehicle = () => {
@@ -87,10 +96,7 @@ export default function VehiclesContent() {
           {isModalOpen && selectedVehicle && (
             <MyVehicleDetails
               vehicle={selectedVehicle}
-              onClose={() => {
-                setIsModalOpen(false);
-                setTimeout(() => setSelectedVehicle(null), 300);
-              }}
+              onClose={handleModalClose}
               onUpdate={handleUpdateVehicle}
             />
           )}
