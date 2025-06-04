@@ -562,6 +562,6 @@ export const updateUserSubscription = async (): Promise<any> => {
 };
 
 export const getAllUserInvoices = async (): Promise<Invoice[]> => {
-  const response = await http.get<{ data: Invoice[] }>("/invoices/me");
-  return response.data.data;
+  const response = await http.get<Invoice[]>("/invoices/me");
+  return response.data || [];
 };
