@@ -560,3 +560,8 @@ export const updateUserSubscription = async (): Promise<any> => {
   const response = await http.patch<any>("/subscription/cancel");
   return response.data;
 };
+
+export const getAllUserInvoices = async (): Promise<Invoice[]> => {
+  const response = await http.get<{ data: Invoice[] }>("/invoices/me");
+  return response.data.data;
+};
