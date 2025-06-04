@@ -10,6 +10,7 @@ import {
   FiEdit3,
 } from "react-icons/fi";
 import { PostResponse } from "@/services/vehicle.service";
+import { showConfirm } from "@/app/utils/Notifications";
 
 type PostsCardProps = {
   post: PostResponse;
@@ -29,7 +30,11 @@ export default function PostsCard({
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onDelete) {
-      onDelete(post.id);
+      showConfirm(
+        "¿Estás seguro de eliminar esta publicación?",
+        () => onDelete(post.id),
+        undefined
+      );
     }
   };
 
