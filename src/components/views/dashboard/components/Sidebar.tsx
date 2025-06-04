@@ -46,17 +46,18 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: "premium", label: "Premium", icon: Crown },
   ];
 
-  const menuItems = isPremium
-    ? [
-        ...baseMenuItems,
-        { id: "premium-history", label: "Historial Premium", icon: Gem },
-      ]
-    : isAdmin
+  const menuItems = isAdmin
     ? [
         ...baseMenuItems,
         { id: "users", label: "Lista de usuarios", icon: Users },
         { id: "user-posts", label: "Lista de publicaciones", icon: FileText },
         { id: "database-scrapper", label: "Scrapper", icon: FileText },
+        { id: "premium-history", label: "Historial Premium", icon: Gem },
+      ]
+    : isPremium
+    ? [
+        ...baseMenuItems,
+        { id: "premium-history", label: "Historial Premium", icon: Gem },
       ]
     : baseMenuItems;
 
