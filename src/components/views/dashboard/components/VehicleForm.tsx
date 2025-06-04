@@ -156,7 +156,6 @@ const VehicleForm: React.FC = () => {
 
         const backendValues = {
           ...values,
-          condition: values.condition === "Nuevo" ? "new" : "used",
         };
 
         await submitVehicle(backendValues);
