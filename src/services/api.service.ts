@@ -520,8 +520,39 @@ export const getInvoiceById = async (id: string): Promise<any> => {
   return response.data;
 };
 
-export const getUserInvoices = async (): Promise<any> => {
-  const response = await http.get<any>("/subscription/me");
+export enum StatusInvoice {
+  DRAFT = "draft",
+  OPEN = "open",
+  PAID = "paid",
+  UNCOLLECTIBLE = "uncollectible",
+  VOID = "void",
+}
+
+export interface Invoice {
+  id: string;
+  hosted_invoice_url: string;
+  invoice_pdf: string;
+  period_end: string;
+  period_start: string;
+  status: string;
+  total: string;
+  amount_paid: string;
+}
+
+export interface SubscriptionResponse {
+  id: string;
+  invoices: Invoice[];
+  started_at: string;
+  latest_invoice: string;
+  status: string;
+  cancel_at: string | null;
+  cancel_at_period_end: boolean;
+  canceled_at: string | null;
+  ended_at: string | null;
+}
+
+export const getUserInvoices = async (): Promise<SubscriptionResponse> => {
+  const response = await http.get<SubscriptionResponse>("/subscription/me");
   return response.data;
 };
 
