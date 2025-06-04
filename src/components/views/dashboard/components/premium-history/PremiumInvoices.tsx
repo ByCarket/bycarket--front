@@ -12,56 +12,20 @@ import {
 import {
   getUserInvoices,
   updateUserSubscription,
+  StatusInvoice,
+  type SubscriptionResponse,
+  type Invoice,
 } from "@/services/api.service";
-
 import { showError, showSuccess } from "@/app/utils/Notifications";
 
-export enum StatusInvoice {
-  PAID = "paid",
-  UNPAID = "unpaid",
-  PENDING = "pending",
-  CANCELED = "canceled",
-}
-
-export interface Invoice {
-  id: string;
-  hosted_invoice_url: string;
-  invoice_pdf: string;
-  period_end: Date;
-  period_start: Date;
-  status: StatusInvoice | null;
-  total: number;
-  amount_paid: number;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
-
-export interface Subscription {
-  id: string;
-  status: string;
-  current_period_start: Date;
-  current_period_end: Date;
-  plan_name?: string;
-  invoices: Invoice[];
-}
-
-export interface SubscriptionResponse {
-  user: User;
-  subscription: Subscription;
-}
-
-const formatCurrency = (amount: number): string => {
+const formatCurrency = (amount: string): string => {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
-  }).format(amount);
+  }).format(Number(amount));
 };
 
-const formatDate = (date: Date): string => {
+const formatDate = (date: string): string => {
   return new Intl.DateTimeFormat("es-AR", {
     year: "numeric",
     month: "long",
@@ -199,7 +163,7 @@ export default function InvoiceSection() {
     );
   }
 
-  if (!subscriptionData?.subscription?.invoices?.length) {
+  if (!subscriptionData?.invoices?.length) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="p-4 md:p-8">
@@ -215,8 +179,7 @@ export default function InvoiceSection() {
     );
   }
 
-  const { user, subscription } = subscriptionData;
-  const invoices = subscription.invoices.sort(
+  const invoices = subscriptionData.invoices.sort(
     (a, b) =>
       new Date(b.period_end).getTime() - new Date(a.period_end).getTime()
   );
