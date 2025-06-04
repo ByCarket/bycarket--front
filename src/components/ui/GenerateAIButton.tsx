@@ -10,7 +10,11 @@ type GenerateAIButtonProps = {
   disabled?: boolean;
 };
 
-const GenerateAIButton = ({ onClick, isGenerating = false, disabled = false }: GenerateAIButtonProps) => {
+const GenerateAIButton = ({
+  onClick,
+  isGenerating = false,
+  disabled = false,
+}: GenerateAIButtonProps) => {
   const { user } = useAuthStore();
   const isPremiumUser = user?.role === "premium" || user?.role === "admin";
 
