@@ -84,9 +84,9 @@ export default function HomeBannerSection() {
             <Image
               src={slides[currentSlide].image}
               alt={slides[currentSlide].title}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-[50px]"
+              fill
+              sizes="(max-width: 768px) 100vw, 80vw"
+              className="object-cover rounded-[50px]"
               priority
             />
             <div className="absolute inset-0 bg-black/40 rounded-[50px]" />

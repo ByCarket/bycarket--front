@@ -35,6 +35,17 @@ const VehicleForm: React.FC = () => {
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [showVersionDropdown, setShowVersionDropdown] = useState(false);
+
+  // NUEVOS ESTADOS Y REFS PARA SELECTORES PERSONALIZADOS
+  const [showTypeOfVehicleDropdown, setShowTypeOfVehicleDropdown] = useState(false);
+  const [showConditionDropdown, setShowConditionDropdown] = useState(false);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+
+  const typeOfVehicleDropdownRef = useRef<HTMLDivElement>(null);
+  const conditionDropdownRef = useRef<HTMLDivElement>(null);
+  const currencyDropdownRef = useRef<HTMLDivElement>(null);
+  // FIN NUEVOS ESTADOS Y REFS
+
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
@@ -52,6 +63,16 @@ const VehicleForm: React.FC = () => {
   const filteredVersions = versions.filter((version) =>
     version.name.toLowerCase().includes(versionSearch.toLowerCase())
   );
+
+  // Opciones para los nuevos selectores personalizados
+  const vehicleTypes = [
+    "SUV", "PICKUP", "MINIVAN", "LIGHT_TRUCK", "COUPE", "HATCHBACK", "FURGON",
+    "SEDAN", "VAN", "RURAL", "CABRIOLET", "SPORTSCAR", "ROADSTER", "ELECTRIC",
+    "HYBRID", "LUXURY", "OFF_ROAD", "PICKUP_TRUCK", "CROSSOVER", "COMPACT"
+  ];
+  const conditions = ["new", "used"];
+  const currencies = ["U$D", "AR$"];
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,6 +94,26 @@ const VehicleForm: React.FC = () => {
       ) {
         setShowVersionDropdown(false);
       }
+      // CERRAR NUEVOS SELECTORES PERSONALIZADOS
+      if (
+        typeOfVehicleDropdownRef.current &&
+        !typeOfVehicleDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowTypeOfVehicleDropdown(false);
+      }
+      if (
+        conditionDropdownRef.current &&
+        !conditionDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowConditionDropdown(false);
+      }
+      if (
+        currencyDropdownRef.current &&
+        !currencyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCurrencyDropdown(false);
+      }
+      // FIN CERRAR NUEVOS SELECTORES PERSONALIZADOS
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -183,6 +224,9 @@ const VehicleForm: React.FC = () => {
       setShowBrandDropdown(false);
       setShowModelDropdown(false);
       setShowVersionDropdown(false);
+      setShowTypeOfVehicleDropdown(false); // Reset para nuevos selectores
+      setShowConditionDropdown(false);     // Reset para nuevos selectores
+      setShowCurrencyDropdown(false);      // Reset para nuevos selectores
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -263,6 +307,27 @@ const VehicleForm: React.FC = () => {
     setShowVersionDropdown(false);
   };
 
+  // NUEVAS FUNCIONES PARA SELECTORES PERSONALIZADOS
+  const handleTypeOfVehicleSelect = (type: string) => {
+    formik.setFieldValue("typeOfVehicle", type);
+    setShowTypeOfVehicleDropdown(false);
+  };
+
+  const handleConditionSelect = (condition: string) => {
+    formik.setFieldValue("condition", condition);
+    setShowConditionDropdown(false);
+    // Si la condición es "new", resetea el kilometraje a 0
+    if (condition === "new") {
+        formik.setFieldValue("mileage", 0);
+    }
+  };
+
+  const handleCurrencySelect = (currency: string) => {
+    formik.setFieldValue("currency", currency);
+    setShowCurrencyDropdown(false);
+  };
+  // FIN NUEVAS FUNCIONES
+
   const allFieldsValid =
     formik.values.brandId &&
     formik.values.modelId &&
@@ -277,7 +342,7 @@ const VehicleForm: React.FC = () => {
     formik.values.images.length > 0;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+    <div className="max-w-4xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow-sm"> {/* AJUSTADO EL PADDING */}
       <h2 className="text-2xl font-bold text-principal-blue mb-6">
         Registrar Vehículo
       </h2>
@@ -311,6 +376,9 @@ const VehicleForm: React.FC = () => {
                     formik.setFieldValue("modelId", "");
                     formik.setFieldValue("versionId", "");
                     setBrandSearch("");
+                    setModelSearch("");
+                    setVersionSearch("");
+                    setShowBrandDropdown(false); // Asegura que el dropdown se cierre al limpiar
                   }}
                 >
                   <X className="h-4 w-4 text-gray-400" />
@@ -323,7 +391,8 @@ const VehicleForm: React.FC = () => {
               )}
             </div>
             {showBrandDropdown && !formik.values.brandId && (
-              <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+              <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                   style={{ width: brandDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
                 <div className="py-1">
                   {filteredBrands.length === 0 ? (
                     <div className="px-4 py-2 text-sm text-gray-500">
@@ -385,6 +454,8 @@ const VehicleForm: React.FC = () => {
                     formik.setFieldValue("modelId", "");
                     formik.setFieldValue("versionId", "");
                     setModelSearch("");
+                    setVersionSearch("");
+                    setShowModelDropdown(false); // Asegura que el dropdown se cierre al limpiar
                   }}
                 >
                   <X className="h-4 w-4 text-gray-400" />
@@ -399,7 +470,8 @@ const VehicleForm: React.FC = () => {
             {showModelDropdown &&
               formik.values.brandId &&
               !formik.values.modelId && (
-                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+                <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                     style={{ width: modelDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
                   <div className="py-1">
                     {filteredModels.length === 0 ? (
                       <div className="px-4 py-2 text-sm text-gray-500">
@@ -462,6 +534,7 @@ const VehicleForm: React.FC = () => {
                   onClick={() => {
                     formik.setFieldValue("versionId", "");
                     setVersionSearch("");
+                    setShowVersionDropdown(false); // Asegura que el dropdown se cierre al limpiar
                   }}
                 >
                   <X className="h-4 w-4 text-gray-400" />
@@ -476,7 +549,8 @@ const VehicleForm: React.FC = () => {
             {showVersionDropdown &&
               formik.values.modelId &&
               !formik.values.versionId && (
-                <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md max-h-60 overflow-auto">
+                <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                     style={{ width: versionDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
                   <div className="py-1">
                     {filteredVersions.length === 0 ? (
                       <div className="px-4 py-2 text-sm text-gray-500">
@@ -507,44 +581,40 @@ const VehicleForm: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          {/* NUEVO SELECTOR PERSONALIZADO: TIPO DE VEHÍCULO */}
+          <div className="relative" ref={typeOfVehicleDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Tipo de Vehículo <span className="text-red-500">*</span>
             </label>
-            <select
-              id="typeOfVehicle"
-              name="typeOfVehicle"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.typeOfVehicle}
+            <div
               className={`w-full px-3 py-2 border ${
                 formik.touched.typeOfVehicle && formik.errors.typeOfVehicle
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue flex justify-between items-center cursor-pointer`}
+              onClick={() => setShowTypeOfVehicleDropdown(!showTypeOfVehicleDropdown)}
             >
-              <option value="">Seleccionar</option>
-              <option value="SUV">SUV</option>
-              <option value="PICKUP">Pickup</option>
-              <option value="MINIVAN">Minivan</option>
-              <option value="LIGHT_TRUCK">Camión Ligero</option>
-              <option value="COUPE">Coupé</option>
-              <option value="HATCHBACK">Hatchback</option>
-              <option value="FURGON">Furgón</option>
-              <option value="SEDAN">Sedán</option>
-              <option value="VAN">Van</option>
-              <option value="RURAL">Rural</option>
-              <option value="CABRIOLET">Cabriolet</option>
-              <option value="SPORTSCAR">Deportivo</option>
-              <option value="ROADSTER">Roadster</option>
-              <option value="ELECTRIC">Eléctrico</option>
-              <option value="HYBRID">Híbrido</option>
-              <option value="LUXURY">Lujo</option>
-              <option value="OFF_ROAD">Todo Terreno</option>
-              <option value="PICKUP_TRUCK">Camioneta Pickup</option>
-              <option value="CROSSOVER">Crossover</option>
-              <option value="COMPACT">Compacto</option>
-            </select>
+              {formik.values.typeOfVehicle || "Seleccionar"}
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+            {showTypeOfVehicleDropdown && (
+              <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                   style={{ width: typeOfVehicleDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
+                <div className="py-1">
+                  {vehicleTypes.map((type) => (
+                    <div
+                      key={type}
+                      className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleTypeOfVehicleSelect(type)}
+                    >
+                      {type}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {formik.touched.typeOfVehicle && formik.errors.typeOfVehicle ? (
               <div className="text-red-500 text-xs mt-1">
                 {formik.errors.typeOfVehicle}
@@ -578,26 +648,40 @@ const VehicleForm: React.FC = () => {
             ) : null}
           </div>
 
-          <div>
+          {/* NUEVO SELECTOR PERSONALIZADO: CONDICIÓN */}
+          <div className="relative" ref={conditionDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Condición <span className="text-red-500">*</span>
             </label>
-            <select
-              id="condition"
-              name="condition"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.condition}
+            <div
               className={`w-full px-3 py-2 border ${
                 formik.touched.condition && formik.errors.condition
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue flex justify-between items-center cursor-pointer`}
+              onClick={() => setShowConditionDropdown(!showConditionDropdown)}
             >
-              <option value="">Selecciona una condición</option>
-              <option value="new">Nuevo</option>
-              <option value="used">Usado</option>
-            </select>
+              {formik.values.condition === "new" ? "Nuevo" : formik.values.condition === "used" ? "Usado" : "Selecciona una condición"}
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+            {showConditionDropdown && (
+              <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                   style={{ width: conditionDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
+                <div className="py-1">
+                  {conditions.map((condition) => (
+                    <div
+                      key={condition}
+                      className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleConditionSelect(condition)}
+                    >
+                      {condition === "new" ? "Nuevo" : "Usado"}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {formik.touched.condition && formik.errors.condition ? (
               <div className="text-red-500 text-xs mt-1">
                 {formik.errors.condition}
@@ -607,26 +691,40 @@ const VehicleForm: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          {/* NUEVO SELECTOR PERSONALIZADO: MONEDA */}
+          <div className="relative" ref={currencyDropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Moneda <span className="text-red-500">*</span>
             </label>
-            <select
-              id="currency"
-              name="currency"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.currency}
+            <div
               className={`w-full px-3 py-2 border ${
                 formik.touched.currency && formik.errors.currency
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue`}
+              } rounded-md focus:outline-none focus:ring-1 focus:ring-secondary-blue flex justify-between items-center cursor-pointer`}
+              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
             >
-              <option value="">Seleccione una moneda</option>
-              <option value="U$D">Dólares (U$D)</option>
-              <option value="AR$">Pesos Argentinos (AR$)</option>
-            </select>
+              {formik.values.currency || "Seleccione una moneda"}
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+            {showCurrencyDropdown && (
+              <div className="absolute z-10 mt-1 bg-white shadow-lg rounded-md max-h-60 overflow-auto"
+                   style={{ width: currencyDropdownRef.current?.offsetWidth || '100%' }}> {/* ANCHO DINÁMICO */}
+                <div className="py-1">
+                  {currencies.map((currency) => (
+                    <div
+                      key={currency}
+                      className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleCurrencySelect(currency)}
+                    >
+                      {currency === "U$D" ? "Dólares (U$D)" : "Pesos Argentinos (AR$)"}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {formik.touched.currency && formik.errors.currency ? (
               <div className="text-red-500 text-xs mt-1">
                 {formik.errors.currency}

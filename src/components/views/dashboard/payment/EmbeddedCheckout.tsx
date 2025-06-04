@@ -35,7 +35,7 @@ export default function Checkout({
   };
 
   return (
-    <div id="checkout">
+    <div id="checkout" className="mt-20">
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{ fetchClientSecret: fetchClientSecretWithPrice }}

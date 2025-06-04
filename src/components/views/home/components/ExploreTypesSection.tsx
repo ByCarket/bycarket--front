@@ -45,6 +45,7 @@ const ExploreTypesSection = () => {
                 src={category.image}
                 alt={category.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"
               />
             </div>
@@ -55,11 +56,10 @@ const ExploreTypesSection = () => {
                     ? "/marketplace?condition=used&page=1"
                     : category.title === "Autos 0 KM"
                     ? "/marketplace?condition=new&page=1"
-                    : category.title === "Camionetas o 4x4"
+                    : category.title === "Camionetas y 4x4"
                     ? "/marketplace?typeOfVehicle=PICKUP&typeOfVehicle=MINIVAN&typeOfVehicle=LIGHT_TRUCK&page=1"
                     : "/marketplace"
                 }
-                passHref
               >
                 <h3 className="text-lg font-semibold text-secondary-blue cursor-pointer hover:underline">
                   {category.title}

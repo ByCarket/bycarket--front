@@ -52,6 +52,7 @@ interface VehiclesActions {
   fetchVehicleById: (id: string) => Promise<VehicleResponse | null>;
   createNewVehicle: (data: VehicleData) => Promise<VehicleResponse | null>;
   removeVehicle: (id: string) => Promise<boolean>;
+  updateVehicleInState: (updatedVehicle: VehicleResponse) => void;
   setSelectedVehicle: (vehicle: VehicleResponse | null) => void;
   fetchBrands: () => Promise<void>;
   fetchModels: (brandId?: string) => Promise<void>;
@@ -186,6 +187,18 @@ export const useVehiclesStore = create<VehiclesState & VehiclesActions>()(
 
       setSelectedVehicle: (vehicle) => {
         set({ selectedVehicle: vehicle });
+      },
+
+      updateVehicleInState: (updatedVehicle) => {
+        set((state) => ({
+          vehicles: state.vehicles.map((v) =>
+            v.id === updatedVehicle.id ? updatedVehicle : v
+          ),
+          selectedVehicle:
+            state.selectedVehicle?.id === updatedVehicle.id
+              ? updatedVehicle
+              : state.selectedVehicle,
+        }));
       },
 
       fetchBrands: async () => {
