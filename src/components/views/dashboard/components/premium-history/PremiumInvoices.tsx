@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FileText,
-  Download,
-  Eye,
-  Calendar,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  Clock,
-} from "lucide-react";
+import { Download, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
 import {
   getUserInvoices,
   updateUserSubscription,
@@ -33,45 +24,49 @@ const formatDate = (date: string): string => {
   }).format(new Date(date));
 };
 
-const getStatusIcon = (status: StatusInvoice | null) => {
+const getStatusIcon = (status: string | null) => {
   switch (status) {
-    case StatusInvoice.PAID:
+    case "paid":
       return <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-500" />;
-    case StatusInvoice.UNPAID:
-      return <XCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500" />;
-    case StatusInvoice.PENDING:
+    case "open":
       return <Clock className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />;
-    case StatusInvoice.CANCELED:
-      return <XCircle className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />;
+    case "uncollectible":
+    case "void":
+      return <XCircle className="w-4 h-4 md:w-5 md:h-5 text-red-500" />;
+    case "draft":
+      return <Clock className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />;
     default:
       return <Clock className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />;
   }
 };
 
-const getStatusText = (status: StatusInvoice | null): string => {
+const getStatusText = (status: string | null): string => {
   switch (status) {
-    case StatusInvoice.PAID:
+    case "paid":
       return "Pagada";
-    case StatusInvoice.UNPAID:
-      return "Pendiente de pago";
-    case StatusInvoice.PENDING:
-      return "Procesando";
-    case StatusInvoice.CANCELED:
-      return "Cancelada";
+    case "open":
+      return "Pendiente";
+    case "uncollectible":
+      return "No cobrable";
+    case "void":
+      return "Anulada";
+    case "draft":
+      return "Borrador";
     default:
       return "Sin estado";
   }
 };
 
-const getStatusColor = (status: StatusInvoice | null): string => {
+const getStatusColor = (status: string | null): string => {
   switch (status) {
-    case StatusInvoice.PAID:
+    case "paid":
       return "bg-green-50 text-green-700 border-green-200";
-    case StatusInvoice.UNPAID:
-      return "bg-red-50 text-red-700 border-red-200";
-    case StatusInvoice.PENDING:
+    case "open":
       return "bg-yellow-50 text-yellow-700 border-yellow-200";
-    case StatusInvoice.CANCELED:
+    case "uncollectible":
+    case "void":
+      return "bg-red-50 text-red-700 border-red-200";
+    case "draft":
       return "bg-gray-50 text-gray-700 border-gray-200";
     default:
       return "bg-gray-50 text-gray-500 border-gray-200";
@@ -91,7 +86,12 @@ export default function InvoiceSection() {
         setLoading(true);
         setError(null);
         const data = await getUserInvoices();
-        setSubscriptionData(data);
+        console.log("Subscription Data:", data);
+        if (data && data.invoices) {
+          setSubscriptionData(data);
+        } else {
+          setError("No se encontraron facturas");
+        }
       } catch (error) {
         console.error("Error fetching subscription data:", error);
         setError("Error al cargar las facturas");
@@ -126,7 +126,9 @@ export default function InvoiceSection() {
       await updateUserSubscription();
       showSuccess("Suscripción cancelada exitosamente");
       const data = await getUserInvoices();
-      setSubscriptionData(data);
+      if (data && data.invoices) {
+        setSubscriptionData(data);
+      }
     } catch (error) {
       showError("Error al cancelar la suscripción");
     }

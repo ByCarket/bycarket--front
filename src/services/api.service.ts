@@ -521,10 +521,11 @@ export const getInvoiceById = async (id: string): Promise<any> => {
 };
 
 export enum StatusInvoice {
+  DRAFT = "draft",
+  OPEN = "open",
   PAID = "paid",
-  UNPAID = "unpaid",
-  PENDING = "pending",
-  CANCELED = "canceled",
+  UNCOLLECTIBLE = "uncollectible",
+  VOID = "void",
 }
 
 export interface Invoice {
@@ -533,7 +534,7 @@ export interface Invoice {
   invoice_pdf: string;
   period_end: string;
   period_start: string;
-  status: StatusInvoice | null;
+  status: string;
   total: string;
   amount_paid: string;
 }
