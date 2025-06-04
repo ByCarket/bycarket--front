@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Download, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
 import {
-  getUserInvoices,
+  getAllUserInvoices,
   updateUserSubscription,
-  StatusInvoice,
-  type SubscriptionResponse,
   type Invoice,
 } from "@/services/api.service";
 import { showError, showSuccess } from "@/app/utils/Notifications";
@@ -74,8 +72,7 @@ const getStatusColor = (status: string | null): string => {
 };
 
 export default function InvoiceSection() {
-  const [subscriptionData, setSubscriptionData] =
-    useState<SubscriptionResponse | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -85,15 +82,14 @@ export default function InvoiceSection() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getUserInvoices();
-        console.log("Subscription Data:", data);
-        if (data && data.invoices) {
-          setSubscriptionData(data);
+        const data = await getAllUserInvoices();
+        if (data && data.length > 0) {
+          setInvoices(data);
         } else {
           setError("No se encontraron facturas");
         }
       } catch (error) {
-        console.error("Error fetching subscription data:", error);
+        console.error("Error fetching invoices:", error);
         setError("Error al cargar las facturas");
       } finally {
         setLoading(false);
@@ -125,9 +121,9 @@ export default function InvoiceSection() {
     try {
       await updateUserSubscription();
       showSuccess("Suscripción cancelada exitosamente");
-      const data = await getUserInvoices();
-      if (data && data.invoices) {
-        setSubscriptionData(data);
+      const data = await getAllUserInvoices();
+      if (data) {
+        setInvoices(data);
       }
     } catch (error) {
       showError("Error al cancelar la suscripción");
@@ -165,7 +161,7 @@ export default function InvoiceSection() {
     );
   }
 
-  if (!subscriptionData?.invoices?.length) {
+  if (!invoices.length) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="p-4 md:p-8">
@@ -180,11 +176,6 @@ export default function InvoiceSection() {
       </div>
     );
   }
-
-  const invoices = subscriptionData.invoices.sort(
-    (a, b) =>
-      new Date(b.period_end).getTime() - new Date(a.period_end).getTime()
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -211,7 +202,7 @@ export default function InvoiceSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((invoice) => (
+                  {invoices.map((invoice: Invoice) => (
                     <tr key={invoice.id} className="border-b border-gray-200">
                       <td className="py-3 px-4">
                         {formatDate(invoice.period_end)}
