@@ -8,6 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "./notifications.css";
 import { ReactNode } from "react";
 
+const MAX_TOASTS = 2;
+
 const toastBaseOptions: ToastOptions = {
   position: "top-right",
   autoClose: 4000,
@@ -104,4 +106,6 @@ export const showConfirm = (
   );
 };
 
-export const NotificationsContainer = () => <ToastContainer />;
+export const NotificationsContainer = () => (
+  <ToastContainer limit={MAX_TOASTS} />
+);
