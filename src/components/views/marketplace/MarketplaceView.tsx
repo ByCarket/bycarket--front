@@ -52,7 +52,7 @@ export default function MarketplaceView() {
           <div
             className={`${
               showFilters ? "block" : "hidden"
-            } lg:block rounded-md bg-white p-4 max-h-[80vh] overflow-auto lg:max-h-full lg:overflow-visible shadow-md`}
+            } lg:block rounded-md p-4 max-h-[80vh] overflow-auto lg:max-h-full lg:overflow-visible shadow-md`}
           >
             <Sidebar />
           </div>
