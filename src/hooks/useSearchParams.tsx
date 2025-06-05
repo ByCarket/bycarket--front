@@ -155,27 +155,16 @@ export const useSearchParams = () => {
   }, []);
 
   const setParams = useCallback(
-    (
-      newParams:
-        | VehicleSearchParams
-        | ((prev: VehicleSearchParams) => VehicleSearchParams)
-    ) => {
-      const updatedParams =
-        typeof newParams === "function"
-          ? newParams(currentParams)
-          : { ...currentParams, ...newParams };
+    (newParams: VehicleSearchParams) => {
+      const mergedParams = { ...currentParams };
 
-      Object.keys(updatedParams).forEach((key) => {
-        if (
-          updatedParams[key as keyof VehicleSearchParams] === undefined ||
-          updatedParams[key as keyof VehicleSearchParams] === null ||
-          updatedParams[key as keyof VehicleSearchParams] === ""
-        ) {
-          delete updatedParams[key as keyof VehicleSearchParams];
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          mergedParams[key as keyof VehicleSearchParams] = value;
         }
       });
 
-      const queryString = createQueryString(updatedParams);
+      const queryString = createQueryString(mergedParams);
       router.replace(`${pathname}?${queryString}`, { scroll: false });
     },
     [pathname, router, currentParams, createQueryString]
@@ -187,9 +176,11 @@ export const useSearchParams = () => {
 
   const setPage = useCallback(
     (page: number) => {
-      setParams((prev) => ({ ...prev, page }));
+      const newParams = { ...currentParams, page };
+      const queryString = createQueryString(newParams);
+      router.replace(`${pathname}?${queryString}`, { scroll: false });
     },
-    [setParams]
+    [pathname, router, currentParams, createQueryString]
   );
 
   const setBrandId = useCallback(
