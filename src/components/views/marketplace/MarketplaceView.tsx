@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useVehicleSearch } from "@/hooks/useVehicleSearch";
 import { Sidebar } from "./components/Sidebar";
 import { MarketContainer } from "./components/MarketContainer";
-import { SearchBar } from "@/components/ui/SearchBar";
+import SearchBar from "@/components/ui/SearchBar";
 import { useSearchParams } from "@/hooks/useSearchParams";
 
 export default function MarketplaceView() {
