@@ -69,6 +69,13 @@ export default function PostsCard({
         icon: FiCheckCircle,
         label: "Activo",
       },
+      pending: {
+        bg: "bg-yellow-300",
+        text: "text-gray-800",
+        border: "border-gray-500",
+        icon: FiClock,
+        label: "Pendiente",
+      },
       draft: {
         bg: "bg-amber-50",
         text: "text-amber-800",
@@ -176,7 +183,11 @@ export default function PostsCard({
             </span>
             <span className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-              {vehicle.condition}
+              {vehicle.condition === "Used"
+                ? "Usado"
+                : vehicle.condition === "New"
+                ? "Nuevo"
+                : vehicle.condition}
             </span>
           </div>
 

@@ -27,12 +27,13 @@ export default function MyVehicleCard({ vehicle, onView }: MyVehicleCardProps) {
   const vehicleName = `${vehicle.brand.name} ${vehicle.model.name}`;
 
   const getConditionConfig = (condition: string) => {
-    if (condition === "Nuevo") {
+    if (condition === "Nuevo" || condition === "New") {
       return {
         bg: "bg-emerald-50",
         text: "text-emerald-700",
         border: "border-emerald-200",
         icon: FiCheckCircle,
+        label: "Nuevo",
       };
     }
     return {
@@ -40,6 +41,7 @@ export default function MyVehicleCard({ vehicle, onView }: MyVehicleCardProps) {
       text: "text-principal-blue",
       border: "border-blue-200",
       icon: FiTag,
+      label: "Usado",
     };
   };
 
@@ -71,7 +73,7 @@ export default function MyVehicleCard({ vehicle, onView }: MyVehicleCardProps) {
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm bg-white/90 ${conditionConfig.bg} ${conditionConfig.text} ${conditionConfig.border}`}
           >
             <ConditionIcon className="w-3 h-3" />
-            {vehicle.condition}
+            {conditionConfig.label}
           </div>
         </div>
 
@@ -103,7 +105,11 @@ export default function MyVehicleCard({ vehicle, onView }: MyVehicleCardProps) {
             </span>
             <span className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-              {vehicle.condition}
+              {vehicle.condition === "Used"
+                ? "Usado"
+                : vehicle.condition === "New"
+                ? "Nuevo"
+                : vehicle.condition}
             </span>
           </div>
 
