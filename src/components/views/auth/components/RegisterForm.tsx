@@ -273,17 +273,18 @@ export default function RegisterForm() {
               /^\+[0-9]+$/,
               "El código de país debe comenzar con + y contener solo números"
             )
-            .min(2, "El código de país debe tener al menos 2 caracteres"),
+            .min(2, "El código de país debe tener al menos 1 dígito")
+            .max(4, "El código de país no debe exceder los 3 dígitos"),
           areaCode: Yup.string()
             .required("El código de área es obligatorio")
-            .matches(
-              /^[0-9]+$/,
-              "El código de área debe contener solo números"
-            ),
+            .matches(/^[0-9]+$/, "El código de área debe contener solo números")
+            .min(2, "El código de área debe tener al menos 2 dígitos")
+            .max(4, "El código de área no debe exceder los 4 dígitos"),
           number: Yup.string()
             .required("El número de teléfono es obligatorio")
             .matches(/^[0-9]+$/, "El número debe contener solo números")
-            .min(5, "El número debe tener al menos 5 dígitos"),
+            .min(4, "El número debe tener al menos 4 dígitos")
+            .max(10, "El número no debe exceder los 10 dígitos"),
         })
         .required("La información de teléfono es obligatoria"),
       country: Yup.string().required("El país es obligatorio"),

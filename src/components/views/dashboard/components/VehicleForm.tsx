@@ -879,7 +879,7 @@ const VehicleForm: React.FC = () => {
 
           <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
             <p>Formatos: JPG, JPEG, PNG o WEBP</p>
-            <p>Máximo: 15MB por imagen</p>
+            <p>Máximo: 5MB por imagen</p>
           </div>
 
           {(imageError || (formik.touched.images && formik.errors.images)) && (

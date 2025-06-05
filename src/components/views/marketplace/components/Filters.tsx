@@ -589,42 +589,36 @@ export function Filters() {
 
       <div className="space-y-3">
         <label className="text-sm font-semibold text-gray-700 flex items-center">
-          <svg
-            className="w-4 h-4 mr-2 text-principal-blue"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
           Rango de años
         </label>
         <div className="grid grid-cols-2 gap-3">
           <input
             type="number"
             placeholder="Desde"
-            value={params.minYear || ""}
-            onChange={(e) =>
-              setYearRange(Number(e.target.value) || undefined, params.maxYear)
-            }
+            value={params.minYear === undefined ? "" : params.minYear}
+            onChange={(e) => {
+              const value = e.target.value
+                ? parseInt(e.target.value, 10)
+                : undefined;
+              setYearRange(value, params.maxYear);
+            }}
             className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            min="0"
+            min="1900"
+            max={new Date().getFullYear() + 1}
           />
           <input
             type="number"
             placeholder="Hasta"
-            value={params.maxYear || ""}
-            onChange={(e) =>
-              setYearRange(params.minYear, Number(e.target.value) || undefined)
-            }
+            value={params.maxYear === undefined ? "" : params.maxYear}
+            onChange={(e) => {
+              const value = e.target.value
+                ? parseInt(e.target.value, 10)
+                : undefined;
+              setYearRange(params.minYear, value);
+            }}
             className="w-full rounded-lg border-2 border-gray-200 py-3 px-4 focus:border-principal-blue focus:outline-none focus:ring-2 focus:ring-secondary-blue/50 transition-all duration-200 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            min="0"
+            min="1900"
+            max={new Date().getFullYear() + 1}
           />
         </div>
       </div>

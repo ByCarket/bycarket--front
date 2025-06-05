@@ -69,7 +69,7 @@ export default function Navbar() {
             alt="logoByCarket"
             width={40}
             height={40}
-            className="h-10 w-10"
+            className="h-10 w-12"
           />
           <span className="text-xl font-semibold text-principal-blue">
             ByCarket

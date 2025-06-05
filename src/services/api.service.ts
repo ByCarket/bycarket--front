@@ -260,18 +260,22 @@ export interface ChatCompletionRequest {
 }
 
 export interface ChatCompletionResponse {
-  message: string;
+  response: string;
 }
 
 export const getChatCompletion = async (
   messages: ChatMessage[],
   postId?: string
 ): Promise<ChatCompletionResponse> => {
-  const response = await http.post<ChatCompletionResponse>(
-    "/openai/chatCompletion",
-    { messages, postId }
-  );
-  return response.data;
+  try {
+    const response = await http.post<ChatCompletionResponse>(
+      "/openai/chatCompletion",
+      { messages, postId }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Error en la comunicación con el chatbot");
+  }
 };
 
 export interface UserListResponse {
