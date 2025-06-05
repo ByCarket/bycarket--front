@@ -31,8 +31,8 @@ export const useVehicleSearch = (): UseVehicleSearchResult => {
     setError(null);
 
     try {
-      const page = params.page || 1;
-      const limit = params.limit || 9;
+      const page = Number(params.page) || 1;
+      const limit = Number(params.limit) || 9;
 
       const filters: Record<string, any> = Object.entries({
         brandId: params.brandId,
