@@ -43,7 +43,6 @@ export default function PostsForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!price || price <= 0) {
       showError("El precio es requerido y debe ser mayor a 0");
       return;

@@ -44,7 +44,7 @@ export default function Footer() {
               aria-label="Facebook"
             >
               <Facebook size={22} />
-              <span>/ByCarket</span>
+              <span>ByCarket</span>
             </Link>
             <Link
               href="#"
@@ -52,7 +52,7 @@ export default function Footer() {
               aria-label="Instagram"
             >
               <Instagram size={22} />
-              <span>/ByCarket</span>
+              <span>ByCarket</span>
             </Link>
           </div>
         </div>
