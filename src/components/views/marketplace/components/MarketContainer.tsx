@@ -1,8 +1,9 @@
 "use client";
 
 import { PostResponse } from "@/services/vehicle.service";
-import { useSearchParams } from "@/hooks/useSearchParams";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ProductCard } from "./ProductCard";
+import Pagination from "./pagination";
 
 interface MarketContainerProps {
   posts: PostResponse[];
@@ -21,7 +22,15 @@ export function MarketContainer({
   currentPage,
   totalItems,
 }: MarketContainerProps) {
-  const { setPage } = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   if (isLoading) {
     return (
@@ -84,10 +93,6 @@ export function MarketContainer({
     );
   }
 
-  const handlePageChange = (page: number) => {
-    setPage(page);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
@@ -105,73 +110,11 @@ export function MarketContainer({
 
       {totalPages > 1 && (
         <div className="flex justify-center mt-8">
-          <nav className="flex items-center space-x-1">
-            <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`px-3 py-2 rounded-md ${
-                currentPage === 1
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  currentPage === page
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() =>
-                handlePageChange(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-              className={`px-3 py-2 rounded-md ${
-                currentPage === totalPages
-                  ? "text-gray-400 cursor-not-allowed"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </nav>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

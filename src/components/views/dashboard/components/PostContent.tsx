@@ -59,12 +59,11 @@ export default function PostContent() {
     setGlobalLoading(true);
     try {
       await createPostMutation(data);
-      await refetchUser();
+      await Promise.all([refetchUser(), refetchPosts()]);
       showSuccess("Publicación creada exitosamente");
       setShowForm(false);
       setSelectedVehicle(null);
       setSelectedPost(null);
-      await refetchPosts();
     } catch (error: any) {
       if (
         error?.response?.status === 403 ||

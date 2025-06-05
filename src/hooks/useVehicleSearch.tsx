@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams, VehicleSearchParams } from "./useSearchParams";
+import { useSearchParams } from "next/navigation";
 import {
   GetPostsResponse,
   PostResponse,
@@ -21,7 +21,7 @@ export interface UseVehicleSearchResult {
 }
 
 export const useVehicleSearch = (): UseVehicleSearchResult => {
-  const { params } = useSearchParams();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [data, setData] = useState<GetPostsResponse | null>(null);
@@ -31,31 +31,35 @@ export const useVehicleSearch = (): UseVehicleSearchResult => {
     setError(null);
 
     try {
-      const page = params.page || 1;
-      const limit = params.limit || 10;
+      const page = Number(searchParams.get("page")) || 1;
+      const limit = 9;
 
-      const filters: Record<string, any> = Object.entries({
-        brandId: params.brandId,
-        modelId: params.modelId,
-        versionId: params.versionId,
-        typeOfVehicle: params.typeOfVehicle,
-        condition: params.condition,
-        currency: params.currency,
-        search: params.search,
-        minYear: params.minYear,
-        maxYear: params.maxYear,
-        minPrice: params.minPrice,
-        maxPrice: params.maxPrice,
-        minMileage: params.minMileage,
-        maxMileage: params.maxMileage,
-        orderBy: params.orderBy,
-        order: params.order,
-      }).reduce((acc, [key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          acc[key] = value;
+      const filters: Record<string, any> = {
+        brandId: searchParams.getAll("brandId"),
+        modelId: searchParams.getAll("modelId"),
+        versionId: searchParams.getAll("versionId"),
+        typeOfVehicle: searchParams.getAll("typeOfVehicle"),
+        condition: searchParams.get("condition"),
+        currency: searchParams.get("currency"),
+        search: searchParams.get("search"),
+        minYear: searchParams.get("minYear"),
+        maxYear: searchParams.get("maxYear"),
+        minPrice: searchParams.get("minPrice"),
+        maxPrice: searchParams.get("maxPrice"),
+        minMileage: searchParams.get("minMileage"),
+        maxMileage: searchParams.get("maxMileage"),
+        orderBy: searchParams.get("orderBy"),
+        order: searchParams.get("order"),
+      };
+
+      Object.keys(filters).forEach((key) => {
+        if (
+          !filters[key] ||
+          (Array.isArray(filters[key]) && filters[key].length === 0)
+        ) {
+          delete filters[key];
         }
-        return acc;
-      }, {} as Record<string, any>);
+      });
 
       const response = await getPosts(page, limit, filters);
       setData(response);
@@ -66,11 +70,13 @@ export const useVehicleSearch = (): UseVehicleSearchResult => {
     } finally {
       setIsLoading(false);
     }
-  }, [params]);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  const currentPage = Number(searchParams.get("page")) || 1;
 
   return {
     isLoading,
@@ -78,10 +84,10 @@ export const useVehicleSearch = (): UseVehicleSearchResult => {
     posts: data?.data || [],
     totalPages: data?.totalPages || 0,
     totalItems: data?.total || 0,
-    currentPage: data?.page || 1,
+    currentPage,
     refetch: fetchPosts,
-    hasNextPage: (data?.page || 1) < (data?.totalPages || 0),
-    hasPrevPage: (data?.page || 1) > 1,
+    hasNextPage: currentPage < (data?.totalPages || 0),
+    hasPrevPage: currentPage > 1,
   };
 };
 

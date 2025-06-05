@@ -32,18 +32,14 @@ export default function Dashboard() {
         "register-vehicle",
         "publish-vehicle",
         "premium",
-        "premium-history",
-        "users",
-        "user-posts",
-        "database-scrapper",
       ];
 
       if (isPremium) {
-        validTabs.push("premium");
+        validTabs.push("premium-history");
       }
 
       if (isAdmin) {
-        validTabs.push("users");
+        validTabs.push("users", "user-posts", "database-scrapper");
       }
 
       if (validTabs.includes(tabParam)) {
@@ -52,7 +48,7 @@ export default function Dashboard() {
         setActiveTab("profile");
       }
     }
-  }, [tabParam, isAdmin]);
+  }, [tabParam, isAdmin, isPremium]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);

@@ -14,7 +14,7 @@ export default function Footer() {
             alt="ByCarket logo"
             width={40}
             height={40}
-            className="h-10 w-10"
+            className="h-10 w-12"
           />
           <span className="text-2xl sm:text-3xl font-semibold text-principal-blue">
             ByCarket
@@ -44,7 +44,7 @@ export default function Footer() {
               aria-label="Facebook"
             >
               <Facebook size={22} />
-              <span>/ByCarket</span>
+              <span>ByCarket</span>
             </Link>
             <Link
               href="#"
@@ -52,7 +52,7 @@ export default function Footer() {
               aria-label="Instagram"
             >
               <Instagram size={22} />
-              <span>/ByCarket</span>
+              <span>ByCarket</span>
             </Link>
           </div>
         </div>

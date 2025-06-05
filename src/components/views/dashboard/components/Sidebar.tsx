@@ -46,20 +46,30 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: "premium", label: "Premium", icon: Crown },
   ];
 
+  const premiumItems = [
+    { id: "premium", label: "Premium", icon: Crown },
+    { id: "premium-history", label: "Historial Premium", icon: Gem },
+  ];
+
   const menuItems = isAdmin
     ? [
-        ...baseMenuItems,
+        ...baseMenuItems.filter(
+          (item) => !premiumItems.some((pi) => pi.id === item.id)
+        ),
         { id: "users", label: "Lista de usuarios", icon: Users },
         { id: "user-posts", label: "Lista de publicaciones", icon: FileText },
         { id: "database-scrapper", label: "Scrapper", icon: FileText },
-        { id: "premium-history", label: "Historial Premium", icon: Gem },
       ]
     : isPremium
     ? [
-        ...baseMenuItems,
-        { id: "premium-history", label: "Historial Premium", icon: Gem },
+        ...baseMenuItems.filter(
+          (item) => !premiumItems.some((pi) => pi.id === item.id)
+        ),
+        ...premiumItems,
       ]
-    : baseMenuItems;
+    : baseMenuItems.filter(
+        (item) => !premiumItems.some((pi) => pi.id === item.id)
+      );
 
   const getInitials = (name: string) => {
     return name

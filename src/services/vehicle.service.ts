@@ -166,7 +166,7 @@ export const getUserVehicles = async (): Promise<VehicleResponse[]> => {
 
 export const getPosts = async (
   page: number = 1,
-  limit: number = 10,
+  limit: number = 9,
   filters: any = {}
 ): Promise<GetPostsResponse> => {
   const params: Record<string, any> = {

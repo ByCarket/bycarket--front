@@ -155,8 +155,21 @@ export const useSearchParams = () => {
   }, []);
 
   const setParams = useCallback(
-    (params: VehicleSearchParams) => {
-      const mergedParams = { ...currentParams, ...params };
+    (
+      newParams:
+        | VehicleSearchParams
+        | ((prev: VehicleSearchParams) => VehicleSearchParams)
+    ) => {
+      const mergedParams = { ...currentParams };
+
+      if (typeof newParams === "function") {
+        const computedParams = (
+          newParams as (prev: VehicleSearchParams) => VehicleSearchParams
+        )(mergedParams);
+        Object.assign(mergedParams, computedParams);
+      } else {
+        Object.assign(mergedParams, newParams);
+      }
 
       Object.keys(mergedParams).forEach((key) => {
         if (
@@ -169,7 +182,7 @@ export const useSearchParams = () => {
       });
 
       const queryString = createQueryString(mergedParams);
-      router.replace(`${pathname}?${queryString}`, { scroll: false });
+      router.push(`${pathname}?${queryString}`, { scroll: false });
     },
     [pathname, router, currentParams, createQueryString]
   );
@@ -180,9 +193,11 @@ export const useSearchParams = () => {
 
   const setPage = useCallback(
     (page: number) => {
-      setParams({ page });
+      const newParams = { ...currentParams, page };
+      const queryString = createQueryString(newParams);
+      router.replace(`${pathname}?${queryString}`, { scroll: false });
     },
-    [setParams]
+    [pathname, router, currentParams, createQueryString]
   );
 
   const setBrandId = useCallback(
