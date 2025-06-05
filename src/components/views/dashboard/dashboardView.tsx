@@ -39,11 +39,11 @@ export default function Dashboard() {
       ];
 
       if (isPremium) {
-        validTabs.push("premium");
+        validTabs.push("premium", "premium-history");
       }
 
       if (isAdmin) {
-        validTabs.push("users");
+        validTabs.push("users", "user-posts", "database-scrapper");
       }
 
       if (validTabs.includes(tabParam)) {
