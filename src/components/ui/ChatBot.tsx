@@ -54,21 +54,43 @@ export default function AnimatedChatbot() {
         postId
       );
 
-      const botResponse = {
-        id: Date.now() + 1,
-        text: response.message,
-        sender: "bot" as const,
-      };
-      setMessages((prev) => [...prev, botResponse]);
-    } catch (error) {
-      const fallbackResponse = getResponseFromDictionary(currentMessage);
+      if (!response?.response?.trim()) {
+        throw new Error("Empty response from AI");
+      }
 
       const botResponse = {
         id: Date.now() + 1,
-        text: fallbackResponse,
+        text: response.response,
         sender: "bot" as const,
       };
       setMessages((prev) => [...prev, botResponse]);
+      return;
+    } catch (error) {
+      try {
+        const dictionaryResponse = getResponseFromDictionary(currentMessage);
+
+        if (
+          typeof dictionaryResponse === "string" &&
+          dictionaryResponse.trim()
+        ) {
+          const botResponse = {
+            id: Date.now() + 1,
+            text: dictionaryResponse,
+            sender: "bot" as const,
+          };
+          setMessages((prev) => [...prev, botResponse]);
+          return;
+        }
+
+        throw new Error("No mock response available");
+      } catch (mockError) {
+        const botResponse = {
+          id: Date.now() + 1,
+          text: "Lo siento, no pude procesar tu mensaje en este momento. ¿Podrías reformularlo?",
+          sender: "bot" as const,
+        };
+        setMessages((prev) => [...prev, botResponse]);
+      }
     }
   };
 
