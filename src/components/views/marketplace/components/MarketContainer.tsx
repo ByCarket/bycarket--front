@@ -1,7 +1,7 @@
 "use client";
 
 import { PostResponse } from "@/services/vehicle.service";
-import { useSearchParams } from "@/hooks/useSearchParams";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ProductCard } from "./ProductCard";
 import Pagination from "./pagination";
 
@@ -22,7 +22,15 @@ export function MarketContainer({
   currentPage,
   totalItems,
 }: MarketContainerProps) {
-  const { setPage } = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   if (isLoading) {
     return (
@@ -84,10 +92,6 @@ export function MarketContainer({
       </div>
     );
   }
-
-  const handlePageChange = (page: number) => {
-    setPage(page);
-  };
 
   return (
     <div className="space-y-6">

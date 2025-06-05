@@ -155,17 +155,34 @@ export const useSearchParams = () => {
   }, []);
 
   const setParams = useCallback(
-    (newParams: VehicleSearchParams) => {
+    (
+      newParams:
+        | VehicleSearchParams
+        | ((prev: VehicleSearchParams) => VehicleSearchParams)
+    ) => {
       const mergedParams = { ...currentParams };
 
-      Object.entries(newParams).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          mergedParams[key as keyof VehicleSearchParams] = value;
+      if (typeof newParams === "function") {
+        const computedParams = (
+          newParams as (prev: VehicleSearchParams) => VehicleSearchParams
+        )(mergedParams);
+        Object.assign(mergedParams, computedParams);
+      } else {
+        Object.assign(mergedParams, newParams);
+      }
+
+      Object.keys(mergedParams).forEach((key) => {
+        if (
+          mergedParams[key as keyof VehicleSearchParams] === undefined ||
+          mergedParams[key as keyof VehicleSearchParams] === null ||
+          mergedParams[key as keyof VehicleSearchParams] === ""
+        ) {
+          delete mergedParams[key as keyof VehicleSearchParams];
         }
       });
 
       const queryString = createQueryString(mergedParams);
-      router.replace(`${pathname}?${queryString}`, { scroll: false });
+      router.push(`${pathname}?${queryString}`, { scroll: false });
     },
     [pathname, router, currentParams, createQueryString]
   );
