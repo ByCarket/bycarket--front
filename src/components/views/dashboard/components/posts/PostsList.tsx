@@ -33,11 +33,7 @@ export default function PostsList({
     setLoading(true);
     try {
       const success = await onDelete(id);
-      if (success) {
-        showSuccess("Publicación eliminada correctamente");
-      } else {
-        showError("No se pudo eliminar la publicación");
-      }
+    
       return success;
     } catch (error) {
       showError("Error al eliminar la publicación");

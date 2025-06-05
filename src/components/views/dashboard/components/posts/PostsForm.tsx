@@ -66,9 +66,7 @@ export default function PostsForm({
 
       if (result === "PREMIUM_REQUIRED") {
         showPremiumRequired();
-      } else {
-        showSuccess("Publicación creada correctamente");
-      }
+      } 
     } catch (error: any) {
       if (error?.response?.status === 403) {
         showPremiumRequired();
