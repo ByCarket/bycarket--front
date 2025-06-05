@@ -14,7 +14,7 @@ export default function Footer() {
             alt="ByCarket logo"
             width={40}
             height={40}
-            className="h-10 w-10"
+            className="h-10 w-12"
           />
           <span className="text-2xl sm:text-3xl font-semibold text-principal-blue">
             ByCarket
