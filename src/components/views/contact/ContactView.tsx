@@ -4,7 +4,6 @@ import { MessageCircleMore } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
-import contactImg from "../../../../public/assets/images/landing/contact-illustration.webp";
 import { motion } from "framer-motion";
 
 export default function ContactView() {
@@ -35,19 +34,71 @@ export default function ContactView() {
           </div>
         </div>
 
-        <motion.div
-          className="flex justify-center md:justify-end"
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
+        <div className="relative w-full max-w-md mx-auto md:mx-0 h-[400px]">
           <Image
-            src={contactImg}
-            alt="Ilustración de contacto"
-            className="w-full max-w-md rounded-2xl shadow-xl object-contain"
+            src="/assets/images/contact/person.webp"
+            alt="Persona con celular"
+            fill
+            className="object-contain"
             priority
           />
-        </motion.div>
+
+          <motion.img
+            src="/assets/images/contact/icono1.webp"
+            alt="Ícono headset"
+            className="absolute top-6 left-6 w-16 h-16"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: 1,
+              y: [-5, 5, -5],
+            }}
+            transition={{
+              delay: 0.4,
+              duration: 3,
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "easeInOut",
+            }}
+          />
+
+          <motion.img
+            src="/assets/images/contact/icono2.webp"
+            alt="Ícono chat"
+            className="absolute top-6 right-6 w-16 h-16"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: 1,
+              y: [-5, 5, -5],
+            }}
+            transition={{
+              delay: 0.8,
+              duration: 3,
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "easeInOut",
+            }}
+          />
+
+          <motion.img
+            src="/assets/images/contact/icono3.webp"
+            alt="Ícono pregunta"
+            className="absolute w-16 h-16
+    bottom-20 right-4
+    md:bottom-24 md:right-10"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{
+              opacity: 1,
+              y: [-5, 5, -5],
+            }}
+            transition={{
+              delay: 1.2,
+              duration: 3,
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "easeInOut",
+            }}
+          />
+        </div>
       </div>
     </section>
   );
