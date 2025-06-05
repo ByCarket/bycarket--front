@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -16,26 +16,29 @@ export default function FeaturedProducts() {
   const { featuredProducts, loading, error } = useHomeFeaturedProducts();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [direction, setDirection] = useState(0);
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
-  };
+  const handleSlideChange = useCallback(
+    (newIndex: number) => {
+      if (!featuredProducts?.length) return;
+      setDirection(newIndex > currentIndex ? 1 : -1);
+      setCurrentIndex(
+        ((newIndex % featuredProducts.length) + featuredProducts.length) %
+          featuredProducts.length
+      );
+    },
+    [currentIndex, featuredProducts?.length]
+  );
 
-  const prevSlide = () => {
-    setCurrentIndex(
-      (prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length
-    );
-  };
+  const nextSlide = () => handleSlideChange(currentIndex + 1);
+  const prevSlide = () => handleSlideChange(currentIndex - 1);
 
   const translateStatus = (status: string) => {
     const translations: Record<string, string> = {
@@ -132,48 +135,53 @@ export default function FeaturedProducts() {
 
       <div className="relative">
         <div className="flex justify-center items-center overflow-visible">
-          <div className="relative w-full h-[500px] flex justify-center items-center perspective-[1000px]">
+          <div className="relative w-full h-[500px] flex justify-center items-center">
             {featuredProducts.map((product, index) => {
               const isActive = index === currentIndex;
-              const offset = index - currentIndex;
-              let position = offset;
+              const offset =
+                (index - currentIndex + featuredProducts.length) %
+                featuredProducts.length;
+              const position =
+                offset > featuredProducts.length / 2
+                  ? offset - featuredProducts.length
+                  : offset < -featuredProducts.length / 2
+                  ? offset + featuredProducts.length
+                  : offset;
 
-              if (offset > featuredProducts.length / 2) {
-                position = offset - featuredProducts.length;
-              } else if (offset < -featuredProducts.length / 2) {
-                position = offset + featuredProducts.length;
-              }
-
-              const isVisible = isMobile
-                ? Math.abs(position) === 0
-                : Math.abs(position) <= 2;
-
+              const isVisible = Math.abs(position) <= (isMobile ? 0 : 1);
               if (!isVisible) return null;
 
               return (
                 <motion.div
-                  key={`${product.id || index}-${currentIndex}`}
-                  initial={false}
+                  key={product.id || index}
+                  initial={{
+                    x: direction * 500,
+                    opacity: 0,
+                    scale: 0.8,
+                  }}
                   animate={{
                     x: isMobile ? 0 : position * 320,
-                    scale: isActive ? 1 : isMobile ? 0.85 : 0.8,
                     opacity: isActive ? 1 : isMobile ? 0.4 : 0.7,
-                    rotateY: position * 15,
+                    scale: isActive ? 1 : isMobile ? 0.9 : 0.85,
                     zIndex: isActive ? 3 : 2 - Math.abs(position),
                   }}
+                  exit={{
+                    x: direction * -500,
+                    opacity: 0,
+                    scale: 0.8,
+                  }}
                   transition={{
-                    duration: 0.5,
-                    ease: [0.4, 0, 0.2, 1],
+                    type: "spring",
+                    stiffness: 45,
+                    damping: 20,
+                    mass: 0.8,
                   }}
                   className="absolute w-80 md:w-72 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
                   style={{
                     position: "absolute",
                     transformStyle: "preserve-3d",
-                    transform: `translateX(${
-                      isMobile ? 0 : position * 320
-                    }px) translateY(-50%) scale(${
-                      isActive ? 1 : isMobile ? 0.85 : 0.8
-                    })`,
+                    filter: isActive ? "none" : "brightness(0.9)",
+                    pointerEvents: isActive ? "auto" : "none",
                   }}
                 >
                   <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
