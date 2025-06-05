@@ -34,7 +34,12 @@ export default function ContactView() {
           </div>
         </div>
 
-        <div className="relative w-full max-w-md mx-auto md:mx-0 h-[400px]">
+        <motion.div
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative w-full max-w-md mx-auto md:mx-0 h-[400px]"
+        >
           <Image
             src="/assets/images/contact/person.webp"
             alt="Persona con celular"
@@ -82,9 +87,7 @@ export default function ContactView() {
           <motion.img
             src="/assets/images/contact/icono3.webp"
             alt="Ícono pregunta"
-            className="absolute w-16 h-16
-    bottom-20 right-4
-    md:bottom-24 md:right-10"
+            className="absolute w-16 h-16 bottom-20 right-4 md:bottom-24 md:right-10"
             initial={{ opacity: 0, y: -20 }}
             animate={{
               opacity: 1,
@@ -98,7 +101,7 @@ export default function ContactView() {
               ease: "easeInOut",
             }}
           />
-        </div>
+        </motion.div>
       </div>
     </section>
   );
