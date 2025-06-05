@@ -32,14 +32,10 @@ export default function Dashboard() {
         "register-vehicle",
         "publish-vehicle",
         "premium",
-        "premium-history",
-        "users",
-        "user-posts",
-        "database-scrapper",
       ];
 
       if (isPremium) {
-        validTabs.push("premium", "premium-history");
+        validTabs.push("premium-history");
       }
 
       if (isAdmin) {
@@ -52,7 +48,7 @@ export default function Dashboard() {
         setActiveTab("profile");
       }
     }
-  }, [tabParam, isAdmin]);
+  }, [tabParam, isAdmin, isPremium]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
