@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // App Router
+import { useRouter } from "next/navigation";
 import { Dialog } from "@headlessui/react";
 import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { IoClose } from "react-icons/io5";
 import { showSuccess, showError } from "@/app/utils/Notifications";
-import { useAuthStore } from "@/context/AuthContext"; // Ajustá el path si es diferente
+import { useAuthStore } from "@/context/AuthContext";
 
 const QuestionModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,7 +24,7 @@ const QuestionModal = () => {
   const handleOpen = () => {
     if (!isAuthenticated) {
       showError("Debes iniciar sesión para contactar al vendedor.");
-      router.push("/login"); // Redirige al login
+      router.push("/login");
       return;
     }
     setIsOpen(true);
