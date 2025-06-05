@@ -1,112 +1,62 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { PostResponse } from "@/services/vehicle.service";
-import { ProductCard } from "@/components/views/marketplace/components/ProductCard";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Car,
+  Calendar,
+  Gauge,
+  Users,
+} from "lucide-react";
+import { useHomeFeaturedProducts } from "@/hooks/useHomeFeaturedProducts";
+import { useRouter } from "next/navigation";
 
 export default function FeaturedProducts() {
-  const [products, setProducts] = useState<PostResponse[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+  const { featuredProducts, loading, error } = useHomeFeaturedProducts();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        // DESCOMENTAR PARA MOCKEAR PUBLICACIONES
-        setTimeout(() => {
-          // const mockData: PostResponse[] = [
-          //   {
-          //     id: "201",
-          //     status: "Approved",
-          //     postDate: new Date().toISOString(),
-          //     vehicle: {
-          //       id: "201",
-          //       brand: { id: "1", name: "Toyota" },
-          //       model: { id: "10", brandId: "1", name: "Corolla" },
-          //       version: { id: "100", modelId: "10", name: "XEi" },
-          //       typeOfVehicle: "Sedán",
-          //       year: 2020,
-          //       condition: "used",
-          //       currency: "AR$",
-          //       price: 2500000,
-          //       mileage: 35000,
-          //       description: "Sedán familiar en muy buen estado.",
-          //       images: [
-          //         {
-          //           public_id: "toyota-corolla",
-          //           secure_url: "/assets/images/cars/toyota-corolla.webp",
-          //         },
-          //       ],
-          //       userId: "user123",
-          //       createdAt: new Date().toISOString(),
-          //     },
-          //   },
-          //   {
-          //     id: "202",
-          //     status: "Approved",
-          //     postDate: new Date().toISOString(),
-          //     vehicle: {
-          //       id: "202",
-          //       brand: { id: "2", name: "Honda" },
-          //       model: { id: "20", brandId: "2", name: "Civic" },
-          //       version: { id: "200", modelId: "20", name: "LX" },
-          //       typeOfVehicle: "Sedán",
-          //       year: 2019,
-          //       condition: "used",
-          //       currency: "AR$",
-          //       price: 2700000,
-          //       mileage: 42000,
-          //       description: "Civic en excelente estado, único dueño.",
-          //       images: [
-          //         {
-          //           public_id: "honda-civic",
-          //           secure_url: "/assets/images/cars/honda-civic.webp",
-          //         },
-          //       ],
-          //       userId: "user456",
-          //       createdAt: new Date().toISOString(),
-          //     },
-          //   },
-          //   {
-          //     id: "203",
-          //     status: "Approved",
-          //     postDate: new Date().toISOString(),
-          //     vehicle: {
-          //       id: "203",
-          //       brand: { id: "3", name: "Ford" },
-          //       model: { id: "30", brandId: "3", name: "Ranger" },
-          //       version: { id: "300", modelId: "30", name: "XLT" },
-          //       typeOfVehicle: "Pickup",
-          //       year: 2021,
-          //       condition: "used",
-          //       currency: "AR$",
-          //       price: 3600000,
-          //       mileage: 15000,
-          //       description: "Pickup en excelente estado y baja milla.",
-          //       images: [
-          //         {
-          //           public_id: "ford-ranger",
-          //           secure_url: "/assets/images/cars/ford-ranger.webp",
-          //         },
-          //       ],
-          //       userId: "user789",
-          //       createdAt: new Date().toISOString(),
-          //     },
-          //   },
-          // ];
-
-          setProducts([]);
-          setLoading(false);
-        }, 2500);
-      } catch (error) {
-        console.error("Error cargando productos destacados:", error);
-        setLoading(false);
-      }
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
     };
 
-    fetchFeatured();
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % featuredProducts.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex(
+      (prev) => (prev - 1 + featuredProducts.length) % featuredProducts.length
+    );
+  };
+
+  const translateStatus = (status: string) => {
+    const translations: Record<string, string> = {
+      Active: "Activo",
+      Used: "Usado",
+      New: "Nuevo",
+    };
+    return translations[status] || status;
+  };
+
+  const translateCondition = (condition: string) => {
+    const translations: Record<string, string> = {
+      new: "Nuevo",
+      used: "Usado",
+    };
+    return translations[condition] || condition;
+  };
+
+  const handleViewDetail = (postId: string) => {
+    router.push(`/marketplace/${postId}`);
+  };
 
   const SkeletonCard = () => (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse flex flex-col h-full">
@@ -126,36 +76,216 @@ export default function FeaturedProducts() {
     </div>
   );
 
-  return (
-    <div className="max-w-7xl mx-auto px-6 pt-2 pb-12 flex flex-col items-center">
-      <div className="max-w-7xl mx-auto px-6 pt-8 pb-8 flex flex-col items-center">
-        <div className="mb-0 text-center">
-          <h1 className="text-5xl font-bold text-principal-blue leading-none">
-            Productos destacados
-          </h1>
+  if (loading) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-principal-blue mb-2">
+            Productos Destacados
+          </h2>
+          <p className="text-secondary-blue">
+            Descubre nuestros vehículos más populares
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((index) => (
+            <SkeletonCard key={index} />
+          ))}
         </div>
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full">
-        {loading ? (
-          [1, 2, 3].map((i) => <SkeletonCard key={i} />)
-        ) : products.length > 0 ? (
-          products.map((post) => <ProductCard key={post.id} post={post} />)
-        ) : (
-          <p className="col-span-full text-center text-gray-500">
-            No hay productos destacados
+  if (error || !featuredProducts || featuredProducts.length === 0) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-principal-blue mb-2">
+            Productos Destacados
+          </h2>
+          <p className="text-secondary-blue">
+            Descubre nuestros vehículos más populares
           </p>
-        )}
+        </div>
+        <div className="text-center">
+          <Car className="h-16 w-16 text-secondary-blue mx-auto mb-4" />
+          <p className="text-principal-blue">
+            {error
+              ? "Error al cargar los productos destacados"
+              : "No hay productos destacados disponibles"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="text-center mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-principal-blue mb-2">
+          Productos Destacados
+        </h2>
+        <p className="text-secondary-blue">
+          Descubre nuestros vehículos más populares
+        </p>
       </div>
 
-      <div className="w-full flex justify-center">
-        <Link
-          href="/marketplace"
-          className="mt-12 inline-flex items-center text-principal-blue font-semibold text-lg hover:underline"
+      <div className="relative">
+        <div className="flex justify-center items-center overflow-visible">
+          <div className="relative w-full h-[500px] flex justify-center items-center perspective-[1000px]">
+            {featuredProducts.map((product, index) => {
+              const isActive = index === currentIndex;
+              const offset = index - currentIndex;
+              let position = offset;
+
+              if (offset > featuredProducts.length / 2) {
+                position = offset - featuredProducts.length;
+              } else if (offset < -featuredProducts.length / 2) {
+                position = offset + featuredProducts.length;
+              }
+
+              const isVisible = isMobile
+                ? Math.abs(position) === 0
+                : Math.abs(position) <= 2;
+
+              if (!isVisible) return null;
+
+              return (
+                <motion.div
+                  key={`${product.id || index}-${currentIndex}`}
+                  initial={false}
+                  animate={{
+                    x: isMobile ? 0 : position * 320,
+                    scale: isActive ? 1 : isMobile ? 0.85 : 0.8,
+                    opacity: isActive ? 1 : isMobile ? 0.4 : 0.7,
+                    rotateY: position * 15,
+                    zIndex: isActive ? 3 : 2 - Math.abs(position),
+                  }}
+                  transition={{
+                    duration: 0.5,
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                  className="absolute w-80 md:w-72 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    position: "absolute",
+                    transformStyle: "preserve-3d",
+                    transform: `translateX(${
+                      isMobile ? 0 : position * 320
+                    }px) translateY(-50%) scale(${
+                      isActive ? 1 : isMobile ? 0.85 : 0.8
+                    })`,
+                  }}
+                >
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="relative h-48 bg-gradient-to-br from-principal-blue to-secondary-blue flex items-center justify-center overflow-hidden">
+                      {product.vehicle.images &&
+                      product.vehicle.images.length > 0 ? (
+                        <img
+                          src={product.vehicle.images[0].secure_url}
+                          alt={`${product.vehicle.brand.name} ${product.vehicle.model.name}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Car className="h-20 w-20 text-white opacity-90 z-10" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"></div>
+                      <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 z-10">
+                        <span className="text-white text-sm font-medium">
+                          {translateStatus(product.status)}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-principal-blue mb-2 truncate">
+                        {`${product.vehicle.brand.name} ${product.vehicle.model.name}`}
+                      </h3>
+
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
+                        {product.vehicle.description ||
+                          "Descripción del vehículo no disponible"}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-secondary-blue flex-shrink-0" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {product.vehicle.year}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Gauge className="h-4 w-4 text-secondary-blue flex-shrink-0" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {product.vehicle.mileage.toLocaleString()} km
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-secondary-blue flex-shrink-0" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {product.vehicle.typeOfVehicle}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Car className="h-4 w-4 text-secondary-blue flex-shrink-0" />
+                          <span className="text-sm text-gray-600 truncate">
+                            {translateCondition(product.vehicle.condition)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-2xl font-bold text-principal-blue">
+                            {product.vehicle.currency} $
+                            {product.vehicle.price.toLocaleString()}
+                          </p>
+                          <p className="text-sm text-gray-500">Precio final</p>
+                        </div>
+                        <button
+                          onClick={() => handleViewDetail(product.id)}
+                          className="bg-principal-blue text-white px-5 py-2.5 rounded-lg hover:bg-secondary-blue transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                        >
+                          Ver más
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow-xl rounded-full p-3 hover:bg-gray-50 transition-all duration-200 z-[60] border border-gray-100 hover:shadow-2xl transform hover:scale-110"
+          disabled={featuredProducts.length <= 1}
         >
-          Ver todos los vehículos
-          <ArrowRight className="ml-2" size={20} />
-        </Link>
+          <ChevronLeft className="h-6 w-6 text-principal-blue" />
+        </button>
+
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-xl rounded-full p-3 hover:bg-gray-50 transition-all duration-200 z-[60] border border-gray-100 hover:shadow-2xl transform hover:scale-110"
+          disabled={featuredProducts.length <= 1}
+        >
+          <ChevronRight className="h-6 w-6 text-principal-blue" />
+        </button>
+      </div>
+
+      <div className="flex justify-center mt-8 gap-3">
+        {featuredProducts.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`transition-all duration-300 rounded-full ${
+              index === currentIndex
+                ? "w-8 h-3 bg-principal-blue"
+                : "w-3 h-3 bg-gray-300 hover:bg-gray-400"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
